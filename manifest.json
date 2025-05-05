@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Video Info Copier",
+  "version": "0.1.0",
+  "description": "Copies YouTube video info (date, channel, title, short URL) to clipboard.",
+  "permissions": [
+    "activeTab",
+    "clipboardWrite",
+    "contextMenus"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/watch*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "128": "icon.png"
+  }
+}
