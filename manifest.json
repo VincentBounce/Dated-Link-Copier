@@ -1,20 +1,14 @@
 {
   "manifest_version": 3,
   "name": "YouTube video info copier",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Copy YouTube video date, channel, title and short link to clipboard.",
   "permissions": ["scripting", "activeTab", "clipboardWrite"],
-  "host_permissions": ["https://www.youtube.com/*"],
+  "host_permissions": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
   "action": {
     "default_title": "Copy YT Video Info"
   },
   "background": {
     "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://www.youtube.com/watch*"],
-      "js": ["content.js"]
-    }
-  ]
+  }
 }
