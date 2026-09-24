@@ -14,10 +14,10 @@ chrome.action.onClicked.addListener(async (tab) => {
     });
     if (!info) return flashBadge(tab.id, "✗", "#d93025");
 
-    // Replace " - " in channel and title
-    const cleanChannel = info.channel.replace(/ - /g, ", ");
-    const cleanTitle = info.title.replace(/ - /g, ", ");
-    const str = `${formatDate(info.published)} @${cleanChannel} - ${cleanTitle} https://youtu.be/${info.id}`;
+    // Replace " - " in channels and title; one "@" per channel (collaborations have several)
+    const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
+    const cleanTitle = cleanText(info.title);
+    const str = `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
 
     // Isolated world: clipboardWrite permission allows the execCommand fallback there
     const [{ result: copied }] = await chrome.scripting.executeScript({
@@ -36,6 +36,13 @@ function flashBadge(tabId, text, color) {
   chrome.action.setBadgeBackgroundColor({ tabId, color });
   chrome.action.setBadgeText({ tabId, text });
   setTimeout(() => chrome.action.setBadgeText({ tabId, text: "" }), 1500);
+}
+
+// Characters forbidden in file names -> full-width look-alikes that are allowed
+const FILENAME_SAFE = { "\\": "＼", "/": "／", ":": "：", "*": "＊", "?": "？", '"': "＂", ">": "＞", "<": "＜", "|": "｜" };
+
+function cleanText(s) {
+  return s.replace(/ - /g, ", ").replace(/[\\/:*?"<>|]/g, ch => FILENAME_SAFE[ch]);
 }
 
 // "2005-04-23T20:31:52-07:00" -> "2005-04-23", the date YouTube displays
@@ -68,12 +75,31 @@ async function readVideoInfo() {
   }
 
   const micro = resp?.microformat?.playerMicroformatRenderer;
+  const channel = resp?.videoDetails?.author || micro?.ownerChannelName
+    || document.querySelector("#owner ytd-channel-name a")?.innerText?.trim() || "";
+
+  // Collaborations: the player only knows the main channel, the full list is in the
+  // "Collaborators" dialog data of the owner block under the video
+  const findCollaborators = () => {
+    const owner = document.querySelector("ytd-watch-metadata ytd-video-owner-renderer");
+    const items = owner?.data?.navigationEndpoint?.showDialogCommand?.panelLoadingStrategy
+      ?.inlineContent?.dialogViewModel?.customContent?.listViewModel?.listItems;
+    const names = (items || []).map(i => i.listItemViewModel?.title?.content?.trim()).filter(Boolean);
+    // Must contain the main channel, otherwise it's leftover data from the previous video
+    return names.length > 1 && names.includes(channel) ? names : null;
+  };
+  // Wait until the page below the player shows this video (not needed on /shorts/)
+  const flexy = document.querySelector("ytd-watch-flexy");
+  for (let i = 0; i < 10 && url.pathname === "/watch" && flexy?.getAttribute("video-id") !== id; i++) {
+    await new Promise(r => setTimeout(r, 200));
+  }
+  const channels = findCollaborators() || [channel];
+
   return {
     id,
     title: resp?.videoDetails?.title
       || document.querySelector("ytd-watch-metadata h1")?.innerText?.trim() || "",
-    channel: resp?.videoDetails?.author || micro?.ownerChannelName
-      || document.querySelector("#owner ytd-channel-name a")?.innerText?.trim() || "",
+    channels,
     published: micro?.publishDate || micro?.uploadDate || ""
   };
 }
