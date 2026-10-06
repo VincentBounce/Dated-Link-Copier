@@ -39,14 +39,16 @@ When the date can't be found, `?` takes its place.
 
 ## Versions
 
-| Version | Date | Changes |
-|---|---|---|
-| 2.0.0 | 2026-10-06 | Renamed Dated Link Copier; Google Play apps and any page with a publish date (Le Parisien…) |
-| 1.1.0 | 2026-09-24 | Multiple channels for collaborations, file name safe characters |
-| 1.0.0 | 2026-09-24 | First reliable version: injected on click, data read from the YouTube player, ✓/✗ badge |
-| 0.3.0 | 2026-01-28 | Retries, date fallback, Shorts support |
-| 0.2.0 | 2025-10-04 | First real copy: date, channel, title and short link |
-| 0.1.0 | 2025-05-05 | Prototype |
+| Version | Date | Built with | Changes |
+|---|---|---|---|
+| 2.0.0 | 2026-10-06 | Claude Code (Claude Opus 5.5) | Renamed Dated Link Copier; Google Play apps and any page with a publish date (Le Parisien…) |
+| 1.1.0 | 2026-09-24 | Claude Code (Claude Opus 5.5) | Multiple channels for collaborations, file name safe characters |
+| 1.0.0 | 2026-09-24 | Claude Code (Claude Opus 5.5) | First reliable version: injected on click, data read from the YouTube player, ✓/✗ badge |
+| 0.3.0 | 2026-01-28 | Perplexity | Retries, date fallback, Shorts support |
+| 0.2.0 | 2025-10-04 | Perplexity | First real copy: date, channel, title and short link |
+| 0.1.0 | 2025-05-05 | Grok | Prototype |
+
+Vibe coded: 0.1 with Grok, 0.2 and 0.3 with Perplexity, 1.0 and later with Claude Code (Claude Opus 5.5).
 
 ## License
 
