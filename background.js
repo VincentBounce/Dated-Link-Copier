@@ -1,23 +1,9 @@
 // The code is injected on click (no static content script), so it works even when
-// the video was reached through YouTube's in-page navigation or after an extension reload.
+// the page was reached through in-page navigation or after an extension reload.
 chrome.action.onClicked.addListener(async (tab) => {
-  if (!/^https:\/\/(www|m)\.youtube\.com\//.test(tab.url || "")) {
-    return flashBadge(tab.id, "✗", "#d93025");
-  }
-
   try {
-    // MAIN world: gives access to the YouTube player's data for the current video
-    const [{ result: info }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      world: "MAIN",
-      func: readVideoInfo
-    });
-    if (!info) return flashBadge(tab.id, "✗", "#d93025");
-
-    // Replace " - " in channels and title; one "@" per channel (collaborations have several)
-    const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
-    const cleanTitle = cleanText(info.title);
-    const str = `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
+    const str = await buildLine(tab);
+    if (!str) return flashBadge(tab.id, "✗", "#d93025");
 
     // Isolated world: clipboardWrite permission allows the execCommand fallback there
     const [{ result: copied }] = await chrome.scripting.executeScript({
@@ -31,6 +17,40 @@ chrome.action.onClicked.addListener(async (tab) => {
     flashBadge(tab.id, "✗", "#d93025");
   }
 });
+
+async function runInPage(tab, func, world = "ISOLATED") {
+  const [{ result }] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world, func });
+  return result;
+}
+
+// One line per kind of page; "?" when the date isn't found
+async function buildLine(tab) {
+  const url = tab.url || "";
+
+  if (/^https:\/\/(www|m)\.youtube\.com\//.test(url)) {
+    // MAIN world: gives access to the YouTube player's data for the current video
+    const info = await runInPage(tab, readVideoInfo, "MAIN");
+    if (!info) return null;
+    // Replace " - " in channels and title; one "@" per channel (collaborations have several)
+    const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
+    const cleanTitle = cleanText(info.title);
+    return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
+  }
+
+  if (/^https:\/\/play\.google\.com\/store\/apps\/details\?/.test(url)) {
+    const info = await runInPage(tab, readPlayAppInfo);
+    if (!info) return null;
+    return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
+  }
+
+  // Any other web page (news articles like Le Parisien): publish date from the page metadata
+  if (/^https?:\/\//.test(url)) {
+    const info = await runInPage(tab, readArticleInfo);
+    return `${formatDate(info.published) || "?"} ${info.link}`;
+  }
+
+  return null;
+}
 
 function flashBadge(tabId, text, color) {
   chrome.action.setBadgeBackgroundColor({ tabId, color });
@@ -102,6 +122,68 @@ async function readVideoInfo() {
     channels,
     published: micro?.publishDate || micro?.uploadDate || ""
   };
+}
+
+// Runs in the page (must be self-contained)
+async function readPlayAppInfo() {
+  const id = new URL(location.href).searchParams.get("id");
+  if (!id) return null;
+
+  // The app data is the "ds:5" block of the page; app[10] is the release date
+  // (["Dec 14, 2012", [1355491348, ...]]), read from the timestamp so the page language doesn't matter.
+  // Returns undefined when the block is missing or belongs to another app (in-page navigation).
+  const releasedFrom = (html, checkId) => {
+    const m = html.match(/key: 'ds:5'[^]*?data:([^]*?), sideChannel: \{\}\}\);/);
+    if (!m) return undefined;
+    try {
+      const app = JSON.parse(m[1])[1][2];
+      if (checkId && app[77]?.[0] !== id) return undefined;
+      const ts = app[10]?.[1]?.[0];
+      return ts ? new Date(ts * 1000).toISOString() : "";
+    } catch (e) {
+      return undefined;
+    }
+  };
+
+  const inline = [...document.scripts].map(s => s.textContent).find(t => t.includes("key: 'ds:5'"));
+  let released = inline && releasedFrom(inline, true);
+  if (released === undefined) {
+    // Fall back to fetching this app's page
+    try {
+      const res = await fetch(`/store/apps/details?id=${encodeURIComponent(id)}&hl=en`);
+      released = releasedFrom(await res.text(), false);
+    } catch (e) {}
+  }
+  return { id, released: released || "" };
+}
+
+// Runs in the page (must be self-contained)
+function readArticleInfo() {
+  const meta = sel => document.querySelector(sel)?.content;
+  let published = meta('meta[property="article:published_time"]')
+    || meta('meta[itemprop="datePublished"]')
+    || meta('meta[name="date"]');
+  if (!published) {
+    for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+      const m = s.textContent.match(/"datePublished"\s*:\s*"([^"]+)"/);
+      if (m) { published = m[1]; break; }
+    }
+  }
+
+  // Canonical link if it's on the same site, otherwise the current URL without tracking parameters
+  const canonical = document.querySelector('link[rel="canonical"]')?.href;
+  let link;
+  if (canonical && new URL(canonical).hostname === location.hostname) {
+    link = canonical;
+  } else {
+    const u = new URL(location.href);
+    u.hash = "";
+    for (const k of [...u.searchParams.keys()]) {
+      if (/^(utm_.*|fbclid|gclid)$/.test(k)) u.searchParams.delete(k);
+    }
+    link = u.href;
+  }
+  return { published: published || "", link };
 }
 
 // Runs in the page's isolated world (must be self-contained)

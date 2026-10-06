@@ -1,12 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "YouTube video info copier",
-  "version": "1.1.0",
-  "description": "Copy YouTube video date, channel, title and short link to clipboard.",
+  "name": "Dated Link Copier",
+  "version": "2.0.0",
+  "description": "Copy a dated link to the current page: YouTube videos, Google Play apps, news articles and more.",
   "permissions": ["scripting", "activeTab", "clipboardWrite"],
-  "host_permissions": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
   "action": {
-    "default_title": "Copy YT Video Info"
+    "default_title": "Copy dated link"
   },
   "background": {
     "service_worker": "background.js"
