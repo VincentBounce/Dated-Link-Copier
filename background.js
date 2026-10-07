@@ -94,10 +94,12 @@ async function buildLine(tab) {
     return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
 
-  // Any other web page (news articles like Le Parisien…): publish date from the page metadata
+  // Any other web page (news articles like Le Parisien…): publish date from the page metadata;
+  // without one there is nothing worth copying, so the click shows ✗
   if (/^https?:\/\//.test(url)) {
     const info = await runInPage(tab, readArticleInfo);
-    return `${formatDate(info.published) || "?"} ${info.link}`;
+    const date = formatDate(info.published);
+    return date ? `${date} ${info.link}` : null;
   }
 
   return null;
