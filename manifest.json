@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Dated Link Copier",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Copy a dated link to the current page: YouTube videos, Google Play apps, news articles and more.",
   "permissions": ["scripting", "activeTab", "clipboardWrite", "declarativeContent"],
   "icons": {

@@ -1,13 +1,39 @@
-// The icon is greyed out (action disabled) except on web pages, where there is something to copy
+// The icon is greyed out (action disabled) except where there is something to copy:
+// YouTube videos, Google Play apps, and any other web page
+const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com"];
+
 function setUpIconState() {
+  const { PageStateMatcher, ShowAction, onPageChanged } = chrome.declarativeContent;
   chrome.action.disable();
-  chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
-    chrome.declarativeContent.onPageChanged.addRules([{
-      conditions: [new chrome.declarativeContent.PageStateMatcher({ pageUrl: { schemes: ["http", "https"] } })],
-      actions: [new chrome.declarativeContent.ShowAction()]
+  onPageChanged.removeRules(undefined, () => {
+    onPageChanged.addRules([{
+      conditions: [
+        new PageStateMatcher({ pageUrl: { urlMatches: "^https://(www|m)\\.youtube\\.com/(watch\\?|shorts/)" } }),
+        new PageStateMatcher({ pageUrl: { hostEquals: "play.google.com", pathEquals: "/store/apps/details" } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
+      ],
+      actions: [new ShowAction()]
     }]);
   });
 }
+
+// Rules can't exclude sites and their regexes have no lookahead, so build a regex matching
+// every http(s) URL whose host is not in the list: for each prefix of an excluded host,
+// accept a host that ends there or continues with a different character.
+function anyHostExcept(hosts) {
+  const H = "[^/:?#]";
+  const esc = str => str.replace(/\./g, "\\.");
+  const alts = [];
+  const prefixes = new Set([""]);
+  for (const h of hosts) for (let i = 1; i <= h.length; i++) prefixes.add(h.slice(0, i));
+  for (const p of prefixes) {
+    const next = new Set(hosts.filter(h => h.startsWith(p) && h.length > p.length).map(h => h[p.length]));
+    if (p && !hosts.includes(p)) alts.push(esc(p));
+    alts.push(esc(p) + "[^" + esc([...next].join("")) + "/:?#]" + H + "*");
+  }
+  return "^https?://(" + alts.join("|") + ")([/:?#]|$)";
+}
+
 chrome.runtime.onInstalled.addListener(setUpIconState);
 chrome.runtime.onStartup.addListener(setUpIconState);
 
@@ -43,20 +69,17 @@ async function buildLine(tab) {
   if (/^https:\/\/(www|m)\.youtube\.com\//.test(url)) {
     // MAIN world: gives access to the YouTube player's data for the current video
     const info = await runInPage(tab, readVideoInfo, "MAIN");
-    if (info) {
-      // Replace " - " in channels and title; one "@" per channel (collaborations have several)
-      const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
-      const cleanTitle = cleanText(info.title);
-      return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
-    }
-    // Not a video (home, channel…): handled like any other page below
+    if (!info) return null;
+    // Replace " - " in channels and title; one "@" per channel (collaborations have several)
+    const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
+    const cleanTitle = cleanText(info.title);
+    return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
   }
 
   if (/^https:\/\/play\.google\.com\/store\/apps\/details\?/.test(url)) {
     const info = await runInPage(tab, readPlayAppInfo);
-    if (info) {
-      return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
-    }
+    if (!info) return null;
+    return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
 
   // Any other web page (news articles like Le Parisien…): publish date from the page metadata
