@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Dated Link Copier",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Copy a dated link to the current page: YouTube videos, Google Play apps, news articles and more.",
   "permissions": ["scripting", "activeTab", "clipboardWrite", "declarativeContent"],
   "icons": {
@@ -13,10 +13,8 @@
   "action": {
     "default_title": "Copy dated link",
     "default_icon": {
-      "16": "icons/icon-16.png",
-      "32": "icons/icon-32.png",
-      "48": "icons/icon-48.png",
-      "128": "icons/icon-128.png"
+      "16": "icons/icon-disabled-16.png",
+      "32": "icons/icon-disabled-32.png"
     }
   },
   "background": {

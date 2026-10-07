@@ -10,7 +10,7 @@ Chrome MV3 extension: one click copies a dated reference line for the current pa
 
 ## Icon
 
-`icons/icon.svg` (blue rounded square, white calendar, blue chain link) with 16/32/48/128 px PNGs. The action is disabled (greyed) by default and enabled with declarativeContent on YouTube videos/Shorts, Google Play app pages, and any other site (`anyHostExcept()` builds a lookahead-free regex, since rules can't exclude hosts).
+`icons/icon.svg` (blue rounded square, white calendar, blue chain link) with 16/32/48/128 px PNGs, plus grey 16/32 px copies (`icons/icon-disabled-*.png`) used as the toolbar default. Chrome draws a disabled action grey only on pages the extension can't access, and activeTab makes every web page accessible, so `chrome.action.disable()` alone never greys the icon on http(s) pages. Hence: default icon = grey copy, and a declarativeContent rule (ShowAction + SetIcon with the colored image data) on YouTube videos/Shorts, Google Play app pages, and any other site (`anyHostExcept()` builds a lookahead-free regex, since rules can't exclude hosts).
 
 ## Working rules (from the owner)
 
@@ -19,9 +19,3 @@ Chrome MV3 extension: one click copies a dated reference line for the current pa
 - Update the README (formats and versions table) when behavior changes.
 - Everything on GitHub (code, comments, commits, README, release notes) is English only. Talk to the owner in French.
 - Version history: 0.1 vibe coded with Grok, 0.2–0.3 with Perplexity, 1.0 and later with Claude Code. The commits up to 1.1.0 are backdated imports of older folders.
-
-## Open bug (2026-10-07)
-
-On the owner's Chrome 154 with 2.1.1, the icon stays colored on `https://www.youtube.com/` (it should be grey there). A new empty tab is grey, but typing `youtube.com` in a new tab gives a colored icon, so one of the 3 conditions seems to match the YouTube home page in Chrome.
-
-Already checked: the rules are installed (`chrome.declarativeContent.onPageChanged.getRules` in the service worker console shows them), the conditions pass an 18-URL test in JavaScriptCore, and no activeTab grant was involved. `chrome.action.isEnabled()` ignores declarative state, so it can't be used to test. Next step: load the extension in a real browser where the toolbar can be seen (e.g. Brave), test each condition alone, and find which one matches `https://www.youtube.com/`.

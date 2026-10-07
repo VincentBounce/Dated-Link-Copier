@@ -41,6 +41,7 @@ When the date can't be found, `?` takes its place.
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.1.2 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Icon really greyed out on web pages with nothing to copy (Chrome kept disabled icons colored on sites reachable through activeTab) |
 | 2.1.1 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Icon greyed out on YouTube pages other than videos and Google Play pages other than apps |
 | 2.1.0 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Icon (calendar + link), greyed out where there is nothing to copy; YouTube and Google Play pages other than videos and apps copied as regular pages |
 | 2.0.0 | 2026-10-06 | Claude Code (Claude Opus 5.5) | Renamed Dated Link Copier; Google Play apps and any page with a publish date (Le Parisien…) |

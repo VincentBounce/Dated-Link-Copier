@@ -1,10 +1,15 @@
-// The icon is greyed out (action disabled) except where there is something to copy:
+// The icon is greyed out except where there is something to copy:
 // YouTube videos, Google Play apps, and any other web page
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com"];
 
-function setUpIconState() {
-  const { PageStateMatcher, ShowAction, onPageChanged } = chrome.declarativeContent;
+// Chrome only draws a disabled action in grey on pages the extension can't access, and
+// activeTab makes every web page accessible: the default icon is therefore a grey copy,
+// and matching pages get the colored one back through SetIcon.
+async function setUpIconState() {
+  const { PageStateMatcher, SetIcon, ShowAction, onPageChanged } = chrome.declarativeContent;
   chrome.action.disable();
+  const imageData = {};
+  for (const size of [16, 32]) imageData[size] = await loadImageData(`icons/icon-${size}.png`, size);
   onPageChanged.removeRules(undefined, () => {
     onPageChanged.addRules([{
       conditions: [
@@ -12,9 +17,16 @@ function setUpIconState() {
         new PageStateMatcher({ pageUrl: { hostEquals: "play.google.com", pathEquals: "/store/apps/details" } }),
         new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
       ],
-      actions: [new ShowAction()]
+      actions: [new ShowAction(), new SetIcon({ imageData })]
     }]);
   });
+}
+
+async function loadImageData(path, size) {
+  const bitmap = await createImageBitmap(await (await fetch(chrome.runtime.getURL(path))).blob());
+  const ctx = new OffscreenCanvas(size, size).getContext("2d");
+  ctx.drawImage(bitmap, 0, 0, size, size);
+  return ctx.getImageData(0, 0, size, size);
 }
 
 // Rules can't exclude sites and their regexes have no lookahead, so build a regex matching
