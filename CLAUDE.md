@@ -5,7 +5,7 @@ Chrome MV3 extension: one click copies a dated reference line for the current pa
 ## Output formats (`?` when the date is missing on YouTube / Google Play)
 
 - YouTube video: `YYYY-MM-DD @Channel1 @Channel2 - Title https://youtu.be/ID`. Data comes from the player (`#movie_player.getPlayerResponse()`, MAIN world), checked against the video ID in the URL; collaborators come from the owner block's "Collaborators" dialog data. In channels and title, ` - ` becomes `, ` and `\ / : * ? " > < |` become `＼／：＊？＂＞＜｜`.
-- Google Play app: `Android YYYY-MM-DD https://play.google.com/store/apps/details?id=…`. Release date = timestamp at `app[10][1][0]` of the `ds:5` data block, falling back to fetching the app page after in-page navigation.
+- Google Play app: `Android YYYY-MM-DD https://play.google.com/store/apps/details?id=…`. Release date = timestamp at `app[10][1][0]` of the `ds:5` data block, read from the fetched app page for regions US, then FR, GB, CH (some regions get no date for some apps), then the loaded page.
 - Any other page: `YYYY-MM-DD <link>` (nothing copied and ✗ when no date is found) from `article:published_time` / `datePublished`; canonical link when on the same host, else the URL without tracking parameters.
 
 ## Icon

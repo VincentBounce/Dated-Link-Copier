@@ -198,15 +198,19 @@ async function readPlayAppInfo() {
     }
   };
 
-  const inline = [...document.scripts].map(s => s.textContent).find(t => t.includes("key: 'ds:5'"));
-  let released = inline && releasedFrom(inline, true);
-  if (!released) {
-    // Fall back to fetching this app's page: after in-page navigation the inline block is stale,
-    // and some regions (e.g. France) get no release date for some apps while the US gets it
+  // Some regions get no release date for some apps: ask the US page first, then other regions,
+  // then the page as loaded (its inline block is stale after in-page navigation, hence the id check)
+  let released;
+  for (const gl of ["US", "FR", "GB", "CH"]) {
     try {
-      const res = await fetch(`/store/apps/details?id=${encodeURIComponent(id)}&hl=en&gl=US`);
+      const res = await fetch(`/store/apps/details?id=${encodeURIComponent(id)}&hl=en&gl=${gl}`);
       released = releasedFrom(await res.text(), false);
     } catch (e) {}
+    if (released) break;
+  }
+  if (!released) {
+    const inline = [...document.scripts].map(s => s.textContent).find(t => t.includes("key: 'ds:5'"));
+    released = inline && releasedFrom(inline, true);
   }
   return { id, released: released || "" };
 }
