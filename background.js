@@ -200,10 +200,11 @@ async function readPlayAppInfo() {
 
   const inline = [...document.scripts].map(s => s.textContent).find(t => t.includes("key: 'ds:5'"));
   let released = inline && releasedFrom(inline, true);
-  if (released === undefined) {
-    // Fall back to fetching this app's page
+  if (!released) {
+    // Fall back to fetching this app's page: after in-page navigation the inline block is stale,
+    // and some regions (e.g. France) get no release date for some apps while the US gets it
     try {
-      const res = await fetch(`/store/apps/details?id=${encodeURIComponent(id)}&hl=en`);
+      const res = await fetch(`/store/apps/details?id=${encodeURIComponent(id)}&hl=en&gl=US`);
       released = releasedFrom(await res.text(), false);
     } catch (e) {}
   }
