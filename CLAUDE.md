@@ -15,7 +15,7 @@ Chrome MV3 extension: one click copies a dated reference line for the current pa
 ## Working rules (from the owner)
 
 - Don't ask questions: pick the sensible default, do it, say in one line what you chose.
-- For each change: test it for real, commit to `main`, bump the SemVer version in `manifest.json` (patch = fix, minor = feature, major = big change), tag `vX.Y.Z`, push, and create the GitHub release with the zip: `git archive --format=zip --prefix=dated-link-copier-X.Y.Z/ -o dated-link-copier-X.Y.Z.zip vX.Y.Z manifest.json background.js icons/icon-16.png icons/icon-32.png icons/icon-48.png icons/icon-128.png`. Release notes end with `_Built with Claude Code (<model>)._`
+- For each change: test it for real, commit to `main`, bump the SemVer version in `manifest.json` (patch = fix, minor = feature, major = big change), tag `vX.Y.Z`, push, and create the GitHub release with the zip: `git archive --format=zip --prefix=dated-link-copier-X.Y.Z/ -o dated-link-copier-X.Y.Z.zip vX.Y.Z manifest.json background.js icons/icon-16.png icons/icon-32.png icons/icon-48.png icons/icon-128.png icons/icon-disabled-16.png icons/icon-disabled-32.png`. Release notes end with `_Built with Claude Code (<model>)._`
 - Update the README (formats and versions table) when behavior changes.
 - Everything on GitHub (code, comments, commits, README, release notes) is English only. Talk to the owner in French.
 - Version history: 0.1 vibe coded with Grok, 0.2–0.3 with Perplexity, 1.0 and later with Claude Code. The commits up to 1.1.0 are backdated imports of older folders.
