@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Dated Link Copier: a calendar page (date) holding a chain link (link) -->
+  <rect width="128" height="128" rx="28" fill="#1a73e8"/>
+  <!-- calendar page -->
+  <rect x="18" y="26" width="92" height="84" rx="12" fill="#ffffff"/>
+  <rect x="18" y="26" width="92" height="24" rx="12" fill="#d2e3fc"/>
+  <rect x="18" y="38" width="92" height="12" fill="#d2e3fc"/>
+  <!-- binder rings -->
+  <rect x="38" y="14" width="12" height="24" rx="6" fill="#ffffff" stroke="#1a73e8" stroke-width="4"/>
+  <rect x="78" y="14" width="12" height="24" rx="6" fill="#ffffff" stroke="#1a73e8" stroke-width="4"/>
+  <!-- chain link -->
+  <g fill="none" stroke="#1a73e8" stroke-width="9" stroke-linecap="round" transform="rotate(-45 64 80)">
+    <rect x="30" y="69" width="38" height="22" rx="11"/>
+    <rect x="60" y="69" width="38" height="22" rx="11"/>
+  </g>
+</svg>

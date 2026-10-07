@@ -1,3 +1,16 @@
+// The icon is greyed out (action disabled) except on web pages, where there is something to copy
+function setUpIconState() {
+  chrome.action.disable();
+  chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+    chrome.declarativeContent.onPageChanged.addRules([{
+      conditions: [new chrome.declarativeContent.PageStateMatcher({ pageUrl: { schemes: ["http", "https"] } })],
+      actions: [new chrome.declarativeContent.ShowAction()]
+    }]);
+  });
+}
+chrome.runtime.onInstalled.addListener(setUpIconState);
+chrome.runtime.onStartup.addListener(setUpIconState);
+
 // The code is injected on click (no static content script), so it works even when
 // the page was reached through in-page navigation or after an extension reload.
 chrome.action.onClicked.addListener(async (tab) => {
@@ -30,20 +43,23 @@ async function buildLine(tab) {
   if (/^https:\/\/(www|m)\.youtube\.com\//.test(url)) {
     // MAIN world: gives access to the YouTube player's data for the current video
     const info = await runInPage(tab, readVideoInfo, "MAIN");
-    if (!info) return null;
-    // Replace " - " in channels and title; one "@" per channel (collaborations have several)
-    const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
-    const cleanTitle = cleanText(info.title);
-    return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
+    if (info) {
+      // Replace " - " in channels and title; one "@" per channel (collaborations have several)
+      const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
+      const cleanTitle = cleanText(info.title);
+      return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
+    }
+    // Not a video (home, channel…): handled like any other page below
   }
 
   if (/^https:\/\/play\.google\.com\/store\/apps\/details\?/.test(url)) {
     const info = await runInPage(tab, readPlayAppInfo);
-    if (!info) return null;
-    return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
+    if (info) {
+      return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
+    }
   }
 
-  // Any other web page (news articles like Le Parisien): publish date from the page metadata
+  // Any other web page (news articles like Le Parisien…): publish date from the page metadata
   if (/^https?:\/\//.test(url)) {
     const info = await runInPage(tab, readArticleInfo);
     return `${formatDate(info.published) || "?"} ${info.link}`;

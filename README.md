@@ -4,7 +4,7 @@ Chrome extension that copies a dated link to the page you're on, in one click.
 
 ## Output
 
-Click the toolbar icon. The icon shows ✓ when the line was copied, ✗ otherwise.
+Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy (new tab, `chrome://` pages, local files).
 
 **YouTube videos:** publish date, channels, title and short link
 
@@ -29,7 +29,7 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-09-30 https://www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php
 ```
 
-When the date can't be found, `?` takes its place.
+When the date can't be found, `?` takes its place. YouTube and Google Play pages that aren't a video or an app (home, channels, search…) are copied like any other page.
 
 ## Install
 
@@ -41,6 +41,7 @@ When the date can't be found, `?` takes its place.
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.1.0 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Icon (calendar + link), greyed out where there is nothing to copy; YouTube and Google Play pages other than videos and apps copied as regular pages |
 | 2.0.0 | 2026-10-06 | Claude Code (Claude Opus 5.5) | Renamed Dated Link Copier; Google Play apps and any page with a publish date (Le Parisien…) |
 | 1.1.0 | 2026-09-24 | Claude Code (Claude Opus 5.5) | Multiple channels for collaborations, file name safe characters |
 | 1.0.0 | 2026-09-24 | Claude Code (Claude Opus 5.5) | First reliable version: injected on click, data read from the YouTube player, ✓/✗ badge |
