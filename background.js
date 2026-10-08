@@ -1,6 +1,8 @@
 // The icon is greyed out except where there is something to copy:
-// YouTube videos, Google Play apps, and any other web page
-const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com"];
+// YouTube videos, Google Play apps, Reddit posts, and any other web page
+const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
+  "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com"];
+const REDDIT_POST = "^https://((www|old|new|sh)\\.)?reddit\\.com/(r/[^/]+/)?comments/[a-z0-9]+";
 
 // Chrome only draws a disabled action in grey on pages the extension can't access, and
 // activeTab makes every web page accessible: the default icon is therefore a grey copy,
@@ -15,6 +17,7 @@ async function setUpIconState() {
       conditions: [
         new PageStateMatcher({ pageUrl: { urlMatches: "^https://(www|m)\\.youtube\\.com/(watch\\?|shorts/)" } }),
         new PageStateMatcher({ pageUrl: { hostEquals: "play.google.com", pathEquals: "/store/apps/details" } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: REDDIT_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
       ],
       actions: [new ShowAction(), new SetIcon({ imageData })]
@@ -92,6 +95,12 @@ async function buildLine(tab) {
     const info = await runInPage(tab, readPlayAppInfo);
     if (!info) return null;
     return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
+  }
+
+  if (/^https:\/\/([a-z]+\.)?reddit\.com\//.test(url)) {
+    const info = await runInPage(tab, readRedditPostInfo);
+    if (!info) return null;
+    return `${info.date || "?"} ${info.link}`;
   }
 
   // Any other web page (news articles like Le Parisien…): publish date from the page metadata;
@@ -238,6 +247,41 @@ function readArticleInfo() {
     link = u.href;
   }
   return { published: published || "", link };
+}
+
+// Runs in the page (must be self-contained)
+function readRedditPostInfo() {
+  const id = location.pathname.match(/\/comments\/([a-z0-9]+)/i)?.[1];
+  if (!id) return null;
+
+  // New Reddit: <shreddit-post id="t3_ID" created-timestamp="2024-05-10T12:34:56.789000+0000" permalink="/r/…/comments/ID/slug/">
+  // Old Reddit: <div class="thing" data-fullname="t3_ID" data-timestamp="1715344496789" data-permalink="…">
+  // Matched on the post ID so a post left over from in-page navigation is never used.
+  const post = document.querySelector(`shreddit-post[id="t3_${id}"]`);
+  const thing = document.querySelector(`.thing[data-fullname="t3_${id}"]`);
+  let created = post?.getAttribute("created-timestamp")
+    || (thing?.dataset.timestamp && Number(thing.dataset.timestamp));
+  if (!created) {
+    for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+      const m = s.textContent.match(/"datePublished"\s*:\s*"([^"]+)"/);
+      if (m) { created = m[1]; break; }
+    }
+  }
+
+  // Local date, as Reddit shows post times in the viewer's time zone
+  let date = "";
+  const d = new Date(typeof created === "string"
+    ? created.replace(/\.(\d{3})\d*/, ".$1").replace(/([+-]\d{2})(\d{2})$/, "$1:$2")
+    : created);
+  if (created && !isNaN(d)) {
+    date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  // Post link without the comment part, query or fragment
+  const permalink = post?.getAttribute("permalink") || thing?.dataset.permalink
+    || location.pathname.match(/^(\/r\/[^/]+)?\/comments\/[a-z0-9]+(\/[^/]+)?/i)[0];
+  const path = permalink.match(/^(\/r\/[^/]+)?\/comments\/[a-z0-9]+(\/[^/]+)?/i)?.[0] || permalink;
+  return { date, link: `https://www.reddit.com${path.replace(/\/?$/, "/")}` };
 }
 
 // Runs in the page's isolated world (must be self-contained)
