@@ -2,11 +2,12 @@
 
 Chrome MV3 extension: one click copies a dated reference line for the current page. Everything is in `background.js`: on click it injects self-contained functions with `chrome.scripting.executeScript` (permissions: scripting, activeTab, clipboardWrite, declarativeContent; no host permissions).
 
-## Output formats (`?` when the date is missing on YouTube / Google Play / Reddit)
+## Output formats (`?` when the date is missing on YouTube / Google Play / Reddit / Sony)
 
 - YouTube video: `YYYY-MM-DD @Channel1 @Channel2 - Title https://youtu.be/ID`. Data comes from the player (`#movie_player.getPlayerResponse()`, MAIN world), checked against the video ID in the URL; collaborators come from the owner block's "Collaborators" dialog data. In channels and title, ` - ` becomes `, ` and `\ / : * ? " > < |` become `＼／：＊？＂＞＜｜`.
 - Google Play app: `Android YYYY-MM-DD https://play.google.com/store/apps/details?id=…`. Release date = timestamp at `app[10][1][0]` of the AF_initDataCallback block whose `[1][2][77][0]` is the app id (key `ds:5` when signed out, another key when signed in). Read from the loaded page first (instant); only when it has none (some regions get no date for some apps, or stale page after in-page navigation) fetch the app page for regions US, then FR, GB, CH (~1 s each).
 - Reddit post: `YYYY-MM-DD https://www.reddit.com/r/<sub>/comments/<id>/<slug>/`. Date = `created-timestamp` of `shreddit-post[id="t3_<id>"]` (new Reddit) or `data-timestamp` of `.thing[data-fullname="t3_<id>"]` (old Reddit), else JSON-LD `datePublished`, shown as the local date like Reddit does. Comment permalinks give the post link. reddit.com blocks curl with a bot check; test in a real browser.
+- Sony news (`www.sony.com` or `www.sony.net`, `/<lang>/SonyInfo/News/…`): `YYYY-MM-DD <URL without index.html>`. Press releases have no date metadata: the date is the text of `p.mod_text.right` ("September 29, 1998", or "1998年9月29日" on Japanese pages), else `time[datetime]` or `article:published_time`. sony.com blocks curl (403); the Wayback Machine (`web.archive.org/web/2025id_/<url>`) gives the raw HTML.
 - Any other page: `YYYY-MM-DD <link>` (nothing copied and ✗ when no date is found) from `article:published_time` / `datePublished`; canonical link when on the same host, else the URL without tracking parameters.
 
 ## Icon

@@ -29,13 +29,19 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-10-07 https://www.reddit.com/r/chrome/comments/1abcde/my_post_title/
 ```
 
+**Sony news and press releases:** release date and link (English and Japanese pages)
+
+```
+1998-09-29 https://www.sony.com/en/SonyInfo/News/Press/199809/98-101/
+```
+
 **Any other page (news articles, blogs…):** publish date from the page metadata and link
 
 ```
 2026-09-30 https://www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php
 ```
 
-On YouTube, Google Play and Reddit, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -47,6 +53,7 @@ On YouTube, Google Play and Reddit, `?` replaces a date that can't be found. On 
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.4.0 | 2026-10-09 | Claude Code (Claude Opus 5.5) | Sony news and press releases: `date link` |
 | 2.3.0 | 2026-10-08 | Claude Code (Claude Opus 5.5) | Reddit posts: `date link` (icon greyed out on other Reddit pages) |
 | 2.2.3 | 2026-10-08 | Claude Code (Claude Opus 5.5) | Google Play: release date found when signed in to Google; instant again (the US, French, British and Swiss pages are only fetched when the loaded page has no date) |
 | 2.2.2 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Google Play: release date read from the US page first, then the French, British and Swiss ones |

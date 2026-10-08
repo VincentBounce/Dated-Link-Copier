@@ -103,6 +103,11 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${info.link}`;
   }
 
+  if (/^https:\/\/www\.sony\.(com|net)\/([a-z]{2}\/)?SonyInfo\/News\//i.test(url)) {
+    const info = await runInPage(tab, readSonyNewsInfo);
+    return `${info.date || "?"} ${info.link}`;
+  }
+
   // Any other web page (news articles like Le Parisien…): publish date from the page metadata;
   // without one there is nothing worth copying, so the click shows ✗
   if (/^https?:\/\//.test(url)) {
@@ -282,6 +287,31 @@ function readRedditPostInfo() {
     || location.pathname.match(/^(\/r\/[^/]+)?\/comments\/[a-z0-9]+(\/[^/]+)?/i)[0];
   const path = permalink.match(/^(\/r\/[^/]+)?\/comments\/[a-z0-9]+(\/[^/]+)?/i)?.[0] || permalink;
   return { date, link: `https://www.reddit.com${path.replace(/\/?$/, "/")}` };
+}
+
+// Runs in the page (must be self-contained)
+function readSonyNewsInfo() {
+  const pad = n => String(n).padStart(2, "0");
+  const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  // "September 29, 1998", "Sept. 29, 1998" or "1998年9月29日"
+  const parse = text => {
+    let m = text.match(/\b([A-Z][a-z]{2,8})\.?\s+(\d{1,2}),\s*(\d{4})\b/);
+    const month = m && months.indexOf(m[1].slice(0, 3).toLowerCase());
+    if (m && month >= 0) return `${m[3]}-${pad(month + 1)}-${pad(m[2])}`;
+    m = text.match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/);
+    return m ? `${m[1]}-${pad(m[2])}-${pad(m[3])}` : "";
+  };
+
+  // Press releases have no date metadata: the date is the right-aligned line under the title
+  // (<p class="mod_text right">September 29, 1998</p>); fall back to <time> and metadata
+  let date = "";
+  for (const el of document.querySelectorAll("p.mod_text.right")) {
+    if ((date = parse(el.textContent))) break;
+  }
+  if (!date) date = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+  if (!date) date = document.querySelector('meta[property="article:published_time"]')?.content?.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+
+  return { date, link: location.origin + location.pathname.replace(/index\.html?$/, "") };
 }
 
 // Runs in the page's isolated world (must be self-contained)
