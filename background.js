@@ -182,35 +182,31 @@ async function readPlayAppInfo() {
   const id = new URL(location.href).searchParams.get("id");
   if (!id) return null;
 
-  // The app data is the "ds:5" block of the page; app[10] is the release date
-  // (["Dec 14, 2012", [1355491348, ...]]), read from the timestamp so the page language doesn't matter.
-  // Returns undefined when the block is missing or belongs to another app (in-page navigation).
-  const releasedFrom = (html, checkId) => {
-    const m = html.match(/key: 'ds:5'[^]*?data:([^]*?), sideChannel: \{\}\}\);/);
-    if (!m) return undefined;
-    try {
-      const app = JSON.parse(m[1])[1][2];
-      if (checkId && app[77]?.[0] !== id) return undefined;
-      const ts = app[10]?.[1]?.[0];
-      return ts ? new Date(ts * 1000).toISOString() : "";
-    } catch (e) {
-      return undefined;
+  // The app data is one of the page's AF_initDataCallback blocks: "ds:5" when signed out, another
+  // key when signed in, so take the block whose app[77][0] is this app's id. app[10] is the release
+  // date (["Dec 14, 2012", [1355491348, ...]]), read from the timestamp so the page language doesn't
+  // matter. Returns undefined when no block describes this app (e.g. stale page after in-page navigation).
+  const releasedFrom = html => {
+    for (const m of html.matchAll(/AF_initDataCallback\(\{key: 'ds:\d+'[^]*?data:([^]*?), sideChannel: \{\}\}\);/g)) {
+      try {
+        const app = JSON.parse(m[1])?.[1]?.[2];
+        if (app?.[77]?.[0] !== id) continue;
+        const ts = app[10]?.[1]?.[0];
+        return ts ? new Date(ts * 1000).toISOString() : "";
+      } catch (e) {}
     }
+    return undefined;
   };
 
-  // Some regions get no release date for some apps: ask the US page first, then other regions,
-  // then the page as loaded (its inline block is stale after in-page navigation, hence the id check)
-  let released;
+  // The loaded page usually has the date (instant); some regions get none for some apps, so only
+  // then fetch the app page for the US, then other regions (about 1 s each)
+  let released = releasedFrom([...document.scripts].map(s => s.textContent).join("\n"));
   for (const gl of ["US", "FR", "GB", "CH"]) {
+    if (released) break;
     try {
       const res = await fetch(`/store/apps/details?id=${encodeURIComponent(id)}&hl=en&gl=${gl}`);
-      released = releasedFrom(await res.text(), false);
+      released = releasedFrom(await res.text());
     } catch (e) {}
-    if (released) break;
-  }
-  if (!released) {
-    const inline = [...document.scripts].map(s => s.textContent).find(t => t.includes("key: 'ds:5'"));
-    released = inline && releasedFrom(inline, true);
   }
   return { id, released: released || "" };
 }

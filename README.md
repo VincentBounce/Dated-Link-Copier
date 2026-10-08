@@ -41,6 +41,7 @@ On YouTube and Google Play, `?` replaces a date that can't be found. On other pa
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.2.3 | 2026-10-08 | Claude Code (Claude Opus 5.5) | Google Play: release date found when signed in to Google; instant again (the US, French, British and Swiss pages are only fetched when the loaded page has no date) |
 | 2.2.2 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Google Play: release date read from the US page first, then the French, British and Swiss ones |
 | 2.2.1 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Google Play: release date found for apps whose page has none in some regions (e.g. France) |
 | 2.2.0 | 2026-10-07 | Claude Code (Claude Opus 5.5) | Pages without a publish date (other than YouTube and Google Play) are no longer copied as `? <link>`: the icon shows ✗ |
