@@ -50,13 +50,19 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 **Sony news and press releases:** release date and link (English and Japanese pages)
 
 ```
-1998-09-29 https://www.sony.com/en/SonyInfo/News/Press/199809/98-101/
+1998-09-29 Sony Announces New Personal LCD Monitor PC Glasstron https://www.sony.com/en/SonyInfo/News/Press/199809/98-101/
 ```
 
 **Any other page (news articles, blogs…):** publish date from the page metadata and link
 
 ```
 2026-09-30 https://www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php
+```
+
+When the link doesn't carry the title (fewer than half of the title's words appear in it), the title is added, made file name safe like on YouTube. Scientific journals' `citation_*` and Dublin Core dates are read too:
+
+```
+2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
 On YouTube, Google Play, Reddit, Amazon and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
@@ -71,6 +77,7 @@ On YouTube, Google Play, Reddit, Amazon and Sony news, `?` replaces a date that 
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.8.0 | 2026-10-13 | Claude Code (Claude Opus 5.5) | Title added when the link doesn't carry it (Nature, Sony press releases…); journal `citation_*` / Dublin Core dates |
 | 2.7.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | LinkedIn posts: `date link`, date read from the post ID (icon greyed out on other LinkedIn pages except Pulse articles) |
 | 2.6.1 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon: products without a "Date First Available" get the date of the oldest review shown |
 | 2.6.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon products: `date link` with the "Date First Available" (icon greyed out on other Amazon pages) |

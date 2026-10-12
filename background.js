@@ -131,7 +131,7 @@ async function buildLine(tab) {
 
   if (/^https:\/\/www\.sony\.(com|net)\/([a-z]{2}\/)?SonyInfo\/News\//i.test(url)) {
     const info = await runInPage(tab, readSonyNewsInfo);
-    return `${info.date || "?"} ${info.link}`;
+    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
   // Any other web page (news articles like Le Parisien…): publish date from the page metadata;
@@ -139,7 +139,7 @@ async function buildLine(tab) {
   if (/^https?:\/\//.test(url)) {
     const info = await runInPage(tab, readArticleInfo);
     const date = formatDate(info.published);
-    return date ? `${date} ${info.link}` : null;
+    return date ? `${date} ${titleIfNotInLink(info.title, info.link)}${info.link}` : null;
   }
 
   return null;
@@ -181,6 +181,19 @@ function linkedinPostLine(url) {
   // Local date, as LinkedIn shows post times in the viewer's time zone
   const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   return `${date} https://www.linkedin.com${u.pathname}`;
+}
+
+// Links that don't carry the title (nature.com/articles/s41598-025-97652-6, Sony press releases)
+// get it in the line, made file name safe: it is kept when fewer than half of the title's
+// words (4+ letters, accents removed) appear in the link's path.
+function titleIfNotInLink(title, link) {
+  if (!title) return "";
+  const norm = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  let path;
+  try { path = norm(decodeURIComponent(new URL(link).pathname)); } catch (e) { path = norm(link); }
+  const words = norm(title).split(/[^a-z0-9]+/).filter(w => w.length >= 4);
+  const inLink = words.filter(w => path.includes(w)).length;
+  return words.length && inLink / words.length >= 0.5 ? "" : cleanText(title) + " ";
 }
 
 // "2005-04-23T20:31:52-07:00" -> "2005-04-23", the date YouTube displays
@@ -279,9 +292,14 @@ async function readPlayAppInfo() {
 // Runs in the page (must be self-contained)
 function readArticleInfo() {
   const meta = sel => document.querySelector(sel)?.content;
+  // Scientific journals (Nature…) use citation_* / Dublin Core tags, sometimes as "2025/06/03"
   let published = meta('meta[property="article:published_time"]')
     || meta('meta[itemprop="datePublished"]')
-    || meta('meta[name="date"]');
+    || meta('meta[name="date"]')
+    || meta('meta[name="citation_publication_date"]')
+    || meta('meta[name="citation_online_date"]')
+    || meta('meta[name="dc.date"]')
+    || meta('meta[name="DC.date"]');
   if (!published) {
     for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
       const m = s.textContent.match(/"datePublished"\s*:\s*"([^"]+)"/);
@@ -302,7 +320,13 @@ function readArticleInfo() {
     }
     link = u.href;
   }
-  return { published: published || "", link };
+  // Title without the site name (" | Scientific Reports", " - Le Parisien")
+  const site = meta('meta[property="og:site_name"]')?.trim();
+  let title = meta('meta[name="citation_title"]') || meta('meta[name="dc.title"]') || meta('meta[name="DC.title"]')
+    || meta('meta[property="og:title"]') || document.title;
+  title = (title || "").trim();
+  if (site) title = title.replace(new RegExp(`\\s+[-|–—:]\\s+${site.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "");
+  return { published: (published || "").replace(/^(\d{4})\/(\d{2})\/(\d{2})/, "$1-$2-$3"), link, title };
 }
 
 // Runs in the page (must be self-contained)
@@ -362,7 +386,9 @@ function readSonyNewsInfo() {
   if (!date) date = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
   if (!date) date = document.querySelector('meta[property="article:published_time"]')?.content?.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
 
-  return { date, link: location.origin + location.pathname.replace(/index\.html?$/, "") };
+  const title = (document.querySelector('meta[property="og:title"]')?.content
+    || document.querySelector("h1")?.textContent || "").trim();
+  return { date, title, link: location.origin + location.pathname.replace(/index\.html?$/, "") };
 }
 
 // Runs in the page (must be self-contained)
