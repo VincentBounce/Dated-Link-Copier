@@ -35,7 +35,7 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-10-10 https://x.com/RobertDaleSmith/status/2108787905225245094
 ```
 
-**Amazon products:** "Date First Available" from the product details (amazon.com, .ca, .co.uk, .fr, .de, .es, .it) and the product link without search parameters
+**Amazon products:** "Date First Available" from the product details, else the date of the oldest review shown (amazon.com, .ca, .co.uk, .fr, .de, .es, .it), and the product link without search parameters
 
 ```
 2023-01-17 https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/
@@ -65,6 +65,7 @@ On YouTube, Google Play, Reddit, Amazon and Sony news, `?` replaces a date that 
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.6.1 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon: products without a "Date First Available" get the date of the oldest review shown |
 | 2.6.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon products: `date link` with the "Date First Available" (icon greyed out on other Amazon pages) |
 | 2.5.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | X (Twitter) posts: `date link`, date read from the post ID (icon greyed out on other X pages) |
 | 2.4.0 | 2026-10-09 | Claude Code (Claude Opus 5.5) | Sony news and press releases: `date link` |

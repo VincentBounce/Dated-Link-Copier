@@ -364,7 +364,7 @@ function readAmazonProductInfo() {
   const parse = text => {
     let m = text.match(/([A-Za-zÀ-ÿ]{3,})\.?\s+(\d{1,2}),\s*(\d{4})/);      // January 17, 2023
     if (m && month(m[1])) return `${m[3]}-${pad(month(m[1]))}-${pad(m[2])}`;
-    m = text.match(/(\d{1,2})\.?\s+([A-Za-zÀ-ÿ]{3,})\.?\s+(\d{4})/);       // 17 Jan. 2023, 17. Januar 2023
+    m = text.match(/(\d{1,2})\.?\s+(?:de\s+)?([A-Za-zÀ-ÿ]{3,})\.?\s+(?:de\s+)?(\d{4})/); // 17 Jan. 2023, 17. Januar 2023, 17 de enero de 2023
     if (m && month(m[2])) return `${m[3]}-${pad(month(m[2]))}-${pad(m[1])}`;
     return "";
   };
@@ -372,6 +372,12 @@ function readAmazonProductInfo() {
   for (const row of document.querySelectorAll("#prodDetails tr, #productDetails_detailBullets_sections1 tr, #detailBullets_feature_div li, #productDetails_feature_div tr")) {
     const text = row.textContent.replace(/[\u200e\u200f]/g, "");
     if (label.test(text) && (date = parse(text.replace(label, "")))) break;
+  }
+  // Without it, the oldest review shown on the page ("Reviewed in the United States on February 9, 2026"):
+  // the product was on sale by then at the latest
+  if (!date) {
+    const reviews = [...document.querySelectorAll('[data-hook="review-date"]')].map(el => parse(el.textContent)).filter(Boolean);
+    date = reviews.sort()[0] || "";
   }
 
   // Canonical link (with the product name), without query parameters
