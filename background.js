@@ -129,6 +129,12 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${info.link}`;
   }
 
+  if (/^https:\/\/news\.ycombinator\.com\/item\?/.test(url)) {
+    const info = await runInPage(tab, readHackerNewsItemInfo);
+    if (!info) return null;
+    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+  }
+
   // ScienceDirect Topics pages compile excerpts and have no date of their own: use the year of the
   // source their definition is based on, as "2022-xx-xx"
   if (/^https:\/\/www\.sciencedirect\.com\/topics\//.test(url)) {
@@ -440,6 +446,21 @@ function readAmazonProductInfo() {
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
   const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}/dp/${asin}`;
   return { date, link: link.replace(/\/?$/, "/") };
+}
+
+// Runs in the page (must be self-contained)
+function readHackerNewsItemInfo() {
+  const id = new URL(location.href).searchParams.get("id");
+  if (!id) return null;
+  // The item's age ("2 days ago") carries its UTC time: <span class="age" title="2026-10-10T00:37:07[ 1791592627]">
+  const age = document.querySelector(".fatitem .age[title]") || document.querySelector(".age[title]");
+  const [iso, unix] = (age?.getAttribute("title") || "").split(" ");
+  const d = unix ? new Date(Number(unix) * 1000) : new Date(iso ? `${iso}Z` : NaN);
+  // Local date, as for the other sites
+  const date = isNaN(d) ? "" : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  // Story title (comments have none)
+  const title = document.querySelector(".fatitem .titleline > a")?.textContent.trim() || "";
+  return { date, title, link: `https://news.ycombinator.com/item?id=${id}` };
 }
 
 // Runs in the page (must be self-contained)
