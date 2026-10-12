@@ -4,7 +4,7 @@ Chrome extension that copies a dated link to the page you're on, in one click.
 
 ## Output
 
-Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit and X pages other than posts, new tab, `chrome://` pages and local files.
+Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit and X pages other than posts, Amazon pages other than products, new tab, `chrome://` pages and local files.
 
 **YouTube videos:** publish date, channels, title and short link
 
@@ -35,6 +35,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-10-10 https://x.com/RobertDaleSmith/status/2108787905225245094
 ```
 
+**Amazon products:** "Date First Available" from the product details (amazon.com, .ca, .co.uk, .fr, .de, .es, .it) and the product link without search parameters
+
+```
+2023-01-17 https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/
+```
+
 **Sony news and press releases:** release date and link (English and Japanese pages)
 
 ```
@@ -47,7 +53,7 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-09-30 https://www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php
 ```
 
-On YouTube, Google Play, Reddit and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit, Amazon and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -59,6 +65,7 @@ On YouTube, Google Play, Reddit and Sony news, `?` replaces a date that can't be
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.6.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon products: `date link` with the "Date First Available" (icon greyed out on other Amazon pages) |
 | 2.5.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | X (Twitter) posts: `date link`, date read from the post ID (icon greyed out on other X pages) |
 | 2.4.0 | 2026-10-09 | Claude Code (Claude Opus 5.5) | Sony news and press releases: `date link` |
 | 2.3.0 | 2026-10-08 | Claude Code (Claude Opus 5.5) | Reddit posts: `date link` (icon greyed out on other Reddit pages) |

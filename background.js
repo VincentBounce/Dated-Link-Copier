@@ -1,8 +1,10 @@
 // The icon is greyed out except where there is something to copy:
-// YouTube videos, Google Play apps, Reddit posts, X posts, and any other web page
+// YouTube videos, Google Play apps, Reddit posts, X posts, Amazon products, and any other web page
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
   "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com",
-  "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com"];
+  "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com",
+  "www.amazon.com", "www.amazon.ca", "www.amazon.co.uk", "www.amazon.fr", "www.amazon.de", "www.amazon.es", "www.amazon.it"];
+const AMAZON_PRODUCT = "^https://www\\.amazon\\.(com|ca|co\\.uk|fr|de|es|it)/(.*/)?(dp|gp/product)/[A-Z0-9]{10}";
 const X_POST = "^https://((www|mobile)\\.)?(x|twitter)\\.com/[^/]+/status/[0-9]+";
 const REDDIT_POST = "^https://((www|old|new|sh)\\.)?reddit\\.com/(r/[^/]+/)?comments/[a-z0-9]+";
 
@@ -21,6 +23,7 @@ async function setUpIconState() {
         new PageStateMatcher({ pageUrl: { hostEquals: "play.google.com", pathEquals: "/store/apps/details" } }),
         new PageStateMatcher({ pageUrl: { urlMatches: REDDIT_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: X_POST } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: AMAZON_PRODUCT } }),
         new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
       ],
       actions: [new ShowAction(), new SetIcon({ imageData })]
@@ -106,6 +109,12 @@ async function buildLine(tab) {
 
   if (/^https:\/\/([a-z]+\.)?reddit\.com\//.test(url)) {
     const info = await runInPage(tab, readRedditPostInfo);
+    if (!info) return null;
+    return `${info.date || "?"} ${info.link}`;
+  }
+
+  if (/^https:\/\/www\.amazon\.[a-z.]+\//.test(url)) {
+    const info = await runInPage(tab, readAmazonProductInfo);
     if (!info) return null;
     return `${info.date || "?"} ${info.link}`;
   }
@@ -333,6 +342,42 @@ function readSonyNewsInfo() {
   if (!date) date = document.querySelector('meta[property="article:published_time"]')?.content?.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
 
   return { date, link: location.origin + location.pathname.replace(/index\.html?$/, "") };
+}
+
+// Runs in the page (must be self-contained)
+function readAmazonProductInfo() {
+  const asin = location.pathname.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})(?:[/?]|$)/)?.[1];
+  if (!asin) return null;
+
+  // "Date First Available" row of the product details (table row or bullet), in the site's language:
+  // "January 17, 2023", "17 Jan. 2023", "17 janvier 2023", "17. Januar 2023", "17 enero 2023"…
+  const label = /Date First Available|Date de mise en ligne|Im Angebot von|Fecha de disponibilidad|Disponibile su Amazon/i;
+  const months = { jan: 1, ene: 1, gen: 1, feb: 2, fév: 2, fev: 2, mar: 3, mär: 3, apr: 4, avr: 4, abr: 4,
+    may: 5, mai: 5, mag: 5, jun: 6, jui: 6, giu: 6, jul: 7, lug: 7, aug: 8, aoû: 8, aou: 8, ago: 8,
+    sep: 9, set: 9, oct: 10, okt: 10, ott: 10, nov: 11, dec: 12, déc: 12, dez: 12, dic: 12 };
+  const month = word => {
+    const w = word.toLowerCase();
+    if (w.startsWith("juil")) return 7;                  // French juin / juillet
+    return months[w.slice(0, 3)];
+  };
+  const pad = n => String(n).padStart(2, "0");
+  const parse = text => {
+    let m = text.match(/([A-Za-zÀ-ÿ]{3,})\.?\s+(\d{1,2}),\s*(\d{4})/);      // January 17, 2023
+    if (m && month(m[1])) return `${m[3]}-${pad(month(m[1]))}-${pad(m[2])}`;
+    m = text.match(/(\d{1,2})\.?\s+([A-Za-zÀ-ÿ]{3,})\.?\s+(\d{4})/);       // 17 Jan. 2023, 17. Januar 2023
+    if (m && month(m[2])) return `${m[3]}-${pad(month(m[2]))}-${pad(m[1])}`;
+    return "";
+  };
+  let date = "";
+  for (const row of document.querySelectorAll("#prodDetails tr, #productDetails_detailBullets_sections1 tr, #detailBullets_feature_div li, #productDetails_feature_div tr")) {
+    const text = row.textContent.replace(/[\u200e\u200f]/g, "");
+    if (label.test(text) && (date = parse(text.replace(label, "")))) break;
+  }
+
+  // Canonical link (with the product name), without query parameters
+  const canonical = document.querySelector('link[rel="canonical"]')?.href;
+  const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}/dp/${asin}`;
+  return { date, link: link.replace(/\/?$/, "/") };
 }
 
 // Runs in the page's isolated world (must be self-contained)
