@@ -1,7 +1,9 @@
 // The icon is greyed out except where there is something to copy:
-// YouTube videos, Google Play apps, Reddit posts, and any other web page
+// YouTube videos, Google Play apps, Reddit posts, X posts, and any other web page
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
-  "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com"];
+  "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com",
+  "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com"];
+const X_POST = "^https://((www|mobile)\\.)?(x|twitter)\\.com/[^/]+/status/[0-9]+";
 const REDDIT_POST = "^https://((www|old|new|sh)\\.)?reddit\\.com/(r/[^/]+/)?comments/[a-z0-9]+";
 
 // Chrome only draws a disabled action in grey on pages the extension can't access, and
@@ -18,6 +20,7 @@ async function setUpIconState() {
         new PageStateMatcher({ pageUrl: { urlMatches: "^https://(www|m)\\.youtube\\.com/(watch\\?|shorts/)" } }),
         new PageStateMatcher({ pageUrl: { hostEquals: "play.google.com", pathEquals: "/store/apps/details" } }),
         new PageStateMatcher({ pageUrl: { urlMatches: REDDIT_POST } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: X_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
       ],
       actions: [new ShowAction(), new SetIcon({ imageData })]
@@ -97,6 +100,10 @@ async function buildLine(tab) {
     return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
 
+  if (/^https:\/\/((www|mobile)\.)?(x|twitter)\.com\//.test(url)) {
+    return xPostLine(url);
+  }
+
   if (/^https:\/\/([a-z]+\.)?reddit\.com\//.test(url)) {
     const info = await runInPage(tab, readRedditPostInfo);
     if (!info) return null;
@@ -130,6 +137,20 @@ const FILENAME_SAFE = { "\\": "＼", "/": "／", ":": "：", "*": "＊", "?": "�
 
 function cleanText(s) {
   return s.replace(/ - /g, ", ").replace(/[\\/:*?"<>|]/g, ch => FILENAME_SAFE[ch]);
+}
+
+// X (Twitter) post IDs are "snowflakes": the top bits are the creation time in ms since
+// 2010-11-04 01:42:54.657 UTC, so the date needs no page access (X often requires sign-in)
+function xPostLine(url) {
+  const m = url.match(/^https:\/\/[^/]+\/([^/?#]+)\/status\/(\d+)/);
+  if (!m) return null;
+  const id = BigInt(m[2]);
+  const d = new Date(Number((id >> 22n) + 1288834974657n));
+  // Older posts (before November 2010) have small sequential IDs that carry no date.
+  // Local date, as X shows post times in the viewer's time zone.
+  const date = id < 10000000000000n ? "?"
+    : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `${date} https://x.com/${m[1]}/status/${m[2]}`;
 }
 
 // "2005-04-23T20:31:52-07:00" -> "2005-04-23", the date YouTube displays

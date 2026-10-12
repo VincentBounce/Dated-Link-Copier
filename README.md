@@ -4,7 +4,7 @@ Chrome extension that copies a dated link to the page you're on, in one click.
 
 ## Output
 
-Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit pages other than posts, new tab, `chrome://` pages and local files.
+Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit and X pages other than posts, new tab, `chrome://` pages and local files.
 
 **YouTube videos:** publish date, channels, title and short link
 
@@ -27,6 +27,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 
 ```
 2026-10-07 https://www.reddit.com/r/chrome/comments/1abcde/my_post_title/
+```
+
+**X (Twitter) posts:** post date and link, read from the post ID (works without signing in; `?` for posts older than November 2010)
+
+```
+2026-10-10 https://x.com/RobertDaleSmith/status/2108787905225245094
 ```
 
 **Sony news and press releases:** release date and link (English and Japanese pages)
@@ -53,6 +59,7 @@ On YouTube, Google Play, Reddit and Sony news, `?` replaces a date that can't be
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.5.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | X (Twitter) posts: `date link`, date read from the post ID (icon greyed out on other X pages) |
 | 2.4.0 | 2026-10-09 | Claude Code (Claude Opus 5.5) | Sony news and press releases: `date link` |
 | 2.3.0 | 2026-10-08 | Claude Code (Claude Opus 5.5) | Reddit posts: `date link` (icon greyed out on other Reddit pages) |
 | 2.2.3 | 2026-10-08 | Claude Code (Claude Opus 5.5) | Google Play: release date found when signed in to Google; instant again (the US, French, British and Swiss pages are only fetched when the loaded page has no date) |
