@@ -4,7 +4,7 @@ Chrome extension that copies a dated link to the page you're on, in one click.
 
 ## Output
 
-Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit and X pages other than posts, Amazon pages other than products, new tab, `chrome://` pages and local files.
+Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit, X and LinkedIn pages other than posts, Amazon pages other than products, new tab, `chrome://` pages and local files.
 
 **YouTube videos:** publish date, channels, title and short link
 
@@ -33,6 +33,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 
 ```
 2026-10-10 https://x.com/RobertDaleSmith/status/2108787905225245094
+```
+
+**LinkedIn posts:** post date and link, read from the post ID like on X (works signed in or out)
+
+```
+2026-05-13 https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/
 ```
 
 **Amazon products:** "Date First Available" from the product details, else the date of the oldest review shown (amazon.com, .ca, .co.uk, .fr, .de, .es, .it), and the product link without search parameters
@@ -65,6 +71,7 @@ On YouTube, Google Play, Reddit, Amazon and Sony news, `?` replaces a date that 
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.7.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | LinkedIn posts: `date link`, date read from the post ID (icon greyed out on other LinkedIn pages except Pulse articles) |
 | 2.6.1 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon: products without a "Date First Available" get the date of the oldest review shown |
 | 2.6.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon products: `date link` with the "Date First Available" (icon greyed out on other Amazon pages) |
 | 2.5.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | X (Twitter) posts: `date link`, date read from the post ID (icon greyed out on other X pages) |

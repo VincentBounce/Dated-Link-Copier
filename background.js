@@ -1,9 +1,12 @@
 // The icon is greyed out except where there is something to copy:
-// YouTube videos, Google Play apps, Reddit posts, X posts, Amazon products, and any other web page
+// YouTube videos, Google Play apps, Reddit posts, X and LinkedIn posts, Amazon products, and any other web page
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
   "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com",
   "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com",
+  "linkedin.com", "www.linkedin.com",
   "www.amazon.com", "www.amazon.ca", "www.amazon.co.uk", "www.amazon.fr", "www.amazon.de", "www.amazon.es", "www.amazon.it"];
+// LinkedIn posts (/posts/…-share-ID-…, /feed/update/urn:li:activity:ID) and Pulse articles (dated by their metadata)
+const LINKEDIN_POST = "^https://(www\\.)?linkedin\\.com/(posts/.*[0-9]{19}|feed/update/urn:li:[a-zA-Z]+:[0-9]{19}|pulse/)";
 const AMAZON_PRODUCT = "^https://www\\.amazon\\.(com|ca|co\\.uk|fr|de|es|it)/(.*/)?(dp|gp/product)/[A-Z0-9]{10}";
 const X_POST = "^https://((www|mobile)\\.)?(x|twitter)\\.com/[^/]+/status/[0-9]+";
 const REDDIT_POST = "^https://((www|old|new|sh)\\.)?reddit\\.com/(r/[^/]+/)?comments/[a-z0-9]+";
@@ -24,6 +27,7 @@ async function setUpIconState() {
         new PageStateMatcher({ pageUrl: { urlMatches: REDDIT_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: X_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: AMAZON_PRODUCT } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: LINKEDIN_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
       ],
       actions: [new ShowAction(), new SetIcon({ imageData })]
@@ -107,6 +111,12 @@ async function buildLine(tab) {
     return xPostLine(url);
   }
 
+  if (/^https:\/\/(www\.)?linkedin\.com\//.test(url)) {
+    const line = linkedinPostLine(url);
+    if (line) return line;
+    // Not a post (Pulse articles…): handled like any other page below
+  }
+
   if (/^https:\/\/([a-z]+\.)?reddit\.com\//.test(url)) {
     const info = await runInPage(tab, readRedditPostInfo);
     if (!info) return null;
@@ -160,6 +170,17 @@ function xPostLine(url) {
   const date = id < 10000000000000n ? "?"
     : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   return `${date} https://x.com/${m[1]}/status/${m[2]}`;
+}
+
+// LinkedIn post IDs (activity, share, ugcPost) also start with the creation time in ms: ID >> 22
+function linkedinPostLine(url) {
+  const u = new URL(url);
+  const id = u.pathname.match(/(?:activity|share|ugcPost)[-:](\d{19})/)?.[1];
+  if (!id) return null;
+  const d = new Date(Number(BigInt(id) >> 22n));
+  // Local date, as LinkedIn shows post times in the viewer's time zone
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `${date} https://www.linkedin.com${u.pathname}`;
 }
 
 // "2005-04-23T20:31:52-07:00" -> "2005-04-23", the date YouTube displays
