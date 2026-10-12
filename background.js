@@ -292,20 +292,22 @@ async function readPlayAppInfo() {
 // Runs in the page (must be self-contained)
 function readArticleInfo() {
   const meta = sel => document.querySelector(sel)?.content;
-  // Scientific journals (Nature…) use citation_* / Dublin Core tags, sometimes as "2025/06/03"
-  let published = meta('meta[property="article:published_time"]')
-    || meta('meta[itemprop="datePublished"]')
-    || meta('meta[name="date"]')
-    || meta('meta[name="citation_publication_date"]')
-    || meta('meta[name="citation_online_date"]')
-    || meta('meta[name="dc.date"]')
-    || meta('meta[name="DC.date"]');
-  if (!published) {
-    for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
-      const m = s.textContent.match(/"datePublished"\s*:\s*"([^"]+)"/);
-      if (m) { published = m[1]; break; }
-    }
-  }
+  // First complete date among the usual tags. Scientific journals (Nature…) use citation_* /
+  // Dublin Core tags, as "2025/06/03"; their citation_publication_date can be the print issue
+  // month only ("2026/07"), so the online date comes first.
+  const candidates = [
+    meta('meta[property="article:published_time"]'),
+    meta('meta[itemprop="datePublished"]'),
+    meta('meta[name="date"]'),
+    meta('meta[name="citation_online_date"]'),
+    meta('meta[name="dc.date"]'),
+    meta('meta[name="DC.date"]'),
+    meta('meta[name="citation_publication_date"]'),
+    ...[...document.querySelectorAll('script[type="application/ld+json"]')]
+      .map(s => s.textContent.match(/"datePublished"\s*:\s*"([^"]+)"/)?.[1])
+  ];
+  const published = candidates.map(d => (d || "").trim().replace(/^(\d{4})\/(\d{2})\/(\d{2})/, "$1-$2-$3"))
+    .find(d => /^\d{4}-\d{2}-\d{2}/.test(d)) || "";
 
   // Canonical link if it's on the same site, otherwise the current URL without tracking parameters
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
@@ -326,7 +328,7 @@ function readArticleInfo() {
     || meta('meta[property="og:title"]') || document.title;
   title = (title || "").trim();
   if (site) title = title.replace(new RegExp(`\\s+[-|–—:]\\s+${site.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "");
-  return { published: (published || "").replace(/^(\d{4})\/(\d{2})\/(\d{2})/, "$1-$2-$3"), link, title };
+  return { published, link, title };
 }
 
 // Runs in the page (must be self-contained)

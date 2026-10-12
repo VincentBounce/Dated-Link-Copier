@@ -77,6 +77,7 @@ On YouTube, Google Play, Reddit, Amazon and Sony news, `?` replaces a date that 
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.8.1 | 2026-10-13 | Claude Code (Claude Opus 5.5) | Journals whose issue date is a month only (Nature Human Behaviour "2026/07") get their online date instead of ✗ |
 | 2.8.0 | 2026-10-13 | Claude Code (Claude Opus 5.5) | Title added when the link doesn't carry it (Nature, Sony press releases…); journal `citation_*` / Dublin Core dates |
 | 2.7.0 | 2026-10-12 | Claude Code (Claude Opus 5.5) | LinkedIn posts: `date link`, date read from the post ID (icon greyed out on other LinkedIn pages except Pulse articles) |
 | 2.6.1 | 2026-10-12 | Claude Code (Claude Opus 5.5) | Amazon: products without a "Date First Available" get the date of the oldest review shown |
