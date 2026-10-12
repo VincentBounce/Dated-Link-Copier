@@ -129,6 +129,13 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${info.link}`;
   }
 
+  // ScienceDirect Topics pages compile excerpts and have no date of their own: use the year of the
+  // source their definition is based on, as "2022-xx-xx"
+  if (/^https:\/\/www\.sciencedirect\.com\/topics\//.test(url)) {
+    const info = await runInPage(tab, readScienceDirectTopicInfo);
+    return `${info.year ? `${info.year}-xx-xx` : "?"} ${info.link}`;
+  }
+
   if (/^https:\/\/www\.sony\.(com|net)\/([a-z]{2}\/)?SonyInfo\/News\//i.test(url)) {
     const info = await runInPage(tab, readSonyNewsInfo);
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
@@ -433,6 +440,15 @@ function readAmazonProductInfo() {
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
   const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}/dp/${asin}`;
   return { date, link: link.replace(/\/?$/, "/") };
+}
+
+// Runs in the page (must be self-contained)
+function readScienceDirectTopicInfo() {
+  const text = document.body.innerText;
+  // "AI generated definition based on: Polymers for 3D Printing, 2022", else the oldest excerpt ("From: <book>, 2019")
+  let year = text.match(/definition based on:[^\n]*?(\d{4})\s*$/im)?.[1];
+  if (!year) year = [...text.matchAll(/^From:[^\n]*?,\s*(\d{4})\s*$/gim)].map(m => m[1]).sort()[0];
+  return { year: year || "", link: location.origin + location.pathname };
 }
 
 // Runs in the page's isolated world (must be self-contained)
