@@ -135,6 +135,12 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  if (/^https:\/\/pubmed\.ncbi\.nlm\.nih\.gov\/\d+/.test(url)) {
+    const info = await runInPage(tab, readPubMedInfo);
+    if (!info) return null;
+    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+  }
+
   // ScienceDirect Topics pages compile excerpts and have no date of their own: use the year of the
   // source their definition is based on, as "2022-xx-xx"
   if (/^https:\/\/www\.sciencedirect\.com\/topics\//.test(url)) {
@@ -461,6 +467,27 @@ function readHackerNewsItemInfo() {
   // Story title (comments have none)
   const title = document.querySelector(".fatitem .titleline > a")?.textContent.trim() || "";
   return { date, title, link: `https://news.ycombinator.com/item?id=${id}` };
+}
+
+// Runs in the page (must be self-contained)
+function readPubMedInfo() {
+  const pmid = location.pathname.match(/^\/(\d+)\/?$/)?.[1];
+  if (!pmid) return null;
+  // No date metadata: the heading shows "Epub 2020 Dec 10." (online, first) and the issue date
+  // "2020 Dec 31;383(27):2603-2615."; a date can lack the day or month ("2026 Jan", "2026")
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const parse = text => {
+    const m = (text || "").match(/(\d{4})(?:\s+([A-Z][a-z]{2}))?(?:\s+(\d{1,2}))?/);
+    if (!m) return "";
+    const month = months.indexOf(m[2]) + 1;
+    return `${m[1]}-${month ? String(month).padStart(2, "0") : "xx"}-${month && m[3] ? m[3].padStart(2, "0") : "xx"}`;
+  };
+  // The article's heading comes first in the page, before the similar articles
+  const epub = document.querySelector(".secondary-date")?.textContent.match(/Epub\s+([^.]+)/)?.[1];
+  const date = parse(epub) || parse(document.querySelector(".article-citation .cit")?.textContent.split(";")[0]);
+  const title = (document.querySelector('meta[name="citation_title"]')?.content
+    || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
+  return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
 }
 
 // Runs in the page (must be self-contained)

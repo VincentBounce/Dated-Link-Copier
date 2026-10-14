@@ -53,6 +53,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-10-10 REA Reverse – Engineer Anything https://news.ycombinator.com/item?id=50028275
 ```
 
+**PubMed:** online (Epub) date, else the issue date (`2026-01-xx` when the day or month is missing), with the title
+
+```
+2026-01-14 Intranasal Human NSC-Derived EVs Therapy Can Restrain Inflammatory Microglial Transcriptome, and NLRP3 and cGAS-STING Signaling, in Aged Hippocampus https://pubmed.ncbi.nlm.nih.gov/41648159/
+```
+
 **ScienceDirect Topics:** these pages compile excerpts and have no date of their own, so the year of the source their definition is based on is used (else the oldest excerpt)
 
 ```
@@ -77,7 +83,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, Amazon, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -89,6 +95,7 @@ On YouTube, Google Play, Reddit, Hacker News, Amazon, ScienceDirect Topics and S
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.11.0 | 2026-10-14 | Claude Code (Claude Opus 5.5) | PubMed articles: `date title link` (Epub date first) |
 | 2.10.0 | 2026-10-13 | Claude Code (Claude Opus 5.5) | Hacker News posts and comments: `date title link` |
 | 2.9.0 | 2026-10-13 | Claude Code (Claude Opus 5.5) | ScienceDirect Topics: `2022-xx-xx link`, year of the source the definition is based on |
 | 2.8.1 | 2026-10-13 | Claude Code (Claude Opus 5.5) | Journals whose issue date is a month only (Nature Human Behaviour "2026/07") get their online date instead of ✗ |
