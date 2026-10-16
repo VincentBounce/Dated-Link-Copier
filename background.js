@@ -326,7 +326,36 @@ function readArticleInfo() {
       .map(s => s.textContent.match(/"datePublished"\s*:\s*"([^"]+)"/)?.[1])
   ];
   const published = candidates.map(d => (d || "").trim().replace(/^(\d{4})\/(\d{2})\/(\d{2})/, "$1-$2-$3"))
-    .find(d => /^\d{4}-\d{2}-\d{2}/.test(d)) || "";
+    .find(d => /^\d{4}-\d{2}-\d{2}/.test(d)) || shownDate();
+
+  // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",
+  // "Published on", "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021")
+  function shownDate() {
+    const iso = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+    if (iso) return iso;
+    const label = /(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)\s*:?\s*/i;
+    const m = document.body.innerText.match(new RegExp(label.source + "([^\\n]{6,40})", "i"));
+    if (!m) return "";
+    const text = m[2];
+    const pad = n => String(n).padStart(2, "0");
+    const months = { jan: 1, ene: 1, gen: 1, fev: 2, feb: 2, mar: 3, apr: 4, avr: 4, abr: 4, mai: 5, may: 5, mag: 5,
+      jun: 6, giu: 6, jul: 7, lug: 7, aou: 8, aug: 8, ago: 8, sep: 9, set: 9, oct: 10, okt: 10, ott: 10, nov: 11,
+      dec: 12, dez: 12, dic: 12 };
+    const month = word => {
+      const w = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      return w.startsWith("juil") ? 7 : w.startsWith("juin") ? 6 : months[w.slice(0, 3)];
+    };
+    let d = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);          // 14.11.2021, 14/11/2021 (11/14/2021 in English)
+    if (d) {
+      const [day, mon] = /^(published|posted)/i.test(m[1]) && text.includes("/") ? [d[2], d[1]] : [d[1], d[2]];
+      return `${d[3]}-${pad(mon)}-${pad(day)}`;
+    }
+    d = text.match(/^(\d{1,2})\.?\s+(?:de\s+)?([^\s\d.,]{3,})\.?\s+(?:de\s+)?(\d{4})/);   // 14 novembre 2021, 14. November 2021
+    if (d && month(d[2])) return `${d[3]}-${pad(month(d[2]))}-${pad(d[1])}`;
+    d = text.match(/^([^\s\d.,]{3,})\.?\s+(\d{1,2}),?\s+(\d{4})/);                // November 14, 2021
+    if (d && month(d[1])) return `${d[3]}-${pad(month(d[1]))}-${pad(d[2])}`;
+    return "";
+  }
 
   // Canonical link if it's on the same site, otherwise the current URL without tracking parameters
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
@@ -347,6 +376,8 @@ function readArticleInfo() {
     || meta('meta[property="og:title"]') || document.title;
   title = (title || "").trim();
   if (site) title = title.replace(new RegExp(`\\s+[-|–—:]\\s+${site.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "");
+  // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")
+  title = title.replace(/\s+\|\s+[^|]*$/, "");
   return { published, link, title };
 }
 

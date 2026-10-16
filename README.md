@@ -71,7 +71,7 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 1998-09-29 Sony Announces New Personal LCD Monitor PC Glasstron https://www.sony.com/en/SonyInfo/News/Press/199809/98-101/
 ```
 
-**Any other page (news articles, blogs…):** publish date from the page metadata and link
+**Any other page (news articles, blogs…):** publish date from the page metadata, else a date shown on the page (`<time>`, "Publié le 14.11.2021", "Published on November 14, 2021"…), and link
 
 ```
 2026-09-30 https://www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php
@@ -95,6 +95,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, ScienceDirect Topi
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.12.0 | 2026-10-16 | Claude Code (Claude Opus 5.5) | Pages without date metadata: date shown on the page (`<time>`, "Publié le…", "Published on…" in 5 languages) instead of ✗; site name after " \| " removed from titles |
 | 2.11.0 | 2026-10-14 | Claude Code (Claude Opus 5.5) | PubMed articles: `date title link` (Epub date first) |
 | 2.10.0 | 2026-10-13 | Claude Code (Claude Opus 5.5) | Hacker News posts and comments: `date title link` |
 | 2.9.0 | 2026-10-13 | Claude Code (Claude Opus 5.5) | ScienceDirect Topics: `2022-xx-xx link`, year of the source the definition is based on |
