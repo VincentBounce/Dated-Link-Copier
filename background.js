@@ -141,6 +141,12 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // Have I Been Pwned breaches: date the breach was added to HIBP ("Added to HIBP: 20 Dec 2020")
+  if (/^https:\/\/haveibeenpwned\.com\/Breach\/[^/?#]+/i.test(url)) {
+    const info = await runInPage(tab, readHibpBreachInfo);
+    return `${info.date || "?"} ${info.link}`;
+  }
+
   // Y Combinator company pages: founding year ("Founded: 2023"), as "2023-xx-xx"
   if (/^https:\/\/www\.ycombinator\.com\/companies\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readYCCompanyInfo);
@@ -525,6 +531,16 @@ function readPubMedInfo() {
   const title = (document.querySelector('meta[name="citation_title"]')?.content
     || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
   return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
+}
+
+// Runs in the page (must be self-contained)
+function readHibpBreachInfo() {
+  const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  const m = document.body.innerText.match(/Added to HIBP:\s*(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})/i);
+  const month = m ? months.indexOf(m[2].toLowerCase()) + 1 : 0;
+  const date = month ? `${m[3]}-${String(month).padStart(2, "0")}-${m[1].padStart(2, "0")}` : "";
+  const name = location.pathname.match(/^\/Breach\/([^/]+)/i)[1];
+  return { date, link: `https://haveibeenpwned.com/Breach/${name}` };
 }
 
 // Runs in the page (must be self-contained)
