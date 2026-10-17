@@ -141,6 +141,12 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // Y Combinator company pages: founding year ("Founded: 2023"), as "2023-xx-xx"
+  if (/^https:\/\/www\.ycombinator\.com\/companies\/[^/?#]+/.test(url)) {
+    const info = await runInPage(tab, readYCCompanyInfo);
+    return `${info.year ? `${info.year}-xx-xx` : "?"} ${info.link}`;
+  }
+
   // ScienceDirect Topics pages compile excerpts and have no date of their own: use the year of the
   // source their definition is based on, as "2022-xx-xx"
   if (/^https:\/\/www\.sciencedirect\.com\/topics\//.test(url)) {
@@ -519,6 +525,13 @@ function readPubMedInfo() {
   const title = (document.querySelector('meta[name="citation_title"]')?.content
     || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
   return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
+}
+
+// Runs in the page (must be self-contained)
+function readYCCompanyInfo() {
+  const year = document.body.innerText.match(/Founded:\s*(\d{4})/)?.[1] || "";
+  const slug = location.pathname.match(/^\/companies\/([^/]+)/)[1];
+  return { year, link: `https://www.ycombinator.com/companies/${slug}` };
 }
 
 // Runs in the page (must be self-contained)
