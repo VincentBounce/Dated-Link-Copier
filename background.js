@@ -141,6 +141,12 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // PyPI projects: date of the first release
+  if (/^https:\/\/pypi\.org\/project\/[^/?#]+/.test(url)) {
+    const info = await runInPage(tab, readPyPIProjectInfo);
+    return `${info.date || "?"} ${info.link}`;
+  }
+
   // Have I Been Pwned breaches: date the breach was added to HIBP ("Added to HIBP: 20 Dec 2020")
   if (/^https:\/\/haveibeenpwned\.com\/Breach\/[^/?#]+/i.test(url)) {
     const info = await runInPage(tab, readHibpBreachInfo);
@@ -531,6 +537,23 @@ function readPubMedInfo() {
   const title = (document.querySelector('meta[name="citation_title"]')?.content
     || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
   return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
+}
+
+// Runs in the page (must be self-contained)
+async function readPyPIProjectInfo() {
+  const name = location.pathname.match(/^\/project\/([^/]+)/)[1];
+  let date = "";
+  // The JSON API (same site) lists every release with its upload time; keep the oldest
+  try {
+    const data = await (await fetch(`/pypi/${name}/json`)).json();
+    date = Object.values(data.releases).flat().map(f => f.upload_time_iso_8601 || f.upload_time).filter(Boolean).sort()[0] || "";
+  } catch (e) {}
+  // Else the oldest date of the page's release history
+  if (!date) {
+    date = [...document.querySelectorAll(".release-timeline time[datetime], #history time[datetime]")]
+      .map(t => t.getAttribute("datetime")).sort()[0] || "";
+  }
+  return { date: date.slice(0, 10), link: `https://pypi.org/project/${name}/` };
 }
 
 // Runs in the page (must be self-contained)
