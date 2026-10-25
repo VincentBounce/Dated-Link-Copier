@@ -141,6 +141,12 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // Shadertoy shaders: upload date and shader name (the link only has the ID)
+  if (/^https:\/\/www\.shadertoy\.com\/view\/\w+/.test(url)) {
+    const info = await runInPage(tab, readShadertoyInfo, "MAIN");
+    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+  }
+
   // PyPI projects: date of the first release
   if (/^https:\/\/pypi\.org\/project\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readPyPIProjectInfo);
@@ -537,6 +543,31 @@ function readPubMedInfo() {
   const title = (document.querySelector('meta[name="citation_title"]')?.content
     || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
   return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
+}
+
+// Runs in the page's MAIN world (must be self-contained)
+async function readShadertoyInfo() {
+  const id = location.pathname.match(/^\/view\/(\w+)/)[1];
+  const utcDate = unix => new Date(Number(unix) * 1000).toISOString().slice(0, 10);
+  // As shown under the shader: "Uploaded by <user> in 2026-10-24"
+  let date = document.querySelector("#shaderAuthorDate")?.textContent.match(/\d{4}-\d{2}-\d{2}/)?.[0] || "";
+  let title = document.querySelector("#shaderTitle")?.textContent.trim() || "";
+  // Else the page's shader object, else the site's API (date = Unix time)
+  const known = window.gShaderToy?.mInfo;
+  if (known?.id === id) {
+    date ||= known.date ? utcDate(known.date) : "";
+    title ||= known.name || "";
+  }
+  if (!date || !title) {
+    try {
+      const res = await fetch("/shadertoy", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "s=" + encodeURIComponent(JSON.stringify({ shaders: [id] })) + "&nt=1&nl=1&np=1" });
+      const info = (await res.json())?.[0]?.info;
+      date ||= info?.date ? utcDate(info.date) : "";
+      title ||= info?.name || "";
+    } catch (e) {}
+  }
+  return { date, title, link: `https://www.shadertoy.com/view/${id}` };
 }
 
 // Runs in the page (must be self-contained)

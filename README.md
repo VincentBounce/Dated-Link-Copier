@@ -59,6 +59,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-01-14 Intranasal Human NSC-Derived EVs Therapy Can Restrain Inflammatory Microglial Transcriptome, and NLRP3 and cGAS-STING Signaling, in Aged Hippocampus https://pubmed.ncbi.nlm.nih.gov/41648159/
 ```
 
+**Shadertoy shaders:** upload date and shader name (the link only has the ID)
+
+```
+2026-10-24 Vor∞noi https://www.shadertoy.com/view/73ySRh
+```
+
 **PyPI projects:** date of the first release and link
 
 ```
@@ -101,7 +107,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, Shadertoy, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -113,6 +119,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, PyPI, Have I Been 
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.16.0 | 2026-10-25 | Claude Code (Claude Opus 5.5) | Shadertoy shaders: `date name link` |
 | 2.15.0 | 2026-10-24 | Claude Code (Claude Opus 5.5) | PyPI projects: `date link` with the first release date |
 | 2.14.0 | 2026-10-17 | Claude Code (Claude Opus 5.5) | Have I Been Pwned breach pages: `date link` with the date added to HIBP |
 | 2.13.0 | 2026-10-17 | Claude Code (Claude Opus 5.5) | Y Combinator company pages: `2023-xx-xx link` with the founding year |
