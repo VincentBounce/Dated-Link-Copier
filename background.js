@@ -141,6 +141,13 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // Suno songs: like YouTube, "date @artist - title link"; the share link (/s/<code>) is kept
+  if (/^https:\/\/suno\.com\/song\/[0-9a-f-]{36}/.test(url)) {
+    const info = await runInPage(tab, readSunoSongInfo);
+    const who = info.handle ? `@${cleanText(info.handle)} - ` : "";
+    return `${info.date || "?"} ${who}${cleanText(info.title)} ${info.link}`;
+  }
+
   // Shadertoy shaders: upload date and shader name (the link only has the ID)
   if (/^https:\/\/www\.shadertoy\.com\/view\/\w+/.test(url)) {
     const info = await runInPage(tab, readShadertoyInfo, "MAIN");
@@ -543,6 +550,28 @@ function readPubMedInfo() {
   const title = (document.querySelector('meta[name="citation_title"]')?.content
     || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
   return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
+}
+
+// Runs in the page (must be self-contained)
+function readSunoSongInfo() {
+  const id = location.pathname.match(/^\/song\/([0-9a-f-]{36})/)[1];
+  const share = new URL(location.href).searchParams.get("sh");
+  // The song data is in the page's scripts: take the "created_at" next to this song's ID
+  // (so data left over from in-page navigation is never used)
+  const text = [...document.scripts].map(s => s.textContent).join("\n").replace(/\\"/g, '"');
+  let created = "";
+  for (const m of text.matchAll(/"created_at":"([^"]+)"/g)) {
+    if (text.slice(Math.max(0, m.index - 3000), m.index + 3000).includes(`"id":"${id}"`)) { created = m[1]; break; }
+  }
+  const d = new Date(created);
+  // Local date, as Suno shows it
+  const date = created && !isNaN(d)
+    ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : "";
+  const meta = sel => document.querySelector(sel)?.content || "";
+  // "The future speaks to us by toutankamo (@toutankamo). Listen and make your own on Suno."
+  const handle = meta('meta[name="description"]').match(/\(@([^)]+)\)/)?.[1] || "";
+  const title = meta('meta[property="og:title"]').trim();
+  return { date, handle, title, link: share ? `https://suno.com/s/${share}` : `https://suno.com/song/${id}` };
 }
 
 // Runs in the page's MAIN world (must be self-contained)
