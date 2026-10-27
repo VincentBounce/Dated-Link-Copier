@@ -141,6 +141,13 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // SoundCloud tracks (soundcloud.com/<user>/<track>): publish date and link
+  if (/^https:\/\/soundcloud\.com\/[^/?#]+\/[^/?#]+/.test(url)) {
+    const info = await runInPage(tab, readSoundCloudTrackInfo);
+    if (info) return `${info.date || "?"} ${info.link}`;
+    // Not a track (sets, likes…): handled like any other page below
+  }
+
   // Pouët demoscene productions: like YouTube, "date @group - name link", one "@" per group
   if (/^https:\/\/www\.pouet\.net\/prod\.php\?/.test(url)) {
     const info = await runInPage(tab, readPouetProdInfo);
@@ -558,6 +565,32 @@ function readPubMedInfo() {
   const title = (document.querySelector('meta[name="citation_title"]')?.content
     || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
   return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
+}
+
+// Runs in the page (must be self-contained)
+function readSoundCloudTrackInfo() {
+  const link = `https://soundcloud.com${location.pathname.match(/^\/[^/]+\/[^/]+/)[0]}`;
+  // window.__sc_hydration (in a page script) holds {hydratable: "sound", data: {kind: "track",
+  // permalink_url, display_date: "2012-08-28T01:07:49Z"}}; matched on the link, since the data
+  // stays from the first page after in-page navigation
+  let iso = "", isTrack = false;
+  const script = [...document.scripts].map(s => s.textContent).find(t => t.includes("__sc_hydration"));
+  try {
+    const sound = JSON.parse(script.match(/__sc_hydration\s*=\s*(\[[^]*?\]);/)[1])
+      .find(h => h.hydratable === "sound")?.data;
+    if (sound?.permalink_url === link) { isTrack = sound.kind === "track"; iso = sound.display_date || sound.created_at || ""; }
+  } catch (e) {}
+  // Else the upload time in the track page's header (lists of tracks have no such header)
+  if (!iso) {
+    const time = document.querySelector(".fullHero__uploadTime time[datetime]");
+    if (time) { isTrack = true; iso = time.getAttribute("datetime"); }
+  }
+  if (!isTrack) return null;
+  const d = new Date(iso);
+  // Local date, as SoundCloud shows it
+  const date = iso && !isNaN(d)
+    ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : "";
+  return { date, link };
 }
 
 // Runs in the page (must be self-contained)

@@ -59,6 +59,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-01-14 Intranasal Human NSC-Derived EVs Therapy Can Restrain Inflammatory Microglial Transcriptome, and NLRP3 and cGAS-STING Signaling, in Aged Hippocampus https://pubmed.ncbi.nlm.nih.gov/41648159/
 ```
 
+**SoundCloud tracks:** publish date and link
+
+```
+2012-08-28 https://soundcloud.com/dubstep/bullet-train-by-stephen-swartz
+```
+
 **Pouët productions:** date added to Pouët, groups and name like YouTube
 
 ```
@@ -119,7 +125,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, Pouët, Suno, Shadertoy, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -131,6 +137,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, Pouët, Suno, Shad
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.19.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | SoundCloud tracks: `date link` |
 | 2.18.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | Pouët productions: `date @group - name link` |
 | 2.17.0 | 2026-10-26 | Claude Code (Claude Opus 5.5) | Suno songs: `date @artist - title link`, share link kept |
 | 2.16.0 | 2026-10-25 | Claude Code (Claude Opus 5.5) | Shadertoy shaders: `date name link` |
