@@ -35,6 +35,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-10-10 https://x.com/RobertDaleSmith/status/2108787905225245094
 ```
 
+**X (Twitter) profiles:** month the account joined X ("Joined October 2021", in any page language) and profile link
+
+```
+2021-10-xx https://x.com/iamlaurael
+```
+
 **LinkedIn posts:** post date and link, read from the post ID like on X (works signed in or out)
 
 ```
@@ -137,6 +143,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.20.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | X profiles: `YYYY-MM-xx link`, month joined |
 | 2.19.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | SoundCloud tracks: `date link` |
 | 2.18.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | Pouët productions: `date @group - name link` |
 | 2.17.0 | 2026-10-26 | Claude Code (Claude Opus 5.5) | Suno songs: `date @artist - title link`, share link kept |

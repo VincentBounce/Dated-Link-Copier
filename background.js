@@ -1,5 +1,5 @@
 // The icon is greyed out except where there is something to copy:
-// YouTube videos, Google Play apps, Reddit posts, X and LinkedIn posts, Amazon products, and any other web page
+// YouTube videos, Google Play apps, Reddit posts, X posts and profiles, LinkedIn posts, Amazon products, and any other web page
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
   "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com",
   "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com",
@@ -9,6 +9,8 @@ const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.
 const LINKEDIN_POST = "^https://(www\\.)?linkedin\\.com/(posts/.*[0-9]{19}|feed/update/urn:li:[a-zA-Z]+:[0-9]{19}|pulse/)";
 const AMAZON_PRODUCT = "^https://www\\.amazon\\.(com|ca|co\\.uk|fr|de|es|it)/(.*/)?(dp|gp/product)/[A-Z0-9]{10}";
 const X_POST = "^https://((www|mobile)\\.)?(x|twitter)\\.com/[^/]+/status/[0-9]+";
+// Profiles; also lights /home, /explore… (no exclusion in rules), where nothing is copied
+const X_PROFILE = "^https://((www|mobile)\\.)?(x|twitter)\\.com/[A-Za-z0-9_]{1,15}/?([?#].*)?$";
 const REDDIT_POST = "^https://((www|old|new|sh)\\.)?reddit\\.com/(r/[^/]+/)?comments/[a-z0-9]+";
 
 // Chrome only draws a disabled action in grey on pages the extension can't access, and
@@ -26,6 +28,7 @@ async function setUpIconState() {
         new PageStateMatcher({ pageUrl: { hostEquals: "play.google.com", pathEquals: "/store/apps/details" } }),
         new PageStateMatcher({ pageUrl: { urlMatches: REDDIT_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: X_POST } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: X_PROFILE } }),
         new PageStateMatcher({ pageUrl: { urlMatches: AMAZON_PRODUCT } }),
         new PageStateMatcher({ pageUrl: { urlMatches: LINKEDIN_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
@@ -108,7 +111,10 @@ async function buildLine(tab) {
   }
 
   if (/^https:\/\/((www|mobile)\.)?(x|twitter)\.com\//.test(url)) {
-    return xPostLine(url);
+    if (/\/status\/\d+/.test(url)) return xPostLine(url);
+    // Profiles (x.com/<user>): month joined, the day isn't shown
+    const info = await runInPage(tab, readXProfileInfo);
+    return info && `${info.date} https://x.com/${info.user}`;
   }
 
   if (/^https:\/\/(www\.)?linkedin\.com\//.test(url)) {
@@ -235,6 +241,22 @@ function xPostLine(url) {
   const date = id < 10000000000000n ? "?"
     : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   return `${date} https://x.com/${m[1]}/status/${m[2]}`;
+}
+
+// X profiles show "Joined October 2021" (in the page's language) and no date metadata
+function readXProfileInfo() {
+  const user = location.pathname.match(/^\/([A-Za-z0-9_]{1,15})(\/|$)/)?.[1];
+  // The title "Name (@user) / X" follows in-page navigation: it tells this is that profile's page
+  if (!user || !document.title.toLowerCase().includes(`(@${user.toLowerCase()})`)) return null;
+  const months = [...Array(12)].map((_, m) =>
+    new Intl.DateTimeFormat(document.documentElement.lang || "en", { month: "long" }).format(new Date(2000, m, 1)).toLowerCase());
+  // The "Joined" line: data-testid="UserJoinDate" when signed in, the line with the calendar icon when signed out
+  const joined = (document.querySelector('[data-testid="UserJoinDate"]')
+    || document.querySelector('svg[data-icon="icon-calendar"]')?.parentElement)?.textContent.toLowerCase() || "";
+  const year = joined.match(/\b(19|20)\d\d\b/)?.[0];
+  // Longest name found, so that Japanese "11月" isn't read as "1月"
+  const m = months.reduce((best, name, i) => joined.includes(name) && (best < 0 || name.length > months[best].length) ? i : best, -1);
+  return year && m >= 0 ? { date: `${year}-${String(m + 1).padStart(2, "0")}-xx`, user } : null;
 }
 
 // LinkedIn post IDs (activity, share, ugcPost) also start with the creation time in ms: ID >> 22
