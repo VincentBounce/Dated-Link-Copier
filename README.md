@@ -29,6 +29,12 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 2026-10-07 https://www.reddit.com/r/chrome/comments/1abcde/my_post_title/
 ```
 
+**Reddit subreddits:** date the subreddit was created ("Created Jan 25, 2008") and its link (old and new Reddit, also on the sort tabs)
+
+```
+2008-01-25 https://www.reddit.com/r/apple/
+```
+
 **X (Twitter) posts:** post date and link, read from the post ID (works without signing in; `?` for posts older than November 2010)
 
 ```
@@ -143,6 +149,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.21.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | Reddit subreddits: `date link`, creation date |
 | 2.20.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | X profiles: `YYYY-MM-xx link`, month joined |
 | 2.19.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | SoundCloud tracks: `date link` |
 | 2.18.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | Pouët productions: `date @group - name link` |
