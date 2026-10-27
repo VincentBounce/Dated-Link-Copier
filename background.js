@@ -141,6 +141,14 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // Pouët demoscene productions: like YouTube, "date @group - name link", one "@" per group
+  if (/^https:\/\/www\.pouet\.net\/prod\.php\?/.test(url)) {
+    const info = await runInPage(tab, readPouetProdInfo);
+    if (!info) return null;
+    const groups = info.groups.map(g => "@" + cleanText(g)).join(" ");
+    return `${info.date || "?"} ${groups ? `${groups} - ` : ""}${cleanText(info.name)} ${info.link}`;
+  }
+
   // Suno songs: like YouTube, "date @artist - title link"; the share link (/s/<code>) is kept
   if (/^https:\/\/suno\.com\/song\/[0-9a-f-]{36}/.test(url)) {
     const info = await runInPage(tab, readSunoSongInfo);
@@ -550,6 +558,33 @@ function readPubMedInfo() {
   const title = (document.querySelector('meta[name="citation_title"]')?.content
     || document.querySelector("h1.heading-title")?.textContent || "").trim().replace(/\.$/, "");
   return { date, title, link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` };
+}
+
+// Runs in the page (must be self-contained)
+function readPouetProdInfo() {
+  const id = new URL(location.href).searchParams.get("which");
+  if (!id) return null;
+  // JSON-LD MediaObject: {"name": "Wake Up! 16b", "author": "Desire", "uploadDate": "2026-05-17T02:36:13+02:00"}
+  let ld = {};
+  for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+    try { const d = JSON.parse(s.textContent); if (d.name) { ld = d; break; } } catch (e) {}
+  }
+  // Date the prod was added to Pouët (as in the JSON-LD, else "added on the 2026-05-17 02:36:13"),
+  // else the release month ("release date : may 2026")
+  let date = (ld.uploadDate || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0]
+    || document.body.innerText.match(/added on the (\d{4}-\d{2}-\d{2})/)?.[1] || "";
+  if (!date) {
+    const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+    const m = document.body.innerText.match(/release date\s*:\s*(?:([a-z]{3})[a-z]*\s+)?(\d{4})/i);
+    const month = m?.[1] ? months.indexOf(m[1].toLowerCase()) + 1 : 0;
+    if (m) date = `${m[2]}-${month ? String(month).padStart(2, "0") : "xx"}-xx`;
+  }
+  // "Wake Up! 16b by Desire" when there is no JSON-LD; several groups are joined by " & "
+  const ogTitle = document.querySelector('meta[property="og:title"]')?.content || "";
+  const name = ld.name || ogTitle.replace(/\s+by\s+.*$/, "");
+  const author = ld.author || ogTitle.match(/\s+by\s+(.*)$/)?.[1] || "";
+  return { date, name: name.trim(), groups: author.split(/\s+&\s+/).map(g => g.trim()).filter(Boolean),
+    link: `https://www.pouet.net/prod.php?which=${id}` };
 }
 
 // Runs in the page (must be self-contained)
