@@ -23,6 +23,13 @@ Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. Th
 Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapostemobile
 ```
 
+**App Store apps:** compatible platforms, first release date and link (iPhone/iPad apps that also run on Apple silicon Macs or Apple Vision Pro count as macOS / visionOS)
+
+```
+iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000
+macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
+```
+
 **Reddit posts:** post date and link (old and new Reddit; comment links are copied as the post link)
 
 ```
@@ -149,6 +156,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.22.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | App Store apps: `platforms date link`, first release date |
 | 2.21.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | Reddit subreddits: `date link`, creation date |
 | 2.20.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | X profiles: `YYYY-MM-xx link`, month joined |
 | 2.19.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | SoundCloud tracks: `date link` |

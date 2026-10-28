@@ -113,6 +113,12 @@ async function buildLine(tab) {
     return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
 
+  // App Store apps (apps.apple.com/<country>/app/<name>/id<id>): compatible platforms and first release date
+  if (/^https:\/\/apps\.apple\.com\/([a-z]{2}\/)?app\/([^/]+\/)?id\d+/.test(url)) {
+    const info = await runInPage(tab, readAppStoreInfo);
+    if (info) return `${info.platforms.join("-") || "?"} ${info.date || "?"} ${info.link}`;
+  }
+
   if (/^https:\/\/((www|mobile)\.)?(x|twitter)\.com\//.test(url)) {
     if (/\/status\/\d+/.test(url)) return xPostLine(url);
     // Profiles (x.com/<user>): month joined, the day isn't shown
@@ -450,6 +456,41 @@ function readArticleInfo() {
   // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")
   title = title.replace(/\s+\|\s+[^|]*$/, "");
   return { published, link, title };
+}
+
+// Runs in the page (must be self-contained)
+async function readAppStoreInfo() {
+  const m = location.pathname.match(/^\/(?:([a-z]{2})\/)?app\/(?:[^/]+\/)?id(\d+)/);
+  if (!m) return null;
+  const [path, country = "us", id] = m;
+  // The page's data: data[0].data.lockup is the app, matched on its ID since it stays from the first page after
+  // in-page navigation (then the app page is fetched again)
+  const lockupOf = doc => {
+    try {
+      const lockup = JSON.parse(doc.getElementById("serialized-server-data").textContent).data[0].data.lockup;
+      return lockup.adamId === id ? lockup : null;
+    } catch (e) { return null; }
+  };
+  let lockup = lockupOf(document);
+  if (!lockup) {
+    try { lockup = lockupOf(new DOMParser().parseFromString(await (await fetch(path)).text(), "text/html")); } catch (e) {}
+  }
+  // Platforms of the app ("phone", "pad", "mac", "tv", "watch", "vision"), plus iPhone/iPad apps that also run on
+  // Apple silicon Macs or on Apple Vision Pro
+  const config = lockup?.buttonAction?.purchaseConfiguration || {};
+  const on = new Set(config.appPlatforms || []);
+  if (lockup?.isIOSBinaryMacOSCompatible) on.add("mac");
+  if (config.supportsVisionOSCompatibleIOSBinary) on.add("vision");
+  const NAMES = { mac: "macOS", phone: "iOS", pad: "iPadOS", tv: "tvOS", watch: "watchOS", vision: "visionOS" };
+  const platforms = Object.keys(NAMES).filter(p => on.has(p)).map(p => NAMES[p]);
+  // The page shows no release date: the public lookup API has it ("2026-10-26T07:00:00Z", midnight in California)
+  // and allows requests from apps.apple.com
+  let date = "";
+  try {
+    const iso = (await (await fetch(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).json()).results[0]?.releaseDate || "";
+    date = iso.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+  } catch (e) {}
+  return { platforms, date, link: `https://apps.apple.com${path}` };
 }
 
 // Runs in the page (must be self-contained)
