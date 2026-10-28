@@ -162,6 +162,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.25.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Other pages: also the date shown without label in the article's date element (ameli.fr: `<p class="date">12 août 2025</p>`) |
 | 2.24.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Google Play apps without a release date on Google Play: date from Chrome-Stats (new host permission: chrome-stats.com) before trying other regions |
 | 2.23.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Chrome-Stats pages: `date link`, no title |
 | 2.22.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | App Store apps: `platforms date link`, first release date |

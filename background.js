@@ -416,14 +416,20 @@ function readArticleInfo() {
     .find(d => /^\d{4}-\d{2}-\d{2}/.test(d)) || shownDate();
 
   // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",
-  // "Published on", "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021")
+  // "Published on", "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021"),
+  // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>)
   function shownDate() {
     const iso = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
     if (iso) return iso;
     const label = /(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)\s*:?\s*/i;
     const m = document.body.innerText.match(new RegExp(label.source + "([^\\n]{6,40})", "i"));
-    if (!m) return "";
-    const text = m[2];
+    if (m) return dateFromText(m[2], /^(published|posted)/i.test(m[1]));
+    const element = document.querySelector("article .date") || document.querySelector(".date");
+    return element ? dateFromText(element.textContent.trim(), false) : "";
+  }
+
+  // "14.11.2021" (day first, or month first after an English label with slashes), "14 novembre 2021", "November 14, 2021"
+  function dateFromText(text, english) {
     const pad = n => String(n).padStart(2, "0");
     const months = { jan: 1, ene: 1, gen: 1, fev: 2, feb: 2, mar: 3, apr: 4, avr: 4, abr: 4, mai: 5, may: 5, mag: 5,
       jun: 6, giu: 6, jul: 7, lug: 7, aou: 8, aug: 8, ago: 8, sep: 9, set: 9, oct: 10, okt: 10, ott: 10, nov: 11,
@@ -434,7 +440,7 @@ function readArticleInfo() {
     };
     let d = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);          // 14.11.2021, 14/11/2021 (11/14/2021 in English)
     if (d) {
-      const [day, mon] = /^(published|posted)/i.test(m[1]) && text.includes("/") ? [d[2], d[1]] : [d[1], d[2]];
+      const [day, mon] = english && text.includes("/") ? [d[2], d[1]] : [d[1], d[2]];
       return `${d[3]}-${pad(mon)}-${pad(day)}`;
     }
     d = text.match(/^(\d{1,2})\.?\s+(?:de\s+)?([^\s\d.,]{3,})\.?\s+(?:de\s+)?(\d{4})/);   // 14 novembre 2021, 14. November 2021
