@@ -113,6 +113,13 @@ async function buildLine(tab) {
     return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
 
+  // Chrome-Stats pages (chrome-stats.com/d/<id>: Android apps, browser extensions…): release date and link, no title
+  if (/^https:\/\/chrome-stats\.com\//.test(url)) {
+    const info = await runInPage(tab, readChromeStatsInfo);
+    if (info) return `${info.date || "?"} ${info.link}`;
+    // Not an app or extension page: handled like any other page below
+  }
+
   // App Store apps (apps.apple.com/<country>/app/<name>/id<id>): compatible platforms and first release date
   if (/^https:\/\/apps\.apple\.com\/([a-z]{2}\/)?app\/([^/]+\/)?id\d+/.test(url)) {
     const info = await runInPage(tab, readAppStoreInfo);
@@ -456,6 +463,28 @@ function readArticleInfo() {
   // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")
   title = title.replace(/\s+\|\s+[^|]*$/, "");
   return { published, link, title };
+}
+
+// Runs in the page (must be self-contained)
+async function readChromeStatsInfo() {
+  const link = `https://chrome-stats.com${location.pathname.replace(/\/$/, "")}`;
+  // JSON-LD SoftwareApplication {"url": "https://chrome-stats.com/d/<id>", "datePublished": "2026-10-24"}, matched on
+  // its url since the head can stay from the first page after in-page navigation (then the page is fetched again)
+  const appOf = doc => {
+    for (const s of doc.querySelectorAll('script[type="application/ld+json"]')) {
+      try {
+        const app = [JSON.parse(s.textContent)].flat().find(o => o["@type"] === "SoftwareApplication" && o.url === link);
+        if (app) return app;
+      } catch (e) {}
+    }
+    return null;
+  };
+  let app = appOf(document);
+  if (!app) {
+    try { app = appOf(new DOMParser().parseFromString(await (await fetch(link)).text(), "text/html")); } catch (e) {}
+  }
+  if (!app) return null;
+  return { date: String(app.datePublished || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "", link };
 }
 
 // Runs in the page (must be self-contained)

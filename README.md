@@ -30,6 +30,12 @@ iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6
 macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
 ```
 
+**Chrome-Stats pages:** release date and link of the Android app or browser extension, without the page title
+
+```
+2026-10-24 https://chrome-stats.com/d/com.anthropic.aibo
+```
+
 **Reddit posts:** post date and link (old and new Reddit; comment links are copied as the post link)
 
 ```
@@ -156,6 +162,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.23.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Chrome-Stats pages: `date link`, no title |
 | 2.22.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | App Store apps: `platforms date link`, first release date |
 | 2.21.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | Reddit subreddits: `date link`, creation date |
 | 2.20.0 | 2026-10-27 | Claude Code (Claude Opus 5.5) | X profiles: `YYYY-MM-xx link`, month joined |
