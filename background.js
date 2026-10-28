@@ -88,8 +88,8 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-async function runInPage(tab, func, world = "ISOLATED") {
-  const [{ result }] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world, func });
+async function runInPage(tab, func, world = "ISOLATED", args = []) {
+  const [{ result }] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world, func, args });
   return result;
 }
 
@@ -108,9 +108,13 @@ async function buildLine(tab) {
   }
 
   if (/^https:\/\/play\.google\.com\/store\/apps\/details\?/.test(url)) {
-    const info = await runInPage(tab, readPlayAppInfo);
+    // The loaded page usually has the date (instant); some apps have none in any region (com.anthropic.aibo),
+    // so then Chrome-Stats (~0.1 s), and last the app page for other regions (about 1 s each)
+    const info = await runInPage(tab, readPlayAppInfo, "ISOLATED", [false]);
     if (!info) return null;
-    return `Android ${formatDate(info.released) || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
+    const date = formatDate(info.released) || await chromeStatsDate(info.id)
+      || formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released);
+    return `Android ${date || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
 
   // Chrome-Stats pages (chrome-stats.com/d/<id>: Android apps, browser extensions…): release date and link, no title
@@ -359,7 +363,7 @@ async function readVideoInfo() {
 }
 
 // Runs in the page (must be self-contained)
-async function readPlayAppInfo() {
+async function readPlayAppInfo(fetchRegions) {
   const id = new URL(location.href).searchParams.get("id");
   if (!id) return null;
 
@@ -379,10 +383,9 @@ async function readPlayAppInfo() {
     return undefined;
   };
 
-  // The loaded page usually has the date (instant); some regions get none for some apps, so only
-  // then fetch the app page for the US, then other regions (about 1 s each)
-  let released = releasedFrom([...document.scripts].map(s => s.textContent).join("\n"));
-  for (const gl of ["US", "FR", "GB", "CH"]) {
+  // The loaded page, or else (fetchRegions) the app page for the US, then other regions
+  let released = fetchRegions ? "" : releasedFrom([...document.scripts].map(s => s.textContent).join("\n"));
+  for (const gl of fetchRegions ? ["US", "FR", "GB", "CH"] : []) {
     if (released) break;
     try {
       const res = await fetch(`/store/apps/details?id=${encodeURIComponent(id)}&hl=en&gl=${gl}`);
@@ -463,6 +466,22 @@ function readArticleInfo() {
   // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")
   title = title.replace(/\s+\|\s+[^|]*$/, "");
   return { published, link, title };
+}
+
+// Release date of an Android app on Chrome-Stats, fetched by the service worker (host permission: the site sends
+// no CORS header). Same JSON-LD as on its pages, read with a regex since the service worker has no DOMParser.
+async function chromeStatsDate(id) {
+  const link = `https://chrome-stats.com/d/${id}`;
+  try {
+    const html = await (await fetch(link)).text();
+    for (const m of html.matchAll(/<script type="application\/ld\+json"[^>]*>([^]*?)<\/script>/g)) {
+      try {
+        const app = [JSON.parse(m[1])].flat().find(o => o["@type"] === "SoftwareApplication" && o.url === link);
+        if (app) return formatDate(String(app.datePublished || ""));
+      } catch (e) {}
+    }
+  } catch (e) {}
+  return "";
 }
 
 // Runs in the page (must be self-contained)
