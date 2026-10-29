@@ -72,7 +72,7 @@ chrome.runtime.onStartup.addListener(setUpIconState);
 // the page was reached through in-page navigation or after an extension reload.
 chrome.action.onClicked.addListener(async (tab) => {
   try {
-    const str = await buildLine(tab);
+    const str = readableLinks(await buildLine(tab) || "");
     if (!str) return flashBadge(tab.id, "✗", "#d93025");
 
     const copied = await writeClipboard(str);
@@ -82,6 +82,18 @@ chrome.action.onClicked.addListener(async (tab) => {
     flashBadge(tab.id, "✗", "#d93025");
   }
 });
+
+// Links as the address bar shows them: percent-encoded UTF-8 decoded ("clean-link-—-copy" instead of
+// "clean-link-%E2%80%94-copy"); ASCII (%20, %2F, %3F…), spaces and control characters stay encoded, so the
+// link keeps its meaning and still ends at the first space of the line
+function readableLinks(line) {
+  return line.replace(/(%[0-9A-F]{2})+/gi, run => {
+    let text;
+    try { text = decodeURIComponent(run); } catch (e) { return run; }
+    return text.replace(/[\x00-\x7F\s\p{C}]/gu, c =>
+      [...new TextEncoder().encode(c)].map(b => "%" + b.toString(16).toUpperCase().padStart(2, "0")).join(""));
+  });
+}
 
 // The service worker has no DOM: the line goes to the clipboard through an offscreen document,
 // which also works on pages no extension may script (Chrome Web Store)

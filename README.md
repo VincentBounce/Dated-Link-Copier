@@ -174,6 +174,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.28.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Links shown with their Unicode characters, as in the address bar (`clean-link-—-copy`, not `clean-link-%E2%80%94-copy`) |
 | 2.27.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Chrome Web Store extensions: `Chrome ext date link`, date from Chrome-Stats; the line is copied through an offscreen document (works on Store pages, which no extension may script) |
 | 2.26.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | iCloud shared shortcuts: `date name link` with the creation date |
 | 2.25.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Other pages: also the date shown without label in the article's date element (ameli.fr: `<p class="date">12 août 2025</p>`) |
