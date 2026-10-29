@@ -41,7 +41,8 @@ def act(identifier, **params):
 
 def workflow():
     # The clipboard goes into the page as base64 (no quoting issue), and the page itself as a base64 data: URL
-    # (no "#" or "%" issue); the page writes the cleaned text, read back as text
+    # (no "#" or "%" issue); the page writes the cleaned text, read back as text. Get Contents of Web Page
+    # needs its URL as a text token (as in Detrackor): given as a plain attachment, it returns nothing
     clip = act("getclipboard")
     clip64 = act("base64encode", WFInput=attachment(clip, "Clipboard"), WFEncodeMode="Encode", WFBase64LineBreakMode="None")
     page = act("gettext", WFTextActionText=text_with(
@@ -50,13 +51,16 @@ def workflow():
         '"), c => c.charCodeAt(0)));\ndocument.getElementById("out").textContent = cleanText(clip);\n</script>'))
     page64 = act("base64encode", WFInput=attachment(page, "Text"), WFEncodeMode="Encode", WFBase64LineBreakMode="None")
     url = act("url", WFURLActionURL=text_with("data:text/html;charset=utf-8;base64,", page64, "Base64 Encoded"))
-    contents = act("getwebpagecontents", WFInput=attachment(url, "URL"))
-    cleaned = act("detect.text", WFInput=attachment(contents, "Contents of Web Page"))
-    setclip = act("setclipboard", WFInput=attachment(cleaned, "Text"))
+    contents = act("getwebpagecontents", WFInput=text_with("", url, "URL"))
+    text = act("detect.text", WFInput=attachment(contents, "Contents of Web Page"))
+    # The page's text ends with a line break
+    cleaned = act("text.replace", WFInput=text_with("", text, "Text"), WFReplaceTextFind=r"^\s+|\s+$",
+                  WFReplaceTextReplace="", WFReplaceTextRegularExpression=True)
+    setclip = act("setclipboard", WFInput=attachment(cleaned, "Updated Text"))
     notify = act("notification", WFNotificationActionTitle="Link cleaned",
-                 WFNotificationActionBody=text_with("", cleaned, "Text"), WFNotificationActionSound=False)
+                 WFNotificationActionBody=text_with("", cleaned, "Updated Text"), WFNotificationActionSound=False)
     return {
-        "WFWorkflowActions": [clip, clip64, page, page64, url, contents, cleaned, setclip, notify],
+        "WFWorkflowActions": [clip, clip64, page, page64, url, contents, text, cleaned, setclip, notify],
         "WFWorkflowClientVersion": "2700.0.4",
         "WFWorkflowMinimumClientVersion": 900,
         "WFWorkflowMinimumClientVersionString": "900",

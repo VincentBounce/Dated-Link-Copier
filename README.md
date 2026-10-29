@@ -188,6 +188,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.30.1 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Clean Link shortcut: now changes the clipboard (the web page step got its URL in a form it ignored), without a trailing line break |
 | 2.30.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Clean Link shortcut for iPhone, iPad and Mac: cleans the links in the clipboard with the extension's rules |
 | 2.29.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Other pages without a canonical link: more tracking parameters removed (Matomo, Piwik, HubSpot, Google `gbraid`/`wbraid`/`gad_source`/`srsltid`, Microsoft, Instagram, TikTok, X, LinkedIn, Yandex, Mailchimp, Marketo…) |
 | 2.28.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Links shown with their Unicode characters, as in the address bar (`clean-link-—-copy`, not `clean-link-%E2%80%94-copy`) |
