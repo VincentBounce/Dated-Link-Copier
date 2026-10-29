@@ -488,8 +488,11 @@ function readArticleInfo() {
   } else {
     const u = new URL(location.href);
     u.hash = "";
+    // Tracking parameters: families by prefix (utm_source…, Matomo, Piwik, HubSpot ads), else exact names
+    // (ad click IDs, Google result links, social networks, newsletters); the rest of the query stays
+    const tracking = /^((utm|mtm|matomo|pk|piwik|hsa)_.*|fbclid|gclid|gclsrc|gbraid|wbraid|gad_source|srsltid|msclkid|igshid|igsh|ttclid|twclid|li_fat_id|yclid|mc_cid|mc_eid|_hsenc|_hsmi|mkt_tok|_ga|_ke|ef_id|s_kwcid|epik)$/;
     for (const k of [...u.searchParams.keys()]) {
-      if (/^(utm_.*|fbclid|gclid)$/.test(k)) u.searchParams.delete(k);
+      if (tracking.test(k)) u.searchParams.delete(k);
     }
     link = u.href;
   }
