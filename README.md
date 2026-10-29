@@ -129,6 +129,12 @@ Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/o
 2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
 ```
 
+**GitHub releases:** publication date and link
+
+```
+2026-10-29 https://github.com/VincentBounce/Dated-Link-Copier/releases/tag/v2.32.0
+```
+
 **PyPI projects:** date of the first release and link
 
 ```
@@ -171,7 +177,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -197,6 +203,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.33.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | GitHub releases: `date link` with the publication date |
 | 2.32.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Instagram posts: `date @user link`, the creator from the post page's `og:url` |
 | 2.31.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | TikTok videos, Instagram and Threads posts, Bluesky posts: `date link`, dated by their ID |
 | 2.30.2 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Clean Link shortcut: links copied on iOS (URL items) are cleaned instead of being replaced by their page's HTML |

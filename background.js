@@ -227,6 +227,12 @@ async function buildLine(tab) {
     return `${info.created ? localDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
   }
 
+  // GitHub releases: publication date, shown in the viewer's time zone
+  if (/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\/tag\/[^/?#]+/.test(url)) {
+    const info = await runInPage(tab, readGitHubReleaseInfo);
+    return `${info.published ? localDate(Date.parse(info.published)) : "?"} ${info.link}`;
+  }
+
   // PyPI projects: date of the first release
   if (/^https:\/\/pypi\.org\/project\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readPyPIProjectInfo);
@@ -888,6 +894,19 @@ async function readICloudShortcutInfo() {
   let record = {};
   try { record = await (await fetch(`/shortcuts/api/records/${id}`)).json(); } catch (e) {}
   return { created: record.created?.timestamp, name: record.fields?.name?.value || "", link: `https://www.icloud.com/shortcuts/${id}` };
+}
+
+// Runs in the page (must be self-contained)
+// No date metadata: the <relative-time datetime="2026-10-29T16:25:44Z"> of the "<user> released this" line
+// ("tagged this" for a bare tag; the other relative-times are signature dates), else the REST API (CORS allowed)
+async function readGitHubReleaseInfo() {
+  const [, owner, repo, tag] = location.pathname.match(/^\/([^/]+)\/([^/]+)\/releases\/tag\/([^/]+)/);
+  let published = [...document.querySelectorAll("relative-time[datetime]")]
+    .find(t => /\b(released|tagged) this\b/.test(t.parentElement.textContent))?.getAttribute("datetime") || "";
+  if (!published) {
+    try { published = (await (await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)).json()).published_at || ""; } catch (e) {}
+  }
+  return { published, link: `https://github.com/${owner}/${repo}/releases/tag/${tag}` };
 }
 
 // Runs in the page (must be self-contained)
