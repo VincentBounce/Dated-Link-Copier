@@ -129,6 +129,38 @@ Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/o
 2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
 ```
 
+**YouTube channels:** date joined and channel link
+
+```
+2008-03-21 https://www.youtube.com/@mkbhd
+```
+
+**Mastodon posts (any server):** post date and link, read from the post ID
+
+```
+2026-10-29 https://mastodon.social/@Gargron/117525141761759792
+```
+
+**GitHub repositories, issues, pull requests, commits:** creation date (with the title when the link lacks it) and link
+
+```
+2008-07-23 https://github.com/git/git
+2015-11-18 GitHub link on page is broken https://github.com/microsoft/vscode/issues/100
+2005-04-08 Initial revision of ＂git＂, the information manager from hell https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290
+```
+
+**Wikipedia articles:** creation date (first revision) and link
+
+```
+2017-01-11 https://en.wikipedia.org/wiki/Mastodon_(social_network)
+```
+
+**npm packages:** date of the first release and link
+
+```
+2014-03-14 https://www.npmjs.com/package/left-pad
+```
+
 **GitHub releases:** publication date and link
 
 ```
@@ -203,6 +235,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.34.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | YouTube channels (date joined), Mastodon posts (from the ID), GitHub repositories, issues, pull requests and commits, Wikipedia articles, npm packages (public APIs) |
 | 2.33.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | GitHub releases: `date link` with the publication date |
 | 2.32.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Instagram posts: `date @user link`, the creator from the post page's `og:url` |
 | 2.31.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | TikTok videos, Instagram and Threads posts, Bluesky posts: `date link`, dated by their ID |

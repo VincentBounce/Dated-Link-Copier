@@ -1,6 +1,6 @@
 // The icon is greyed out except where there is something to copy:
-// YouTube videos, Google Play apps, Reddit posts and subreddits, X posts and profiles, LinkedIn posts, Amazon products,
-// and any other web page (TikTok, Instagram, Threads, Bluesky posts among them)
+// YouTube videos and channels, Google Play apps, Reddit posts and subreddits, X posts and profiles, LinkedIn posts,
+// Amazon products, and any other web page (TikTok, Instagram, Threads, Bluesky, Mastodon, GitHub, Wikipedia, npm…)
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
   "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com",
   "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com",
@@ -9,6 +9,8 @@ const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.
 // LinkedIn posts (/posts/…-share-ID-…, /feed/update/urn:li:activity:ID) and Pulse articles (dated by their metadata)
 const LINKEDIN_POST = "^https://(www\\.)?linkedin\\.com/(posts/.*[0-9]{19}|feed/update/urn:li:[a-zA-Z]+:[0-9]{19}|pulse/)";
 const AMAZON_PRODUCT = "^https://www\\.amazon\\.(com|ca|co\\.uk|fr|de|es|it)/(.*/)?(dp|gp/product)/[A-Z0-9]{10}";
+// Channels and their tabs (/@handle/videos, /channel/UC…)
+const YOUTUBE_CHANNEL = "^https://(www|m)\\.youtube\\.com/(@[^/?#]+|(channel|c|user)/[^/?#]+)";
 const X_POST = "^https://((www|mobile)\\.)?(x|twitter)\\.com/[^/]+/status/[0-9]+";
 // Profiles; also lights /home, /explore… (no exclusion in rules), where nothing is copied
 const X_PROFILE = "^https://((www|mobile)\\.)?(x|twitter)\\.com/[A-Za-z0-9_]{1,15}/?([?#].*)?$";
@@ -28,6 +30,7 @@ async function setUpIconState() {
     onPageChanged.addRules([{
       conditions: [
         new PageStateMatcher({ pageUrl: { urlMatches: "^https://(www|m)\\.youtube\\.com/(watch\\?|shorts/)" } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: YOUTUBE_CHANNEL } }),
         new PageStateMatcher({ pageUrl: { hostEquals: "play.google.com", pathEquals: "/store/apps/details" } }),
         new PageStateMatcher({ pageUrl: { urlMatches: REDDIT_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: REDDIT_SUBREDDIT } }),
@@ -115,6 +118,11 @@ async function buildLine(tab) {
   const url = tab.url || "";
 
   if (/^https:\/\/(www|m)\.youtube\.com\//.test(url)) {
+    // Channels: date joined, written in the page's language
+    if (new RegExp(YOUTUBE_CHANNEL).test(url)) {
+      const info = await runInPage(tab, readYouTubeChannelInfo);
+      return `${localizedDate(info.joined, info.lang) || "?"} ${info.link}`;
+    }
     // MAIN world: gives access to the YouTube player's data for the current video
     const info = await runInPage(tab, readVideoInfo, "MAIN");
     if (!info) return null;
@@ -156,7 +164,8 @@ async function buildLine(tab) {
     if (/\/status\/\d+/.test(url)) return xPostLine(url);
     // Profiles (x.com/<user>): month joined, the day isn't shown
     const info = await runInPage(tab, readXProfileInfo);
-    return info && `${info.date} https://x.com/${info.user}`;
+    const date = info && localizedDate(info.joined, info.lang);
+    return date ? `${date} https://x.com/${info.user}` : null;
   }
 
   // TikTok videos, Instagram and Threads posts, Bluesky posts: dated by their ID, like X and LinkedIn
@@ -226,6 +235,10 @@ async function buildLine(tab) {
     const info = await runInPage(tab, readICloudShortcutInfo);
     return `${info.created ? localDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
   }
+
+  // GitHub repositories, issues, pull requests and commits; Wikipedia articles; npm packages: public APIs
+  const apiLine = await githubLine(url) || await wikipediaLine(url) || await npmLine(url);
+  if (apiLine) return apiLine;
 
   // GitHub releases: publication date, shown in the viewer's time zone
   if (/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\/tag\/[^/?#]+/.test(url)) {
@@ -304,15 +317,37 @@ function readXProfileInfo() {
   const user = location.pathname.match(/^\/([A-Za-z0-9_]{1,15})(\/|$)/)?.[1];
   // The title "Name (@user) / X" follows in-page navigation: it tells this is that profile's page
   if (!user || !document.title.toLowerCase().includes(`(@${user.toLowerCase()})`)) return null;
-  const months = [...Array(12)].map((_, m) =>
-    new Intl.DateTimeFormat(document.documentElement.lang || "en", { month: "long" }).format(new Date(2000, m, 1)).toLowerCase());
   // The "Joined" line: data-testid="UserJoinDate" when signed in, the line with the calendar icon when signed out
   const joined = (document.querySelector('[data-testid="UserJoinDate"]')
-    || document.querySelector('svg[data-icon="icon-calendar"]')?.parentElement)?.textContent.toLowerCase() || "";
-  const year = joined.match(/\b(19|20)\d\d\b/)?.[0];
-  // Longest name found, so that Japanese "11月" isn't read as "1月"
-  const m = months.reduce((best, name, i) => joined.includes(name) && (best < 0 || name.length > months[best].length) ? i : best, -1);
-  return year && m >= 0 ? { date: `${year}-${String(m + 1).padStart(2, "0")}-xx`, user } : null;
+    || document.querySelector('svg[data-icon="icon-calendar"]')?.parentElement)?.textContent || "";
+  return { joined, lang: document.documentElement.lang || "en", user };
+}
+
+// A date written in a page's language: "Joined October 2021", "Actif depuis le 21 mars 2008", "Joined Mar 21, 2008",
+// "2008年3月21日" -> "2008-03-21", "2021-10-xx" without day, "" without year and month. Month names come from Intl
+// in that language, long and short; the longest one found wins (Japanese "11月" isn't "1月").
+function localizedDate(text, lang) {
+  const pad = n => String(n).padStart(2, "0");
+  const t = text.toLowerCase();
+  const ymd = t.match(/((?:19|20)\d\d)\D{1,3}(\d{1,2})\D{1,3}(\d{1,2})\D/);   // year first: 2008年3月21日, 2008. 3. 21.
+  if (ymd) return `${ymd[1]}-${pad(ymd[2])}-${pad(ymd[3])}`;
+  const year = t.match(/\b(?:19|20)\d\d\b/)?.[0];
+  let format;
+  try { format = style => new Intl.DateTimeFormat(lang, { month: style }); format("long"); } catch (e) { format = style => new Intl.DateTimeFormat("en", { month: style }); }
+  let month = 0, name = "";
+  for (const style of ["long", "short"]) {
+    for (let m = 0; m < 12; m++) {
+      const n = format(style).format(new Date(2000, m, 1)).toLowerCase().replace(/\.$/, "");
+      if (t.includes(n) && n.length > name.length) { month = m + 1; name = n; }
+    }
+  }
+  if (!month) {
+    const dmy = t.match(/\b(\d{1,2})[./](\d{1,2})[./]((?:19|20)\d\d)\b/);   // no name: day first, 21.03.2008
+    return dmy ? `${dmy[3]}-${pad(dmy[2])}-${pad(dmy[1])}` : "";
+  }
+  if (!year) return "";
+  const day = t.replace(year, "").replace(name, "").match(/\b(\d{1,2})\b/)?.[1];
+  return `${year}-${pad(month)}-${day && day >= 1 && day <= 31 ? pad(day) : "xx"}`;
 }
 
 // LinkedIn post IDs (activity, share, ugcPost) also start with the creation time in ms: ID >> 22
@@ -332,6 +367,7 @@ function linkedinPostLine(url) {
 //   (A-Z a-z 0-9 - _), whose top bits are ms since 2011-08-24 21:07:01.721 UTC: (id >> 23) + 1314220021721;
 //   older posts have small sequential IDs that carry no date
 // - Bluesky /profile/<handle>/post/<rkey>: the rkey is a TID, 13 base-32 digits (2-7 a-z), microseconds >> 10
+// - Mastodon <server>/@user/<id>: id >> 16 = ms
 async function idPostLine(url, tab) {
   const u = new URL(url);
   const host = u.hostname.replace(/^www\./, "");
@@ -350,6 +386,11 @@ async function idPostLine(url, tab) {
     // Instagram links rarely name the creator: "date @user link" like YouTube
     const user = instagram[1] || await runInPage(tab, readInstagramUser, "ISOLATED", [code]);
     return `${date} ${user ? `@${user} ` : ""}https://www.instagram.com/${instagram[2].replace("reels", "reel")}/${code}/`;
+  }
+  // Mastodon posts on any server (/@user/<id>, /@user@server/<id>): id >> 16 = ms; the oldest posts have sequential IDs
+  if ((m = u.pathname.match(/^\/(@[^/]+)\/(\d{6,19})\/?$/))) {
+    const id = BigInt(m[2]);
+    return `${id < 1n << 40n ? "?" : localDate(Number(id >> 16n))} https://${u.hostname}/${m[1]}/${m[2]}`;
   }
   if (host === "bsky.app" && (m = u.pathname.match(/^\/profile\/([^/]+)\/post\/([^/]+)/))) {
     const date = /^[2-7a-z]{13}$/.test(m[2]) ? localDate(Number(digits(m[2], "234567abcdefghijklmnopqrstuvwxyz") >> 10n) / 1000) : "?";
@@ -394,6 +435,24 @@ function titleIfNotInLink(title, link) {
 // (converting to local time could shift it by one day)
 function formatDate(s) {
   return (s || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+}
+
+// Runs in the page (must be self-contained)
+// A channel shows "Joined Mar 21, 2008" ("Actif depuis le 21 mars 2008"…) only in its About panel, whose data is in
+// the /about page (fetched, ~1 s, 2-3 MB), next to the channel's canonical link (https://www.youtube.com/@mkbhd)
+async function readYouTubeChannelInfo() {
+  const base = location.pathname.match(/^\/(@[^/]+|(?:channel|c|user)\/[^/]+)/)[1];
+  let joined = "", link = `https://www.youtube.com/${base}`, lang = "en";
+  try {
+    const html = await (await fetch(`/${base}/about`)).text();
+    const m = html.match(/"joinedDateText":\{"content":"([^"]+)"[^]{0,200}?"canonicalChannelUrl":"([^"]+)"/);
+    if (m) {
+      joined = JSON.parse(`"${m[1]}"`);
+      link = m[2].replace(/^http:/, "https:");
+    }
+    lang = html.match(/<html[^>]* lang="([^"]+)"/)?.[1] || lang;
+  } catch (e) {}
+  return { joined, lang, link };
 }
 
 // Runs in the page (must be self-contained)
@@ -562,6 +621,55 @@ function readArticleInfo() {
   // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")
   title = title.replace(/\s+\|\s+[^|]*$/, "");
   return { published, link, title };
+}
+
+// GitHub repositories (creation), issues and pull requests (opening, with their title), commits (commit date, with
+// their subject), from the REST API (CORS allowed, 60 requests an hour without sign-in), local date as GitHub shows it.
+// null on other GitHub pages (users, /features/…: the API has no such repository) and when the API fails.
+async function githubLine(url) {
+  const m = url.match(/^https:\/\/github\.com\/([^/?#]+)\/([^/?#]+)(?:\/(issues|pull|commit)\/([0-9a-f]+))?(?:[/?#]|$)/);
+  if (!m || (!m[3] && !/^https:\/\/github\.com\/[^/]+\/[^/?#]+\/?([?#]|$)/.test(url))) return null;
+  const [, owner, repo, kind, ref] = m;
+  const repoLink = `https://github.com/${owner}/${repo}`;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}${kind ? `/${{ issues: "issues", pull: "pulls", commit: "commits" }[kind]}/${ref}` : ""}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!kind) return `${localDate(Date.parse(data.created_at))} ${repoLink}`;
+    if (kind === "commit") {
+      const link = `${repoLink}/commit/${data.sha}`;
+      return `${localDate(Date.parse(data.commit.committer.date))} ${titleIfNotInLink(data.commit.message.split("\n")[0], link)}${link}`;
+    }
+    const link = `${repoLink}/${kind}/${ref}`;
+    return `${localDate(Date.parse(data.created_at))} ${titleIfNotInLink(data.title, link)}${link}`;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Wikipedia articles: creation date = timestamp of the first revision (API, CORS with origin=*), UTC date as
+// Wikipedia shows it to signed-out readers; redirects followed
+async function wikipediaLine(url) {
+  const m = url.match(/^https:\/\/([a-z-]+)(?:\.m)?\.wikipedia\.org\/wiki\/([^?#]+)/);
+  if (!m) return null;
+  let date = "";
+  try {
+    const api = `https://${m[1]}.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1`
+      + `&prop=revisions&rvdir=newer&rvlimit=1&rvprop=timestamp&titles=${encodeURIComponent(decodeURIComponent(m[2]))}`;
+    date = formatDate(Object.values((await (await fetch(api)).json()).query.pages)[0].revisions?.[0]?.timestamp);
+  } catch (e) {}
+  return `${date || "?"} https://${m[1]}.wikipedia.org/wiki/${m[2]}`;
+}
+
+// npm packages: date of the first release, "time.created" of the registry document (CORS allowed; it lists every
+// version: 16 MB for typescript, ~0.3 s), UTC date like PyPI
+async function npmLine(url) {
+  const m = url.match(/^https:\/\/www\.npmjs\.com\/package\/((?:@[^/?#]+\/)?[^/?#]+)/);
+  if (!m) return null;
+  const name = decodeURIComponent(m[1]);
+  let date = "";
+  try { date = formatDate((await (await fetch(`https://registry.npmjs.org/${name.replace("/", "%2F")}`)).json()).time.created); } catch (e) {}
+  return `${date || "?"} https://www.npmjs.com/package/${name}`;
 }
 
 // Release date of an Android app or a Chrome extension on Chrome-Stats, fetched by the service worker (host
