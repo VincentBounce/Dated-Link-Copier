@@ -44,7 +44,9 @@ def workflow():
     # (no "#" or "%" issue); the page writes the cleaned text, read back as text. Get Contents of Web Page
     # needs its URL as a text token (as in Detrackor): given as a plain attachment, it returns nothing
     clip = act("getclipboard")
-    clip64 = act("base64encode", WFInput=attachment(clip, "Clipboard"), WFEncodeMode="Encode", WFBase64LineBreakMode="None")
+    # As text first: a link copied on iOS is a URL item, which Base64 Encode would download (the page's HTML)
+    clip_text = act("gettext", WFTextActionText=text_with("", clip, "Clipboard"))
+    clip64 = act("base64encode", WFInput=attachment(clip_text, "Text"), WFEncodeMode="Encode", WFBase64LineBreakMode="None")
     page = act("gettext", WFTextActionText=text_with(
         '<!doctype html><meta charset="utf-8"><pre id="out"></pre><script>\n' + script()
         + '\nconst clip = new TextDecoder().decode(Uint8Array.from(atob("', clip64, "Base64 Encoded",
@@ -60,7 +62,7 @@ def workflow():
     notify = act("notification", WFNotificationActionTitle="Link cleaned",
                  WFNotificationActionBody=text_with("", cleaned, "Updated Text"), WFNotificationActionSound=False)
     return {
-        "WFWorkflowActions": [clip, clip64, page, page64, url, contents, text, cleaned, setclip, notify],
+        "WFWorkflowActions": [clip, clip_text, clip64, page, page64, url, contents, text, cleaned, setclip, notify],
         "WFWorkflowClientVersion": "2700.0.4",
         "WFWorkflowMinimumClientVersion": 900,
         "WFWorkflowMinimumClientVersionString": "900",
