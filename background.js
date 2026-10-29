@@ -160,7 +160,7 @@ async function buildLine(tab) {
   }
 
   // TikTok videos, Instagram and Threads posts, Bluesky posts: dated by their ID, like X and LinkedIn
-  const idLine = idPostLine(url);
+  const idLine = await idPostLine(url, tab);
   if (idLine) return idLine;
 
   if (/^https:\/\/(www\.)?linkedin\.com\//.test(url)) {
@@ -326,7 +326,7 @@ function linkedinPostLine(url) {
 //   (A-Z a-z 0-9 - _), whose top bits are ms since 2011-08-24 21:07:01.721 UTC: (id >> 23) + 1314220021721;
 //   older posts have small sequential IDs that carry no date
 // - Bluesky /profile/<handle>/post/<rkey>: the rkey is a TID, 13 base-32 digits (2-7 a-z), microseconds >> 10
-function idPostLine(url) {
+async function idPostLine(url, tab) {
   const u = new URL(url);
   const host = u.hostname.replace(/^www\./, "");
   const digits = (code, alphabet) => [...code].reduce((n, c) => n * BigInt(alphabet.length) + BigInt(alphabet.indexOf(c)), 0n);
@@ -334,20 +334,35 @@ function idPostLine(url) {
   if (host === "tiktok.com" && (m = u.pathname.match(/^\/(@[^/]+)\/(video|photo)\/(\d{19})/))) {
     return `${localDate(Number(BigInt(m[3]) >> 32n) * 1000)} https://www.tiktok.com/${m[1]}/${m[2]}/${m[3]}`;
   }
-  const instagram = host === "instagram.com" && u.pathname.match(/^\/(?:[^/]+\/)?(p|reels?|tv)\/([A-Za-z0-9_-]{1,11})\/?$/);
+  const instagram = host === "instagram.com" && u.pathname.match(/^\/(?:([^/]+)\/)?(p|reels?|tv)\/([A-Za-z0-9_-]{1,11})\/?$/);
   const threads = /^threads\.(com|net)$/.test(host) && u.pathname.match(/^\/(@[^/]+)\/post\/([A-Za-z0-9_-]{1,11})\/?$/);
   if (instagram || threads) {
-    const code = (instagram || threads)[2];
+    const code = instagram ? instagram[3] : threads[2];
     const id = digits(code, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
     const date = id < 1n << 40n ? "?" : localDate(Number((id >> 23n) + 1314220021721n));
-    return instagram ? `${date} https://www.instagram.com/${instagram[1].replace("reels", "reel")}/${code}/`
-      : `${date} https://www.threads.com/${threads[1]}/post/${code}`;
+    if (threads) return `${date} https://www.threads.com/${threads[1]}/post/${code}`;
+    // Instagram links rarely name the creator: "date @user link" like YouTube
+    const user = instagram[1] || await runInPage(tab, readInstagramUser, "ISOLATED", [code]);
+    return `${date} ${user ? `@${user} ` : ""}https://www.instagram.com/${instagram[2].replace("reels", "reel")}/${code}/`;
   }
   if (host === "bsky.app" && (m = u.pathname.match(/^\/profile\/([^/]+)\/post\/([^/]+)/))) {
     const date = /^[2-7a-z]{13}$/.test(m[2]) ? localDate(Number(digits(m[2], "234567abcdefghijklmnopqrstuvwxyz") >> 10n) / 1000) : "?";
     return `${date} https://bsky.app/profile/${m[1]}/post/${m[2]}`;
   }
   return null;
+}
+
+// Runs in the page (must be self-contained)
+// The creator of an Instagram post is in og:url ("https://www.instagram.com/instagram/reel/<code>/"): the loaded
+// page's when it is that post (in-page navigation keeps the first page's head), else the post page fetched (~0.5 s)
+async function readInstagramUser(code) {
+  const userOf = doc => doc.querySelector('meta[property="og:url"]')?.content
+    .match(new RegExp(`^https://www\\.instagram\\.com/([^/]+)/(?:p|reels?|tv)/${code}/`))?.[1];
+  let user = userOf(document);
+  if (!user) {
+    try { user = userOf(new DOMParser().parseFromString(await (await fetch(`/p/${code}/`)).text(), "text/html")); } catch (e) {}
+  }
+  return user || "";
 }
 
 // Time in ms -> "2025-12-15" in the viewer's time zone
