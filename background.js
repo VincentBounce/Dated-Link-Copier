@@ -1,6 +1,7 @@
 // The icon is greyed out except where there is something to copy:
 // YouTube videos and channels, Google Play apps, Reddit posts and subreddits, X posts and profiles, LinkedIn posts,
-// Amazon products, and any other web page (TikTok, Instagram, Threads, Bluesky, Mastodon, GitHub, Wikipedia, npm…)
+// Amazon products, and any other web page (TikTok, Instagram, Threads, Bluesky, Mastodon, GitHub, GitLab, Wikipedia,
+// npm, Steam, Meta Quest, Microsoft Store, Firefox and Edge add-ons, Flathub…)
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
   "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com",
   "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com",
@@ -142,10 +143,40 @@ async function buildLine(tab) {
     return `Android ${date || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
 
-  // Chrome Web Store items: release date from Chrome-Stats. The Store shows only the last update, and Chrome
-  // blocks extensions from its pages and requests (its own data has the first publication time, out of reach)
-  const store = url.match(/^https:\/\/chromewebstore\.google\.com\/detail\/([^/?#]+\/)?([a-p]{32})([/?#]|$)/);
-  if (store) return `Chrome ext ${await chromeStatsDate(store[2]) || "?"} https://chromewebstore.google.com/detail/${store[1] || ""}${store[2]}`;
+  // Chrome Web Store and Edge Add-ons items: release date from Chrome-Stats, which follows both. The stores show only
+  // the last update, and Chrome blocks extensions from its Store's pages and requests (its own data has the first
+  // publication time, out of reach)
+  const store = url.match(/^https:\/\/(chromewebstore\.google\.com\/detail|microsoftedge\.microsoft\.com\/addons\/detail)\/([^/?#]+\/)?([a-p]{32})([/?#]|$)/);
+  if (store) {
+    const browser = store[1].startsWith("chrome") ? "Chrome" : "Edge";
+    return `${browser} ext ${await chromeStatsDate(store[3]) || "?"} https://${store[1]}/${store[2] || ""}${store[3]}`;
+  }
+
+  // Steam games: platforms and release date, like App Store apps
+  if (/^https:\/\/store\.steampowered\.com\/app\/\d+/.test(url)) {
+    const info = await runInPage(tab, readSteamAppInfo);
+    const platforms = ["windows", "mac", "linux"].filter(p => info.platforms[p])
+      .map(p => ({ windows: "Windows", mac: "macOS", linux: "Linux" })[p]).join("-");
+    return `${platforms || "?"} ${localizedDate(info.date, "en") || "?"} ${info.link}`;
+  }
+
+  // Meta Quest Store apps: release date shown in the page's language
+  if (/^https:\/\/www\.meta\.com\/([a-z]{2}-[a-z]{2}\/)?experiences\/([^/?#]+\/)?\d+/.test(url)) {
+    const info = await runInPage(tab, readMetaQuestAppInfo);
+    return `Meta Quest ${localizedDate(info.date, info.lang) || "?"} ${info.link}`;
+  }
+
+  // Flathub apps: date added to Flathub
+  if (/^https:\/\/flathub\.org\/([a-z]{2}([-_][A-Za-z]{2,4})?\/)?apps\/[A-Za-z0-9._-]+/.test(url)) {
+    const info = await runInPage(tab, readFlathubAppInfo);
+    return `Linux ${info.added ? new Date(info.added * 1000).toISOString().slice(0, 10) : "?"} ${info.link}`;
+  }
+
+  // Microsoft Store apps and games: release date
+  if (/^https:\/\/apps\.microsoft\.com\/detail\/[a-z0-9]{12}/i.test(url)) {
+    const info = await runInPage(tab, readMicrosoftStoreInfo);
+    return `Windows ${formatDate(info.released) || "?"} ${info.link}`;
+  }
 
   // Chrome-Stats pages (chrome-stats.com/d/<id>: Android apps, browser extensions…): release date and link, no title
   if (/^https:\/\/chrome-stats\.com\//.test(url)) {
@@ -236,8 +267,9 @@ async function buildLine(tab) {
     return `${info.created ? localDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
   }
 
-  // GitHub repositories, issues, pull requests and commits; Wikipedia articles; npm packages: public APIs
-  const apiLine = await githubLine(url) || await wikipediaLine(url) || await npmLine(url);
+  // GitHub and GitLab repositories, issues, pull or merge requests, commits; Wikipedia articles; npm packages;
+  // Firefox add-ons: public APIs
+  const apiLine = await forgeLine(url) || await wikipediaLine(url) || await npmLine(url) || await firefoxAddonLine(url);
   if (apiLine) return apiLine;
 
   // GitHub releases: publication date, shown in the viewer's time zone
@@ -297,7 +329,7 @@ function flashBadge(tabId, text, color) {
 const FILENAME_SAFE = { "\\": "＼", "/": "／", ":": "：", "*": "＊", "?": "？", '"': "＂", ">": "＞", "<": "＜", "|": "｜" };
 
 function cleanText(s) {
-  return s.replace(/ - /g, ", ").replace(/[\\/:*?"<>|]/g, ch => FILENAME_SAFE[ch]);
+  return s.trim().replace(/ - /g, ", ").replace(/[\\/:*?"<>|]/g, ch => FILENAME_SAFE[ch]);
 }
 
 // X (Twitter) post IDs are "snowflakes": the top bits are the creation time in ms since
@@ -623,29 +655,59 @@ function readArticleInfo() {
   return { published, link, title };
 }
 
-// GitHub repositories (creation), issues and pull requests (opening, with their title), commits (commit date, with
-// their subject), from the REST API (CORS allowed, 60 requests an hour without sign-in), local date as GitHub shows it.
-// null on other GitHub pages (users, /features/…: the API has no such repository) and when the API fails.
-async function githubLine(url) {
-  const m = url.match(/^https:\/\/github\.com\/([^/?#]+)\/([^/?#]+)(?:\/(issues|pull|commit)\/([0-9a-f]+))?(?:[/?#]|$)/);
-  if (!m || (!m[3] && !/^https:\/\/github\.com\/[^/]+\/[^/?#]+\/?([?#]|$)/.test(url))) return null;
-  const [, owner, repo, kind, ref] = m;
-  const repoLink = `https://github.com/${owner}/${repo}`;
-  try {
-    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}${kind ? `/${{ issues: "issues", pull: "pulls", commit: "commits" }[kind]}/${ref}` : ""}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!kind) return `${localDate(Date.parse(data.created_at))} ${repoLink}`;
-    if (kind === "commit") {
-      const link = `${repoLink}/commit/${data.sha}`;
-      return `${localDate(Date.parse(data.commit.committer.date))} ${titleIfNotInLink(data.commit.message.split("\n")[0], link)}${link}`;
+// Code forges: repositories (creation), issues and pull or merge requests (opening, with their title), commits
+// (commit date, with their subject), from the public REST APIs (CORS allowed; GitHub: 60 requests an hour without
+// sign-in), local date as the sites show it. null on other pages (users, /features/…: the API has no such
+// repository) and when the API fails, then the generic reader.
+// GitHub: /<owner>/<repo>, /issues/<n>, /pull/<n> (own endpoint: repos with issues disabled answer 410 to /issues),
+// /commit/<sha>. GitLab: /<group>/…/<project>, /-/issues/<n>, /-/merge_requests/<n>, /-/commit/<sha>.
+const FORGES = [
+  { pattern: /^https:\/\/github\.com\/([^/?#]+\/[^/?#]+)(?:\/(issues|pull|commit)\/([0-9a-f]+))?(?:[/?#]|$)/,
+    root: /^https:\/\/github\.com\/[^/]+\/[^/?#]+\/?([?#]|$)/,
+    api: (path, kind, ref) => `https://api.github.com/repos/${path}${kind ? `/${{ issues: "issues", pull: "pulls", commit: "commits" }[kind]}/${ref}` : ""}`,
+    link: (path, kind, ref) => `https://github.com/${path}${kind ? `/${kind}/${ref}` : ""}`,
+    commit: data => ({ sha: data.sha, date: data.commit.committer.date, title: data.commit.message.split("\n")[0] }) },
+  { pattern: /^https:\/\/gitlab\.com\/([^?#]+?)(?:\/-\/(issues|merge_requests|commit)\/([0-9a-f]+)(?:\/[^?#]*)?|\/-\/[^?#]*|\/)?([?#]|$)/,
+    root: /^https:\/\/gitlab\.com\/(?:(?!\/-\/)[^?#])+([?#]|$)/,
+    api: (path, kind, ref) => `https://gitlab.com/api/v4/projects/${encodeURIComponent(path)}${kind ? `/${kind === "commit" ? "repository/commits" : kind}/${ref}` : ""}`,
+    link: (path, kind, ref) => `https://gitlab.com/${path}${kind ? `/-/${kind}/${ref}` : ""}`,
+    commit: data => ({ sha: data.id, date: data.committed_date, title: data.title }) }
+];
+
+async function forgeLine(url) {
+  for (const forge of FORGES) {
+    const m = url.match(forge.pattern);
+    if (!m || (!m[2] && !forge.root.test(url))) continue;
+    const [, path, kind, ref] = m;
+    try {
+      const res = await fetch(forge.api(path, kind, ref));
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!kind) return `${localDate(Date.parse(data.created_at))} ${forge.link(path)}`;
+      if (kind === "commit") {
+        const commit = forge.commit(data);
+        const link = forge.link(path, kind, commit.sha);
+        return `${localDate(Date.parse(commit.date))} ${titleIfNotInLink(commit.title, link)}${link}`;
+      }
+      const link = forge.link(path, kind, ref);
+      return `${localDate(Date.parse(data.created_at))} ${titleIfNotInLink(data.title, link)}${link}`;
+    } catch (e) {
+      return null;
     }
-    const link = `${repoLink}/${kind}/${ref}`;
-    return `${localDate(Date.parse(data.created_at))} ${titleIfNotInLink(data.title, link)}${link}`;
-  } catch (e) {
-    return null;
   }
+  return null;
 }
+
+// Firefox add-ons (addons.mozilla.org/<lang>/firefox/addon/<slug>/): date created, from the public API (CORS
+// allowed); "Firefox theme" for themes; UTC date like the stores
+async function firefoxAddonLine(url) {
+  const m = url.match(/^https:\/\/addons\.mozilla\.org\/(?:[a-z]{2}(?:-[A-Z]{2})?\/)?(?:firefox|android)\/addon\/([^/?#]+)/);
+  if (!m) return null;
+  let addon = {};
+  try { addon = await (await fetch(`https://addons.mozilla.org/api/v5/addons/addon/${m[1]}/`)).json(); } catch (e) {}
+  return `Firefox ${addon.type === "statictheme" ? "theme" : "ext"} ${formatDate(addon.created) || "?"} https://addons.mozilla.org/firefox/addon/${addon.slug || m[1]}/`;
+}
+
 
 // Wikipedia articles: creation date = timestamp of the first revision (API, CORS with origin=*), UTC date as
 // Wikipedia shows it to signed-out readers; redirects followed
@@ -1015,6 +1077,57 @@ async function readGitHubReleaseInfo() {
     try { published = (await (await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)).json()).published_at || ""; } catch (e) {}
   }
   return { published, link: `https://github.com/${owner}/${repo}/releases/tag/${tag}` };
+}
+
+// Runs in the page (must be self-contained)
+// Steam's store API on the same site gives the release date in English ("18 Apr, 2011"; "Coming soon" text for
+// unreleased games) and the platforms; link = canonical (https://store.steampowered.com/app/620/Portal_2/)
+async function readSteamAppInfo() {
+  const id = location.pathname.match(/^\/app\/(\d+)/)[1];
+  let data = {};
+  try { data = (await (await fetch(`/api/appdetails?appids=${id}&l=english`)).json())[id].data || {}; } catch (e) {}
+  const canonical = document.querySelector('link[rel="canonical"]')?.href || "";
+  return { date: data.release_date?.date || "", platforms: data.platforms || {},
+    link: canonical.includes(`/app/${id}/`) ? canonical : `https://store.steampowered.com/app/${id}/` };
+}
+
+// Runs in the page (must be self-contained)
+// Meta Quest Store: "release_info":{"display_date":"21 May 2019"} (in the page's language) follows the app's
+// "id":"<id>" in the data of the loaded page. That data comes only with a full page load (a fetched page is an empty
+// shell, 210 KB): after in-page navigation the date is "?" until the page is reloaded.
+function readMetaQuestAppInfo() {
+  const [, slug = "", id] = location.pathname.match(/\/experiences\/([^/]+\/)?(\d+)/);
+  const html = document.documentElement.innerHTML;
+  const date = [...html.matchAll(/"release_info":\{"display_date":"([^"]+)"\}/g)]
+    .find(m => html.slice(Math.max(0, m.index - 3000), m.index).includes(`"id":"${id}"`))?.[1];
+  return { date: date || "", lang: document.documentElement.lang || "en", link: `https://www.meta.com/experiences/${slug}${id}/` };
+}
+
+// Runs in the page (must be self-contained)
+// Flathub: "added_at" (Unix seconds) of the same-site search API's hit for the app id (the API refuses the service
+// worker's POST); it is the creation of the app's flathub/<id> repository when there is one. UTC date.
+async function readFlathubAppInfo() {
+  const id = location.pathname.match(/\/apps\/([A-Za-z0-9._-]+)/)[1];
+  let added = 0;
+  try {
+    const res = await fetch("/api/v2/search", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: id, filters: [] }) });
+    added = (await res.json()).hits.find(h => h.app_id === id)?.added_at || 0;
+  } catch (e) {}
+  return { added, link: `https://flathub.org/apps/${id}` };
+}
+
+// Runs in the page (must be self-contained)
+// Microsoft Store: "releaseDateUtc" in the product data of the page, once, with "productId":"<id>" (either case; the loaded page's
+// when it is that product, else the product page fetched)
+async function readMicrosoftStoreInfo() {
+  const id = location.pathname.match(/^\/detail\/([a-z0-9]{12})/i)[1].toLowerCase();
+  const releasedIn = html => new RegExp(`"productId":"${id}"`, "i").test(html) && html.match(/"releaseDateUtc":"([^"]+)"/)?.[1];
+  let released = releasedIn(document.documentElement.innerHTML);
+  if (!released) {
+    try { released = releasedIn(await (await fetch(`/detail/${id}`)).text()); } catch (e) {}
+  }
+  return { released: released || "", link: `https://apps.microsoft.com/detail/${id}` };
 }
 
 // Runs in the page (must be self-contained)

@@ -36,6 +36,17 @@ macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carro
 Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng
 ```
 
+**Edge, Firefox add-ons; Steam, Meta Quest, Microsoft Store, Flathub apps:** platform, release date and link
+
+```
+Edge ext 2022-02-10 https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak
+Firefox ext 2015-04-25 https://addons.mozilla.org/firefox/addon/ublock-origin/
+Windows-Linux 2011-04-19 https://store.steampowered.com/app/620/Portal_2/
+Meta Quest 2019-05-21 https://www.meta.com/experiences/beat-saber/2448060205267927/
+Windows 2010-10-18 https://apps.microsoft.com/detail/9wzdncrfj3tj
+Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
+```
+
 **Chrome-Stats pages:** release date and link of the Android app or browser extension, without the page title
 
 ```
@@ -141,7 +152,7 @@ Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/o
 2026-10-29 https://mastodon.social/@Gargron/117525141761759792
 ```
 
-**GitHub repositories, issues, pull requests, commits:** creation date (with the title when the link lacks it) and link
+**GitHub and GitLab repositories, issues, pull or merge requests, commits:** creation date (with the title when the link lacks it) and link
 
 ```
 2008-07-23 https://github.com/git/git
@@ -235,6 +246,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.35.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Edge and Firefox add-ons, Steam, Meta Quest, Microsoft Store and Flathub apps: `platform date link`; GitLab projects, issues, merge requests and commits like GitHub |
 | 2.34.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | YouTube channels (date joined), Mastodon posts (from the ID), GitHub repositories, issues, pull requests and commits, Wikipedia articles, npm packages (public APIs) |
 | 2.33.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | GitHub releases: `date link` with the publication date |
 | 2.32.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Instagram posts: `date @user link`, the creator from the post page's `og:url` |
