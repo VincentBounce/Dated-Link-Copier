@@ -272,6 +272,11 @@ async function buildLine(tab) {
   const apiLine = await forgeLine(url) || await wikipediaLine(url) || await npmLine(url) || await firefoxAddonLine(url);
   if (apiLine) return apiLine;
 
+  // Apple user guides (support.apple.com/<locale>/guide/…) carry no date at all: the month they were read, without
+  // day (the user's choice), and the link without the locale (support.apple.com serves the reader's)
+  const appleGuide = url.match(/^https:\/\/support\.apple\.com\/(?:[a-z]{2}-[a-z0-9]{2,4}\/)?(guide\/[^?#]+)/);
+  if (appleGuide) return `${localDate(Date.now()).slice(0, 7)}-xx https://support.apple.com/${appleGuide[1]}`;
+
   // GitHub releases: publication date, shown in the viewer's time zone
   if (/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\/tag\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readGitHubReleaseInfo);
