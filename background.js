@@ -272,10 +272,10 @@ async function buildLine(tab) {
   const apiLine = await forgeLine(url) || await wikipediaLine(url) || await npmLine(url) || await firefoxAddonLine(url);
   if (apiLine) return apiLine;
 
-  // Apple user guides (support.apple.com/<locale>/guide/…) carry no date at all: the month they were read, without
-  // day (the user's choice), and the link without the locale (support.apple.com serves the reader's)
+  // Apple user guides (support.apple.com/<locale>/guide/…) carry no date at all: the date read, and the link without
+  // the locale (support.apple.com serves the reader's)
   const appleGuide = url.match(/^https:\/\/support\.apple\.com\/(?:[a-z]{2}-[a-z0-9]{2,4}\/)?(guide\/[^?#]+)/);
-  if (appleGuide) return `${localDate(Date.now()).slice(0, 7)}-xx https://support.apple.com/${appleGuide[1]}`;
+  if (appleGuide) return `${consultedDate()} https://support.apple.com/${appleGuide[1]}`;
 
   // GitHub releases: publication date, shown in the viewer's time zone
   if (/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\/tag\/[^/?#]+/.test(url)) {
@@ -447,6 +447,12 @@ async function readInstagramUser(code) {
     try { user = userOf(new DOMParser().parseFromString(await (await fetch(`/p/${code}/`)).text(), "text/html")); } catch (e) {}
   }
   return user || "";
+}
+
+// Date a page was read, for pages with no date of their own: always the month in parentheses, "(2026-10)" (the user's
+// convention), so it shows at once that it is not the page's date and not to the day
+function consultedDate() {
+  return `(${localDate(Date.now()).slice(0, 7)})`;
 }
 
 // Time in ms -> "2025-12-15" in the viewer's time zone

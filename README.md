@@ -172,10 +172,10 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2014-03-14 https://www.npmjs.com/package/left-pad
 ```
 
-**Apple user guides:** no date on the page, so the month they were read, and the link without the locale
+**Apple user guides:** no date on the page, so the month they were read, in parentheses (the format of every date read), and the link without the locale
 
 ```
-2026-10-xx https://support.apple.com/guide/watch/apd521a8a902/watchos
+(2026-10) https://support.apple.com/guide/watch/apd521a8a902/watchos
 ```
 
 **GitHub releases:** publication date and link
@@ -252,6 +252,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.36.1 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Dates read (pages with no date of their own) are written `(YYYY-MM)` |
 | 2.36.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Apple user guides: `YYYY-MM-xx link`, the month read, link without the locale |
 | 2.35.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Edge and Firefox add-ons, Steam, Meta Quest, Microsoft Store and Flathub apps: `platform date link`; GitLab projects, issues, merge requests and commits like GitHub |
 | 2.34.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | YouTube channels (date joined), Mastodon posts (from the ID), GitHub repositories, issues, pull requests and commits, Wikipedia articles, npm packages (public APIs) |
