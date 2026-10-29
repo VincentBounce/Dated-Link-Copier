@@ -172,7 +172,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 ## Clean Link shortcut (iPhone, iPad, Mac)
 
-[`shortcut/Clean Link.shortcut`](shortcut/Clean%20Link.shortcut) cleans the links in the clipboard, without the date: run it and the clipboard holds the clean text.
+[`shortcut/Clean Link.shortcut`](shortcut/Clean%20Link.shortcut) cleans the links in the clipboard, without the date: run it and the clipboard holds the clean text. Add it from iCloud: https://www.icloud.com/shortcuts/454decdd52a6409792a0d28ecc2e84fc
 
 ```
 https://x.com/Parlons_Cyber/status/2115345322289570046?a=kGeGtTmLpX3NrwK3rv0&s=20  →  https://x.com/Parlons_Cyber/status/2115345322289570046
