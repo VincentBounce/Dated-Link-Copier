@@ -75,18 +75,22 @@ chrome.action.onClicked.addListener(async (tab) => {
     const str = await buildLine(tab);
     if (!str) return flashBadge(tab.id, "✗", "#d93025");
 
-    // Isolated world: clipboardWrite permission allows the execCommand fallback there
-    const [{ result: copied }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: copyToClipboard,
-      args: [str]
-    });
+    const copied = await writeClipboard(str);
     flashBadge(tab.id, copied ? "✓" : "✗", copied ? "#188038" : "#d93025");
   } catch (e) {
     console.error(e);
     flashBadge(tab.id, "✗", "#d93025");
   }
 });
+
+// The service worker has no DOM: the line goes to the clipboard through an offscreen document,
+// which also works on pages no extension may script (Chrome Web Store)
+async function writeClipboard(text) {
+  if (!(await chrome.offscreen.hasDocument())) {
+    await chrome.offscreen.createDocument({ url: "offscreen.html", reasons: ["CLIPBOARD"], justification: "Copy the dated line" });
+  }
+  return chrome.runtime.sendMessage({ type: "copy", text });
+}
 
 async function runInPage(tab, func, world = "ISOLATED", args = []) {
   const [{ result }] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world, func, args });
@@ -116,6 +120,11 @@ async function buildLine(tab) {
       || formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released);
     return `Android ${date || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
   }
+
+  // Chrome Web Store items: release date from Chrome-Stats. The Store shows only the last update, and Chrome
+  // blocks extensions from its pages and requests (its own data has the first publication time, out of reach)
+  const store = url.match(/^https:\/\/chromewebstore\.google\.com\/detail\/([^/?#]+\/)?([a-p]{32})([/?#]|$)/);
+  if (store) return `Chrome ext ${await chromeStatsDate(store[2]) || "?"} https://chromewebstore.google.com/detail/${store[1] || ""}${store[2]}`;
 
   // Chrome-Stats pages (chrome-stats.com/d/<id>: Android apps, browser extensions…): release date and link, no title
   if (/^https:\/\/chrome-stats\.com\//.test(url)) {
@@ -483,8 +492,8 @@ function readArticleInfo() {
   return { published, link, title };
 }
 
-// Release date of an Android app on Chrome-Stats, fetched by the service worker (host permission: the site sends
-// no CORS header). Same JSON-LD as on its pages, read with a regex since the service worker has no DOMParser.
+// Release date of an Android app or a Chrome extension on Chrome-Stats, fetched by the service worker (host
+// permission: the site sends no CORS header). Same JSON-LD as on its pages, read with a regex (no DOMParser here).
 async function chromeStatsDate(id) {
   const link = `https://chrome-stats.com/d/${id}`;
   try {
@@ -856,28 +865,4 @@ function readScienceDirectTopicInfo() {
   let year = text.match(/definition based on:[^\n]*?(\d{4})\s*$/im)?.[1];
   if (!year) year = [...text.matchAll(/^From:[^\n]*?,\s*(\d{4})\s*$/gim)].map(m => m[1]).sort()[0];
   return { year: year || "", link: location.origin + location.pathname };
-}
-
-// Runs in the page's isolated world (must be self-contained)
-async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (e) {}
-
-  // Fallback that doesn't need page focus
-  const prev = document.activeElement;
-  const ta = document.createElement("textarea");
-  ta.value = text;
-  ta.style.position = "fixed";
-  ta.style.opacity = "0";
-  document.body.appendChild(ta);
-  ta.select();
-  let ok = false;
-  try { ok = document.execCommand("copy"); } catch (e) {}
-  ta.remove();
-  prev?.focus?.();
-
-  if (!ok) prompt("Copy manually", text);
-  return ok;
 }

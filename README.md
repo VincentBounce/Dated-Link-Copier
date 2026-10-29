@@ -30,6 +30,12 @@ iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6
 macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
 ```
 
+**Chrome Web Store extensions:** release date (from Chrome-Stats, as the Store shows only the last update) and link
+
+```
+Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng
+```
+
 **Chrome-Stats pages:** release date and link of the Android app or browser extension, without the page title
 
 ```
@@ -168,6 +174,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.27.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Chrome Web Store extensions: `Chrome ext date link`, date from Chrome-Stats; the line is copied through an offscreen document (works on Store pages, which no extension may script) |
 | 2.26.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | iCloud shared shortcuts: `date name link` with the creation date |
 | 2.25.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Other pages: also the date shown without label in the article's date element (ameli.fr: `<p class="date">12 août 2025</p>`) |
 | 2.24.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Google Play apps without a release date on Google Play: date from Chrome-Stats (new host permission: chrome-stats.com) before trying other regions |
