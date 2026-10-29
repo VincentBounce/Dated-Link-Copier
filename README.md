@@ -170,10 +170,25 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 2. Open `chrome://extensions` and turn on **Developer mode**
 3. Click **Load unpacked** and select the unzipped folder
 
+## Clean Link shortcut (iPhone, iPad, Mac)
+
+[`shortcut/Clean Link.shortcut`](shortcut/Clean%20Link.shortcut) cleans the links in the clipboard, without the date: run it and the clipboard holds the clean text.
+
+```
+https://x.com/Parlons_Cyber/status/2115345322289570046?a=kGeGtTmLpX3NrwK3rv0&s=20  →  https://x.com/Parlons_Cyber/status/2115345322289570046
+https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=abc&t=83                           →  https://youtu.be/dQw4w9WgXcQ?t=83
+https://www.amazon.fr/Some-Product/dp/B0ABCDEFGH/ref=sr_1_1?crid=X                →  https://www.amazon.fr/dp/B0ABCDEFGH
+https://example.com/?utm_source=nl&id=5&srsltid=AfmBOo&page=2#section             →  https://example.com/?id=5&page=2#section
+https://fr.wikipedia.org/wiki/%C3%89cole_normale_sup%C3%A9rieure_(Paris)          →  https://fr.wikipedia.org/wiki/École_normale_supérieure_(Paris)
+```
+
+X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Reddit and LinkedIn posts get the link built from their ID; other links lose the extension's tracking parameters and keep everything else. The script is [`shortcut/clean-link.js`](shortcut/clean-link.js); `python3 tools/make_shortcut.py` builds and signs the shortcut with the extension's own tracking list and link decoding.
+
 ## Versions
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.30.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Clean Link shortcut for iPhone, iPad and Mac: cleans the links in the clipboard with the extension's rules |
 | 2.29.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Other pages without a canonical link: more tracking parameters removed (Matomo, Piwik, HubSpot, Google `gbraid`/`wbraid`/`gad_source`/`srsltid`, Microsoft, Instagram, TikTok, X, LinkedIn, Yandex, Mailchimp, Marketo…) |
 | 2.28.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Links shown with their Unicode characters, as in the address bar (`clean-link-—-copy`, not `clean-link-%E2%80%94-copy`) |
 | 2.27.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Chrome Web Store extensions: `Chrome ext date link`, date from Chrome-Stats; the line is copied through an offscreen document (works on Store pages, which no extension may script) |
