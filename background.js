@@ -195,6 +195,12 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
+  // iCloud shared shortcuts: creation date and name (the link only has the ID)
+  if (/^https:\/\/www\.icloud\.com\/shortcuts\/[0-9a-f]{32}/.test(url)) {
+    const info = await runInPage(tab, readICloudShortcutInfo);
+    return `${info.created ? localDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
+  }
+
   // PyPI projects: date of the first release
   if (/^https:\/\/pypi\.org\/project\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readPyPIProjectInfo);
@@ -255,11 +261,9 @@ function xPostLine(url) {
   const m = url.match(/^https:\/\/[^/]+\/([^/?#]+)\/status\/(\d+)/);
   if (!m) return null;
   const id = BigInt(m[2]);
-  const d = new Date(Number((id >> 22n) + 1288834974657n));
   // Older posts (before November 2010) have small sequential IDs that carry no date.
   // Local date, as X shows post times in the viewer's time zone.
-  const date = id < 10000000000000n ? "?"
-    : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const date = id < 10000000000000n ? "?" : localDate(Number((id >> 22n) + 1288834974657n));
   return `${date} https://x.com/${m[1]}/status/${m[2]}`;
 }
 
@@ -284,10 +288,15 @@ function linkedinPostLine(url) {
   const u = new URL(url);
   const id = u.pathname.match(/(?:activity|share|ugcPost)[-:](\d{19})/)?.[1];
   if (!id) return null;
-  const d = new Date(Number(BigInt(id) >> 22n));
   // Local date, as LinkedIn shows post times in the viewer's time zone
-  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const date = localDate(Number(BigInt(id) >> 22n));
   return `${date} https://www.linkedin.com${u.pathname}`;
+}
+
+// Time in ms -> "2025-12-15" in the viewer's time zone
+function localDate(ms) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 // Links that don't carry the title (nature.com/articles/s41598-025-97652-6, Sony press releases)
@@ -795,6 +804,15 @@ async function readShadertoyInfo() {
     } catch (e) {}
   }
   return { date, title, link: `https://www.shadertoy.com/view/${id}` };
+}
+
+// Runs in the page (must be self-contained)
+// The page shows no date; its same-site record API has the creation time in ms
+async function readICloudShortcutInfo() {
+  const id = location.pathname.match(/^\/shortcuts\/([0-9a-f]{32})/)[1];
+  let record = {};
+  try { record = await (await fetch(`/shortcuts/api/records/${id}`)).json(); } catch (e) {}
+  return { created: record.created?.timestamp, name: record.fields?.name?.value || "", link: `https://www.icloud.com/shortcuts/${id}` };
 }
 
 // Runs in the page (must be self-contained)

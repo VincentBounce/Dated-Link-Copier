@@ -108,6 +108,12 @@ macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carro
 2026-10-24 Vor∞noi https://www.shadertoy.com/view/73ySRh
 ```
 
+**iCloud shared shortcuts:** creation date and shortcut name (the link only has the ID)
+
+```
+2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
+```
+
 **PyPI projects:** date of the first release and link
 
 ```
@@ -150,7 +156,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -162,6 +168,7 @@ On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.26.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | iCloud shared shortcuts: `date name link` with the creation date |
 | 2.25.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Other pages: also the date shown without label in the article's date element (ameli.fr: `<p class="date">12 août 2025</p>`) |
 | 2.24.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Google Play apps without a release date on Google Play: date from Chrome-Stats (new host permission: chrome-stats.com) before trying other regions |
 | 2.23.0 | 2026-10-28 | Claude Code (Claude Opus 5.5) | Chrome-Stats pages: `date link`, no title |
