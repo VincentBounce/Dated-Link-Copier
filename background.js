@@ -1,5 +1,6 @@
 // The icon is greyed out except where there is something to copy:
-// YouTube videos, Google Play apps, Reddit posts and subreddits, X posts and profiles, LinkedIn posts, Amazon products, and any other web page
+// YouTube videos, Google Play apps, Reddit posts and subreddits, X posts and profiles, LinkedIn posts, Amazon products,
+// and any other web page (TikTok, Instagram, Threads, Bluesky posts among them)
 const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.google.com",
   "reddit.com", "www.reddit.com", "old.reddit.com", "new.reddit.com", "sh.reddit.com",
   "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com",
@@ -158,6 +159,10 @@ async function buildLine(tab) {
     return info && `${info.date} https://x.com/${info.user}`;
   }
 
+  // TikTok videos, Instagram and Threads posts, Bluesky posts: dated by their ID, like X and LinkedIn
+  const idLine = idPostLine(url);
+  if (idLine) return idLine;
+
   if (/^https:\/\/(www\.)?linkedin\.com\//.test(url)) {
     const line = linkedinPostLine(url);
     if (line) return line;
@@ -312,6 +317,37 @@ function linkedinPostLine(url) {
   // Local date, as LinkedIn shows post times in the viewer's time zone
   const date = localDate(Number(BigInt(id) >> 22n));
   return `${date} https://www.linkedin.com${u.pathname}`;
+}
+
+// Post IDs that carry their creation time, so the date needs no page access (these sites often require
+// sign-in). Local date, as the sites show times in the viewer's time zone. Checked on real posts:
+// - TikTok /@user/video/<id> (also /photo/): id >> 32 = Unix seconds
+// - Instagram /p/<code>/, /reel/<code>/ and Threads /@user/post/<code>: the code is the media ID in base 64
+//   (A-Z a-z 0-9 - _), whose top bits are ms since 2011-08-24 21:07:01.721 UTC: (id >> 23) + 1314220021721;
+//   older posts have small sequential IDs that carry no date
+// - Bluesky /profile/<handle>/post/<rkey>: the rkey is a TID, 13 base-32 digits (2-7 a-z), microseconds >> 10
+function idPostLine(url) {
+  const u = new URL(url);
+  const host = u.hostname.replace(/^www\./, "");
+  const digits = (code, alphabet) => [...code].reduce((n, c) => n * BigInt(alphabet.length) + BigInt(alphabet.indexOf(c)), 0n);
+  let m;
+  if (host === "tiktok.com" && (m = u.pathname.match(/^\/(@[^/]+)\/(video|photo)\/(\d{19})/))) {
+    return `${localDate(Number(BigInt(m[3]) >> 32n) * 1000)} https://www.tiktok.com/${m[1]}/${m[2]}/${m[3]}`;
+  }
+  const instagram = host === "instagram.com" && u.pathname.match(/^\/(?:[^/]+\/)?(p|reels?|tv)\/([A-Za-z0-9_-]{1,11})\/?$/);
+  const threads = /^threads\.(com|net)$/.test(host) && u.pathname.match(/^\/(@[^/]+)\/post\/([A-Za-z0-9_-]{1,11})\/?$/);
+  if (instagram || threads) {
+    const code = (instagram || threads)[2];
+    const id = digits(code, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+    const date = id < 1n << 40n ? "?" : localDate(Number((id >> 23n) + 1314220021721n));
+    return instagram ? `${date} https://www.instagram.com/${instagram[1].replace("reels", "reel")}/${code}/`
+      : `${date} https://www.threads.com/${threads[1]}/post/${code}`;
+  }
+  if (host === "bsky.app" && (m = u.pathname.match(/^\/profile\/([^/]+)\/post\/([^/]+)/))) {
+    const date = /^[2-7a-z]{13}$/.test(m[2]) ? localDate(Number(digits(m[2], "234567abcdefghijklmnopqrstuvwxyz") >> 10n) / 1000) : "?";
+    return `${date} https://bsky.app/profile/${m[1]}/post/${m[2]}`;
+  }
+  return null;
 }
 
 // Time in ms -> "2025-12-15" in the viewer's time zone

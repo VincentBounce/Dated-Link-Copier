@@ -66,6 +66,15 @@ Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/o
 2021-10-xx https://x.com/iamlaurael
 ```
 
+**TikTok videos, Instagram and Threads posts, Bluesky posts:** post date and link, read from the post ID like on X (works signed in or out)
+
+```
+2019-07-27 https://www.tiktok.com/@scout2015/video/6718335390845095173
+2026-10-29 https://www.instagram.com/reel/DfFSUCaB3Ty/
+2026-10-12 https://www.threads.com/@zuck/post/DeZtp-TkQHh
+2023-04-29 https://bsky.app/profile/jay.bsky.team/post/3juk2oypfkc2g
+```
+
 **LinkedIn posts:** post date and link, read from the post ID like on X (works signed in or out)
 
 ```
@@ -188,6 +197,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.31.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | TikTok videos, Instagram and Threads posts, Bluesky posts: `date link`, dated by their ID |
 | 2.30.2 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Clean Link shortcut: links copied on iOS (URL items) are cleaned instead of being replaced by their page's HTML |
 | 2.30.1 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Clean Link shortcut: now changes the clipboard (the web page step got its URL in a form it ignored), without a trailing line break |
 | 2.30.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Clean Link shortcut for iPhone, iPad and Mac: cleans the links in the clipboard with the extension's rules |
