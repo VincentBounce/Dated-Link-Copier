@@ -7,8 +7,9 @@ const SPECIAL_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "play.
   "x.com", "www.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "mobile.twitter.com",
   "linkedin.com", "www.linkedin.com",
   "www.amazon.com", "www.amazon.ca", "www.amazon.co.uk", "www.amazon.fr", "www.amazon.de", "www.amazon.es", "www.amazon.it"];
-// LinkedIn posts (/posts/…-share-ID-…, /feed/update/urn:li:activity:ID) and Pulse articles (dated by their metadata)
-const LINKEDIN_POST = "^https://(www\\.)?linkedin\\.com/(posts/.*[0-9]{19}|feed/update/urn:li:[a-zA-Z]+:[0-9]{19}|pulse/)";
+// LinkedIn posts (/posts/…-share-ID-…, /feed/update/urn:li:activity:ID), Pulse articles (dated by their metadata)
+// and company pages (founding year)
+const LINKEDIN_PAGE = "^https://(www\\.)?linkedin\\.com/(posts/.*[0-9]{19}|feed/update/urn:li:[a-zA-Z]+:[0-9]{19}|pulse/|company/)";
 const AMAZON_PRODUCT = "^https://www\\.amazon\\.(com|ca|co\\.uk|fr|de|es|it)/(.*/)?(dp|gp/product)/[A-Z0-9]{10}";
 // Channels and their tabs (/@handle/videos, /channel/UC…)
 const YOUTUBE_CHANNEL = "^https://(www|m)\\.youtube\\.com/(@[^/?#]+|(channel|c|user)/[^/?#]+)";
@@ -38,7 +39,7 @@ async function setUpIconState() {
         new PageStateMatcher({ pageUrl: { urlMatches: X_POST } }),
         new PageStateMatcher({ pageUrl: { urlMatches: X_PROFILE } }),
         new PageStateMatcher({ pageUrl: { urlMatches: AMAZON_PRODUCT } }),
-        new PageStateMatcher({ pageUrl: { urlMatches: LINKEDIN_POST } }),
+        new PageStateMatcher({ pageUrl: { urlMatches: LINKEDIN_PAGE } }),
         new PageStateMatcher({ pageUrl: { urlMatches: anyHostExcept(SPECIAL_HOSTS) } })
       ],
       actions: [new ShowAction(), new SetIcon({ imageData })]
@@ -206,6 +207,12 @@ async function buildLine(tab) {
   if (/^https:\/\/(www\.)?linkedin\.com\//.test(url)) {
     const line = linkedinPostLine(url);
     if (line) return line;
+    // Company pages: founding year, as "2024-xx-xx"
+    const company = url.match(/^https:\/\/(?:www\.)?linkedin\.com\/(company\/[^/?#]+(?:\/[^?#]*)?)/);
+    if (company) {
+      const year = await runInPage(tab, readLinkedInFoundedYear);
+      return `${year ? `${year}-xx-xx` : "?"} https://www.linkedin.com/${company[1].replace(/\/?$/, "/")}`;
+    }
     // Not a post (Pulse articles…): handled like any other page below
   }
 
@@ -1174,6 +1181,13 @@ function readHibpBreachInfo() {
   const date = month ? `${m[3]}-${String(month).padStart(2, "0")}-${m[1].padStart(2, "0")}` : "";
   const name = location.pathname.match(/^\/Breach\/([^/]+)/i)[1];
   return { date, link: `https://haveibeenpwned.com/Breach/${name}` };
+}
+
+// Runs in the page (must be self-contained)
+// LinkedIn company "About" list: <dt>Founded</dt><dd>2024</dd> (signed out: the company page; signed in: its /about/
+// tab). The label is in the page's language, but Founded is the only entry that is a bare year, so that dd is it.
+function readLinkedInFoundedYear() {
+  return [...document.querySelectorAll("dd")].map(dd => dd.textContent.trim()).find(t => /^(19|20)\d\d$/.test(t)) || "";
 }
 
 // Runs in the page (must be self-contained)

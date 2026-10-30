@@ -86,6 +86,12 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2023-04-29 https://bsky.app/profile/jay.bsky.team/post/3juk2oypfkc2g
 ```
 
+**LinkedIn company pages:** founding year and link
+
+```
+2024-xx-xx https://www.linkedin.com/company/bflai/about/
+```
+
 **LinkedIn posts:** post date and link, read from the post ID like on X (works signed in or out)
 
 ```
@@ -259,6 +265,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.38.0 | 2026-10-30 | Claude Code (Claude Opus 5.5) | LinkedIn company pages: `YYYY-xx-xx link` with the founding year |
 | 2.37.0 | 2026-10-30 | Claude Code (Claude Opus 5.5) | Crunchbase organizations: founding date to the day, month (`YYYY-MM-xx`) or year (`YYYY-xx-xx`) Crunchbase knows |
 | 2.36.1 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Dates read (pages with no date of their own) are written `(YYYY-MM)` |
 | 2.36.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Apple user guides: `YYYY-MM-xx link`, the month read, link without the locale |
