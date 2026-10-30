@@ -184,6 +184,13 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2026-10-29 https://github.com/VincentBounce/Dated-Link-Copier/releases/tag/v2.32.0
 ```
 
+**Crunchbase organizations:** founding date, as precise as Crunchbase knows it, and link
+
+```
+2015-12-11 https://www.crunchbase.com/organization/openai
+2024-xx-xx https://www.crunchbase.com/organization/arcads
+```
+
 **PyPI projects:** date of the first release and link
 
 ```
@@ -226,7 +233,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages, nothing is copied without a publish date and the icon shows ✗.
 
 ## Install
 
@@ -252,6 +259,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.37.0 | 2026-10-30 | Claude Code (Claude Opus 5.5) | Crunchbase organizations: founding date to the day, month (`YYYY-MM-xx`) or year (`YYYY-xx-xx`) Crunchbase knows |
 | 2.36.1 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Dates read (pages with no date of their own) are written `(YYYY-MM)` |
 | 2.36.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Apple user guides: `YYYY-MM-xx link`, the month read, link without the locale |
 | 2.35.0 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Edge and Firefox add-ons, Steam, Meta Quest, Microsoft Store and Flathub apps: `platform date link`; GitLab projects, issues, merge requests and commits like GitHub |

@@ -295,6 +295,14 @@ async function buildLine(tab) {
     return `${info.date || "?"} ${info.link}`;
   }
 
+  // Crunchbase organizations: founding date, as precise as Crunchbase knows it (day, month or year)
+  if (/^https:\/\/www\.crunchbase\.com\/organization\/[^/?#]+/.test(url)) {
+    const info = await runInPage(tab, readCrunchbaseInfo);
+    const [y, mo, d] = info.founded.split("-");
+    const date = !y ? "?" : info.precision === "day" ? info.founded : info.precision === "month" ? `${y}-${mo}-xx` : `${y}-xx-xx`;
+    return `${date} ${info.link}`;
+  }
+
   // Y Combinator company pages: founding year ("Founded: 2023"), as "2023-xx-xx"
   if (/^https:\/\/www\.ycombinator\.com\/companies\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readYCCompanyInfo);
@@ -1166,6 +1174,20 @@ function readHibpBreachInfo() {
   const date = month ? `${m[3]}-${String(month).padStart(2, "0")}-${m[1].padStart(2, "0")}` : "";
   const name = location.pathname.match(/^\/Breach\/([^/]+)/i)[1];
   return { date, link: `https://haveibeenpwned.com/Breach/${name}` };
+}
+
+// Runs in the page (must be self-contained)
+// Crunchbase: "founded_on":{"value":"2015-12-11","precision":"day"} ("month", "year": "2017-01-01" then means 2017)
+// in the page data; the loaded page's when its canonical link is that organization (in-page navigation keeps the
+// first page's), else the organization page fetched
+async function readCrunchbaseInfo() {
+  const path = location.pathname.match(/^\/organization\/[^/]+/)[0];
+  const foundedIn = html => html.match(/"founded_on":\{"value":"(\d{4}-\d\d-\d\d)","precision":"(day|month|year)"\}/);
+  let m = document.querySelector('link[rel="canonical"]')?.href === location.origin + path && foundedIn(document.documentElement.innerHTML);
+  if (!m) {
+    try { m = foundedIn(await (await fetch(path)).text()); } catch (e) {}
+  }
+  return { founded: m ? m[1] : "", precision: m ? m[2] : "", link: `https://www.crunchbase.com${path}` };
 }
 
 // Runs in the page (must be self-contained)
