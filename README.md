@@ -23,11 +23,12 @@ Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. Th
 Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapostemobile
 ```
 
-**App Store apps:** compatible platforms, first release date and link (iPhone/iPad apps that also run on Apple silicon Macs or Apple Vision Pro count as macOS / visionOS)
+**App Store apps:** compatible platforms, first release date and link (an iPhone/iPad app that also runs on Apple silicon Macs or Apple Vision Pro, without being native there, shows `(macOS)` / `(visionOS)`)
 
 ```
 iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000
 macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
+(macOS)-iPadOS 2012-08-28 https://apps.apple.com/us/app/golly/id553184760
 ```
 
 **Chrome Web Store extensions:** release date (from Chrome-Stats, as the Store shows only the last update) and link
@@ -265,6 +266,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.38.1 | 2026-10-31 | Claude Code (Claude Opus 5.5) | App Store: a non-native Mac or Vision Pro platform (iPhone/iPad app) in parentheses, `(macOS)-iPadOS` |
 | 2.38.0 | 2026-10-30 | Claude Code (Claude Opus 5.5) | LinkedIn company pages: `YYYY-xx-xx link` with the founding year |
 | 2.37.0 | 2026-10-30 | Claude Code (Claude Opus 5.5) | Crunchbase organizations: founding date to the day, month (`YYYY-MM-xx`) or year (`YYYY-xx-xx`) Crunchbase knows |
 | 2.36.1 | 2026-10-29 | Claude Code (Claude Opus 5.5) | Dates read (pages with no date of their own) are written `(YYYY-MM)` |

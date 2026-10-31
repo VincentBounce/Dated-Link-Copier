@@ -815,14 +815,14 @@ async function readAppStoreInfo() {
   if (!lockup) {
     try { lockup = lockupOf(new DOMParser().parseFromString(await (await fetch(path)).text(), "text/html")); } catch (e) {}
   }
-  // Platforms of the app ("phone", "pad", "mac", "tv", "watch", "vision"), plus iPhone/iPad apps that also run on
-  // Apple silicon Macs or on Apple Vision Pro
+  // Platforms of the app ("phone", "pad", "mac", "tv", "watch", "vision"); an iPhone/iPad app that also runs on
+  // Apple silicon Macs or on Apple Vision Pro gets that platform in parentheses, "(macOS)", as it isn't native there
   const config = lockup?.buttonAction?.purchaseConfiguration || {};
-  const on = new Set(config.appPlatforms || []);
-  if (lockup?.isIOSBinaryMacOSCompatible) on.add("mac");
-  if (config.supportsVisionOSCompatibleIOSBinary) on.add("vision");
+  const native = new Set(config.appPlatforms || []);
+  const compatible = new Set([lockup?.isIOSBinaryMacOSCompatible && "mac", config.supportsVisionOSCompatibleIOSBinary && "vision"]);
   const NAMES = { mac: "macOS", phone: "iOS", pad: "iPadOS", tv: "tvOS", watch: "watchOS", vision: "visionOS" };
-  const platforms = Object.keys(NAMES).filter(p => on.has(p)).map(p => NAMES[p]);
+  const platforms = Object.keys(NAMES).filter(p => native.has(p) || compatible.has(p))
+    .map(p => native.has(p) ? NAMES[p] : `(${NAMES[p]})`);
   // The page shows no release date: the public lookup API has it ("2026-10-26T07:00:00Z", midnight in California)
   // and allows requests from apps.apple.com
   let date = "";
