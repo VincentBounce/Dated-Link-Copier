@@ -941,9 +941,11 @@ function readAmazonProductInfo() {
     date = reviews.sort()[0] || "";
   }
 
-  // Canonical link (with the product name), without query parameters
+  // Canonical link (with the product name), without query parameters; when it names another product (a variant's
+  // parent), the page's own path up to the ASIN, which keeps the name it may have ("/-/en/Connected-16A-…/dp/<ASIN>")
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
-  const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}/dp/${asin}`;
+  const own = location.pathname.match(new RegExp(`^(.*?)/(?:dp|gp/product)/${asin}`))?.[1] || "";
+  const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}${own}/dp/${asin}`;
   return { date, link: link.replace(/\/?$/, "/") };
 }
 

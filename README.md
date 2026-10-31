@@ -266,6 +266,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.38.2 | 2026-10-31 | Claude Code (Claude Opus 5.5) | Amazon: a variant whose canonical link names another product keeps its own link, with the product name |
 | 2.38.1 | 2026-10-31 | Claude Code (Claude Opus 5.5) | App Store: a non-native Mac or Vision Pro platform (iPhone/iPad app) in parentheses, `(macOS)-iPadOS` |
 | 2.38.0 | 2026-10-30 | Claude Code (Claude Opus 5.5) | LinkedIn company pages: `YYYY-xx-xx link` with the founding year |
 | 2.37.0 | 2026-10-30 | Claude Code (Claude Opus 5.5) | Crunchbase organizations: founding date to the day, month (`YYYY-MM-xx`) or year (`YYYY-xx-xx`) Crunchbase knows |
