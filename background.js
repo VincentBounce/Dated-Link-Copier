@@ -329,11 +329,10 @@ async function buildLine(tab) {
   }
 
   // Any other web page (news articles like Le Parisien…): publish date from the page metadata;
-  // without one there is nothing worth copying, so the click shows ✗
+  // without one, the month the page was read, "(2026-10)"
   if (/^https?:\/\//.test(url)) {
     const info = await runInPage(tab, readArticleInfo);
-    const date = formatDate(info.published);
-    return date ? `${date} ${titleIfNotInLink(info.title, info.link)}${info.link}` : null;
+    return `${formatDate(info.published) || consultedDate()} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
   return null;
@@ -478,13 +477,14 @@ function localDate(ms) {
 
 // Links that don't carry the title (nature.com/articles/s41598-025-97652-6, Sony press releases)
 // get it in the line, made file name safe: it is kept when fewer than half of the title's
-// words (4+ letters, accents removed) appear in the link's path.
+// words (4+ letters, else all of them; accents removed) appear in the link's path.
 function titleIfNotInLink(title, link) {
   if (!title) return "";
   const norm = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   let path;
   try { path = norm(decodeURIComponent(new URL(link).pathname)); } catch (e) { path = norm(link); }
-  const words = norm(title).split(/[^a-z0-9]+/).filter(w => w.length >= 4);
+  const all = norm(title).split(/[^a-z0-9]+/).filter(Boolean);
+  const words = all.some(w => w.length >= 4) ? all.filter(w => w.length >= 4) : all;
   const inLink = words.filter(w => path.includes(w)).length;
   return words.length && inLink / words.length >= 0.5 ? "" : cleanText(title) + " ";
 }
