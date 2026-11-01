@@ -605,7 +605,11 @@ function readArticleInfo() {
   // First complete date among the usual tags. Scientific journals (Nature…) use citation_* /
   // Dublin Core tags, as "2025/06/03"; their citation_publication_date can be the print issue
   // month only ("2026/07"), so the online date comes first.
-  const candidates = [
+  const firstDate = list => list.map(d => (d || "").trim().replace(/^(\d{4})\/(\d{2})\/(\d{2})/, "$1-$2-$3"))
+    .find(d => /^\d{4}-\d{2}-\d{2}/.test(d)) || "";
+  const jsonLd = key => [...document.querySelectorAll('script[type="application/ld+json"]')]
+    .map(s => s.textContent.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`))?.[1]);
+  const published = firstDate([
     meta('meta[property="article:published_time"]'),
     meta('meta[itemprop="datePublished"]'),
     meta('meta[name="date"]'),
@@ -613,17 +617,15 @@ function readArticleInfo() {
     meta('meta[name="dc.date"]'),
     meta('meta[name="DC.date"]'),
     meta('meta[name="citation_publication_date"]'),
-    ...[...document.querySelectorAll('script[type="application/ld+json"]')]
-      .map(s => s.textContent.match(/"datePublished"\s*:\s*"([^"]+)"/)?.[1])
-  ];
-  const published = candidates.map(d => (d || "").trim().replace(/^(\d{4})\/(\d{2})\/(\d{2})/, "$1-$2-$3"))
-    .find(d => /^\d{4}-\d{2}-\d{2}/.test(d)) || shownDate();
+    ...jsonLd("datePublished")
+  ]) || shownDate();
 
   // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",
   // "Published on", "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021"),
   // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>),
-  // else the text after "Updated", "Mis à jour le"… (emergentmind.com: "Updated 11 January 2026"), else a Google
-  // Sites page's last publication (data-last-updated-at-time, ms, shown in its "Page updated" info), local date
+  // else the last update: modification metadata, else the text after "Updated", "Mis à jour le"… (emergentmind.com:
+  // "Updated 11 January 2026"), else a Google Sites page's last publication (data-last-updated-at-time, ms, shown in
+  // its "Page updated" info), local date
   function shownDate() {
     const iso = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
     if (iso) return iso;
@@ -636,11 +638,14 @@ function readArticleInfo() {
     const updatedAt = Number(document.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
     return afterLabel(/(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)/)
       || (element ? dateFromText(element.textContent.trim(), false) : "")
-      || afterLabel(/(last updated(?: on)?|updated(?: on)?|mise? à jour le|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
+      || firstDate([meta('meta[property="article:modified_time"]'), meta('meta[property="og:updated_time"]'),
+        meta('meta[itemprop="dateModified"]'), ...jsonLd("dateModified")])
+      || afterLabel(/(last (?:updated|modified)(?: on)?|updated(?: on)?|mise? à jour(?: le)?|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
       || (updatedAt ? new Date(updatedAt - new Date(updatedAt).getTimezoneOffset() * 60000).toISOString().slice(0, 10) : "");
   }
 
-  // "14.11.2021" (day first, or month first after an English label with slashes), "14 novembre 2021", "November 14, 2021"
+  // "2021-11-14", "14.11.2021" (day first, or month first after an English label with slashes), "14 novembre 2021",
+  // "November 14, 2021"
   function dateFromText(text, english) {
     const pad = n => String(n).padStart(2, "0");
     const months = { jan: 1, ene: 1, gen: 1, fev: 2, feb: 2, mar: 3, apr: 4, avr: 4, abr: 4, mai: 5, may: 5, mag: 5,
@@ -650,7 +655,9 @@ function readArticleInfo() {
       const w = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
       return w.startsWith("juil") ? 7 : w.startsWith("juin") ? 6 : months[w.slice(0, 3)];
     };
-    let d = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);          // 14.11.2021, 14/11/2021 (11/14/2021 in English)
+    let d = text.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})/);              // 2021-11-14, 2021/11/14
+    if (d) return `${d[1]}-${pad(d[2])}-${pad(d[3])}`;
+    d = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);              // 14.11.2021, 14/11/2021 (11/14/2021 in English)
     if (d) {
       const [day, mon] = english && text.includes("/") ? [d[2], d[1]] : [d[1], d[2]];
       return `${d[3]}-${pad(mon)}-${pad(day)}`;

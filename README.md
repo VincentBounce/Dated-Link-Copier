@@ -267,6 +267,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.42.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Pages without a publication date: modification metadata (`article:modified_time`, `og:updated_time`, `dateModified`) and "Last modified", "Dernière mise à jour", year-first dates ("Last updated 2026-10-29") before the month read |
 | 2.41.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Pages without a publication date: the last update shown ("Updated 11 January 2026", "Mis à jour le…") or a Google Sites page's last publication, before the month read |
 | 2.40.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Microsoft Store: app type, `Windows (UWP)` or `Windows (Win32)`; `XP…` product links (14 characters) no longer cut |
 | 2.39.0 | 2026-10-31 | Claude Code (Claude Opus 5.5) | Pages without a date: the month read, `(YYYY-MM) link`, instead of ✗; titles made of short words only ("All in One App") are matched against the link too |
