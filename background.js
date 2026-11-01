@@ -621,15 +621,23 @@ function readArticleInfo() {
 
   // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",
   // "Published on", "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021"),
-  // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>)
+  // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>),
+  // else the text after "Updated", "Mis à jour le"… (emergentmind.com: "Updated 11 January 2026"), else a Google
+  // Sites page's last publication (data-last-updated-at-time, ms, shown in its "Page updated" info), local date
   function shownDate() {
     const iso = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
     if (iso) return iso;
-    const label = /(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)\s*:?\s*/i;
-    const m = document.body.innerText.match(new RegExp(label.source + "([^\\n]{6,40})", "i"));
-    if (m) return dateFromText(m[2], /^(published|posted)/i.test(m[1]));
+    // English labels write the month first with slashes ("11/14/2021")
+    const afterLabel = label => {
+      const m = document.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
+      return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
+    };
     const element = document.querySelector("article .date") || document.querySelector(".date");
-    return element ? dateFromText(element.textContent.trim(), false) : "";
+    const updatedAt = Number(document.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
+    return afterLabel(/(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)/)
+      || (element ? dateFromText(element.textContent.trim(), false) : "")
+      || afterLabel(/(last updated(?: on)?|updated(?: on)?|mise? à jour le|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
+      || (updatedAt ? new Date(updatedAt - new Date(updatedAt).getTimezoneOffset() * 60000).toISOString().slice(0, 10) : "");
   }
 
   // "14.11.2021" (day first, or month first after an English label with slashes), "14 novembre 2021", "November 14, 2021"

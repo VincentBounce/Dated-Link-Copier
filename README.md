@@ -241,7 +241,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages without a publish date, the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages without a publish date, the last update shown (`2024-01-26 https://sites.google.com/view/flowlenia/`, a Google Sites page), else the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
 
 ## Install
 
@@ -267,6 +267,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.41.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Pages without a publication date: the last update shown ("Updated 11 January 2026", "Mis à jour le…") or a Google Sites page's last publication, before the month read |
 | 2.40.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Microsoft Store: app type, `Windows (UWP)` or `Windows (Win32)`; `XP…` product links (14 characters) no longer cut |
 | 2.39.0 | 2026-10-31 | Claude Code (Claude Opus 5.5) | Pages without a date: the month read, `(YYYY-MM) link`, instead of ✗; titles made of short words only ("All in One App") are matched against the link too |
 | 2.38.2 | 2026-10-31 | Claude Code (Claude Opus 5.5) | Amazon: a variant whose canonical link names another product keeps its own link, with the product name |
