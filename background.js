@@ -173,10 +173,10 @@ async function buildLine(tab) {
     return `Linux ${info.added ? new Date(info.added * 1000).toISOString().slice(0, 10) : "?"} ${info.link}`;
   }
 
-  // Microsoft Store apps and games: release date
-  if (/^https:\/\/apps\.microsoft\.com\/detail\/[a-z0-9]{12}/i.test(url)) {
+  // Microsoft Store apps and games: app type and release date
+  if (/^https:\/\/apps\.microsoft\.com\/detail\/(xp)?[a-z0-9]{12}/i.test(url)) {
     const info = await runInPage(tab, readMicrosoftStoreInfo);
-    return `Windows ${formatDate(info.released) || "?"} ${info.link}`;
+    return `Windows${info.kind ? ` (${info.kind})` : ""} ${formatDate(info.released) || "?"} ${info.link}`;
   }
 
   // Chrome-Stats pages (chrome-stats.com/d/<id>: Android apps, browser extensions…): release date and link, no title
@@ -1149,13 +1149,24 @@ async function readFlathubAppInfo() {
 // Microsoft Store: "releaseDateUtc" in the product data of the page, once, with "productId":"<id>" (either case; the loaded page's
 // when it is that product, else the product page fetched)
 async function readMicrosoftStoreInfo() {
-  const id = location.pathname.match(/^\/detail\/([a-z0-9]{12})/i)[1].toLowerCase();
-  const releasedIn = html => new RegExp(`"productId":"${id}"`, "i").test(html) && html.match(/"releaseDateUtc":"([^"]+)"/)?.[1];
-  let released = releasedIn(document.documentElement.innerHTML);
-  if (!released) {
-    try { released = releasedIn(await (await fetch(`/detail/${id}`)).text()); } catch (e) {}
+  const id = location.pathname.match(/^\/detail\/((?:xp)?[a-z0-9]{12})/i)[1].toLowerCase();
+  const ofThisProduct = html => new RegExp(`"productId":"${id}"`, "i").test(html) ? html : "";
+  let html = ofThisProduct(document.documentElement.innerHTML);
+  if (!html) {
+    try { html = ofThisProduct(await (await fetch(`/detail/${id}`)).text()); } catch (e) {}
   }
-  return { released: released || "", link: `https://apps.microsoft.com/detail/${id}` };
+  // App type: a Win32 installer (.exe, .msi) the Store downloads ("installer":{"type":"WPM"}: VLC), else a package
+  // whose capabilities in the public catalog (CORS allowed from apps.microsoft.com) have runFullTrust (Win32 in MSIX:
+  // Firefox) or not (UWP: Remote Desktop)
+  let kind = "";
+  if (/"installer":\{"type":"WPM"/.test(html)) kind = "Win32";
+  else {
+    try {
+      const catalog = await (await fetch(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${id.toUpperCase()}&market=US&languages=en-US`)).text();
+      if (/"PackageFormat"/.test(catalog)) kind = /"runFullTrust"/.test(catalog) ? "Win32" : "UWP";
+    } catch (e) {}
+  }
+  return { released: html.match(/"releaseDateUtc":"([^"]+)"/)?.[1] || "", kind, link: `https://apps.microsoft.com/detail/${id}` };
 }
 
 // Runs in the page (must be self-contained)

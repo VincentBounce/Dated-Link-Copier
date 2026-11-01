@@ -37,14 +37,15 @@ macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carro
 Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng
 ```
 
-**Edge, Firefox add-ons; Steam, Meta Quest, Microsoft Store, Flathub apps:** platform, release date and link
+**Edge, Firefox add-ons; Steam, Meta Quest, Microsoft Store, Flathub apps:** platform (with the app type, UWP or Win32, on the Microsoft Store), release date and link
 
 ```
 Edge ext 2022-02-10 https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak
 Firefox ext 2015-04-25 https://addons.mozilla.org/firefox/addon/ublock-origin/
 Windows-Linux 2011-04-19 https://store.steampowered.com/app/620/Portal_2/
 Meta Quest 2019-05-21 https://www.meta.com/experiences/beat-saber/2448060205267927/
-Windows 2010-10-18 https://apps.microsoft.com/detail/9wzdncrfj3tj
+Windows (Win32) 2010-10-18 https://apps.microsoft.com/detail/9wzdncrfj3tj
+Windows (UWP) 2012-05-10 https://apps.microsoft.com/detail/9wzdncrfj3ps
 Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 ```
 
@@ -266,6 +267,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.40.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Microsoft Store: app type, `Windows (UWP)` or `Windows (Win32)`; `XP…` product links (14 characters) no longer cut |
 | 2.39.0 | 2026-10-31 | Claude Code (Claude Opus 5.5) | Pages without a date: the month read, `(YYYY-MM) link`, instead of ✗; titles made of short words only ("All in One App") are matched against the link too |
 | 2.38.2 | 2026-10-31 | Claude Code (Claude Opus 5.5) | Amazon: a variant whose canonical link names another product keeps its own link, with the product name |
 | 2.38.1 | 2026-10-31 | Claude Code (Claude Opus 5.5) | App Store: a non-native Mac or Vision Pro platform (iPhone/iPad app) in parentheses, `(macOS)-iPadOS` |
