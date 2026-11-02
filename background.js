@@ -225,7 +225,8 @@ async function buildLine(tab) {
   if (/^https:\/\/www\.amazon\.[a-z.]+\//.test(url)) {
     const info = await runInPage(tab, readAmazonProductInfo);
     if (!info) return null;
-    return `${info.date || "?"} ${info.link}`;
+    // The price changes: it comes with the month it was read, "(2026-11) €39.99"
+    return `${info.date || "?"} ${info.link}${info.price ? ` ${consultedDate()} ${priceText(info.price, info.currency)}` : ""}`;
   }
 
   if (/^https:\/\/news\.ycombinator\.com\/item\?/.test(url)) {
@@ -467,6 +468,17 @@ async function readInstagramUser(code) {
 // convention), so it shows at once that it is not the page's date and not to the day
 function consultedDate() {
   return `(${localDate(Date.now()).slice(0, 7)})`;
+}
+
+// 39.99, "EUR" -> "€39.99": the currency's symbol ("CA$" for Canadian dollars), else a Unicode currency sign, else
+// its code ("AED39.99")
+function priceText(amount, currency) {
+  const format = display => new Intl.NumberFormat("en", { style: "currency", currency, currencyDisplay: display,
+    useGrouping: false }).format(amount).replace(/\s/g, "");
+  const symbol = format("symbol");
+  if (!symbol.startsWith(currency)) return symbol;
+  const narrow = format("narrowSymbol");
+  return /^\p{Sc}\d/u.test(narrow) ? narrow : symbol;
 }
 
 // Time in ms -> "2025-12-15" in the viewer's time zone
@@ -961,7 +973,11 @@ function readAmazonProductInfo() {
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
   const own = location.pathname.match(new RegExp(`^(.*?)/(?:dp|gp/product)/${asin}`))?.[1] || "";
   const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}${own}/dp/${asin}`;
-  return { date, link: link.replace(/\/?$/, "/") };
+  // Price of the buy box, from its hidden form fields (amount "39.99", currency "EUR"); some sites have several
+  // offers, the first one is the one shown
+  const field = name => document.querySelector(`input[name="items[0.base][${name}]"]`)?.value;
+  const price = field("asin") === asin && Number(field("customerVisiblePrice][amount")) || 0;
+  return { date, link: link.replace(/\/?$/, "/"), price, currency: field("customerVisiblePrice][currencyCode") };
 }
 
 // Runs in the page (must be self-contained)

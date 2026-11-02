@@ -100,9 +100,10 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2026-05-13 https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/
 ```
 
-**Amazon products:** "Date First Available" from the product details, else the date of the oldest review shown (amazon.com, .ca, .co.uk, .fr, .de, .es, .it), and the product link without search parameters
+**Amazon products:** "Date First Available" from the product details, else the date of the oldest review shown (amazon.com, .ca, .co.uk, .fr, .de, .es, .it), the product link without search parameters, then the month read and the price shown (the currency's symbol, else its code: `AED39.99`)
 
 ```
+2025-06-02 https://www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/ (2026-11) €39.99
 2023-01-17 https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/
 ```
 
@@ -267,6 +268,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.43.0 | 2026-11-02 | Claude Code (Claude Opus 5.5) | Amazon: the price shown, after the month read (`(2026-11) €39.99`; currency code without a symbol: `AED39.99`) |
 | 2.42.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Pages without a publication date: modification metadata (`article:modified_time`, `og:updated_time`, `dateModified`) and "Last modified", "Dernière mise à jour", year-first dates ("Last updated 2026-10-29") before the month read |
 | 2.41.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Pages without a publication date: the last update shown ("Updated 11 January 2026", "Mis à jour le…") or a Google Sites page's last publication, before the month read |
 | 2.40.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Microsoft Store: app type, `Windows (UWP)` or `Windows (Win32)`; `XP…` product links (14 characters) no longer cut |
