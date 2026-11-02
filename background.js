@@ -974,10 +974,13 @@ function readAmazonProductInfo() {
   const own = location.pathname.match(new RegExp(`^(.*?)/(?:dp|gp/product)/${asin}`))?.[1] || "";
   const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}${own}/dp/${asin}`;
   // Price of the buy box, from its hidden form fields (amount "39.99", currency "EUR"); some sites have several
-  // offers, the first one is the one shown
+  // offers, the first one is the one shown. Only in the site's own currency: a visitor's currency preference
+  // (Amazon Currency Converter, EUR on amazon.co.uk from France) converts it, and the page then has no original price
+  const currency = { "www.amazon.com": "USD", "www.amazon.ca": "CAD", "www.amazon.co.uk": "GBP" }[location.hostname] || "EUR";
   const field = name => document.querySelector(`input[name="items[0.base][${name}]"]`)?.value;
-  const price = field("asin") === asin && Number(field("customerVisiblePrice][amount")) || 0;
-  return { date, link: link.replace(/\/?$/, "/"), price, currency: field("customerVisiblePrice][currencyCode") };
+  const price = field("asin") === asin && field("customerVisiblePrice][currencyCode") === currency
+    && Number(field("customerVisiblePrice][amount")) || 0;
+  return { date, link: link.replace(/\/?$/, "/"), price, currency };
 }
 
 // Runs in the page (must be self-contained)
