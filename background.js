@@ -325,6 +325,11 @@ async function buildLine(tab) {
     return `${info.year ? `${info.year}-xx-xx` : "?"} ${info.link}`;
   }
 
+  if (/^https:\/\/www\.nidcd\.nih\.gov\/health\/./.test(url)) {
+    const info = await runInPage(tab, readNidcdInfo);
+    return `${info.date || "?"} ${cleanText(info.title)} ${info.link}`;
+  }
+
   if (/^https:\/\/www\.sony\.(com|net)\/([a-z]{2}\/)?SonyInfo\/News\//i.test(url)) {
     const info = await runInPage(tab, readSonyNewsInfo);
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
@@ -505,7 +510,7 @@ function titleIfNotInLink(title, link) {
 // "2005-04-23T20:31:52-07:00" -> "2005-04-23", the date YouTube displays
 // (converting to local time could shift it by one day)
 function formatDate(s) {
-  return (s || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+  return (s || "").match(/^\d{4}-(\d{2}|xx)-(\d{2}|xx)/)?.[0] || "";
 }
 
 // Runs in the page (must be self-contained)
@@ -615,14 +620,14 @@ async function readPlayAppInfo(fetchRegions) {
 // Runs in the page (must be self-contained)
 function readArticleInfo() {
   const meta = sel => document.querySelector(sel)?.content;
-  // First complete date among the usual tags. Scientific journals (Nature…) use citation_* /
-  // Dublin Core tags, as "2025/06/03"; their citation_publication_date can be the print issue
-  // month only ("2026/07"), so the online date comes first.
-  const firstDate = list => list.map(d => (d || "").trim().replace(/^(\d{4})\/(\d{2})\/(\d{2})/, "$1-$2-$3"))
-    .find(d => /^\d{4}-\d{2}-\d{2}/.test(d)) || "";
+  // Dates of the usual tags, complete first. Scientific journals (Nature…) use citation_* / Dublin Core tags, as
+  // "2025/06/03" or "2024 Oct 3" (PMC); their citation_publication_date can be the print issue month only
+  // ("2026/07", "2011"), so the online date comes first, and a partial date only after the dates shown on the page
+  const dates = list => list.map(d => dateFromText((d || "").trim(), false)).filter(Boolean);
+  const firstDate = list => dates(list).find(d => !d.includes("x")) || "";
   const jsonLd = key => [...document.querySelectorAll('script[type="application/ld+json"]')]
     .map(s => s.textContent.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`))?.[1]);
-  const published = firstDate([
+  const publishedTags = [
     meta('meta[property="article:published_time"]'),
     meta('meta[itemprop="datePublished"]'),
     meta('meta[name="date"]'),
@@ -631,34 +636,38 @@ function readArticleInfo() {
     meta('meta[name="DC.date"]'),
     meta('meta[name="citation_publication_date"]'),
     ...jsonLd("datePublished")
-  ]) || shownDate();
+  ];
+  // English labels write the month first with slashes ("11/14/2021")
+  const afterLabel = label => {
+    const m = document.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
+    return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
+  };
+  const published = firstDate(publishedTags) || shownDate() || dates(publishedTags)[0] || updatedDate();
 
   // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",
   // "Published on", "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021"),
-  // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>),
-  // else the last update: modification metadata, else the text after "Updated", "Mis à jour le"… (emergentmind.com:
-  // "Updated 11 January 2026"), else a Google Sites page's last publication (data-last-updated-at-time, ms, shown in
-  // its "Page updated" info), local date
+  // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>)
   function shownDate() {
     const iso = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
     if (iso) return iso;
-    // English labels write the month first with slashes ("11/14/2021")
-    const afterLabel = label => {
-      const m = document.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
-      return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
-    };
     const element = document.querySelector("article .date") || document.querySelector(".date");
-    const updatedAt = Number(document.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
     return afterLabel(/(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)/)
-      || (element ? dateFromText(element.textContent.trim(), false) : "")
-      || firstDate([meta('meta[property="article:modified_time"]'), meta('meta[property="og:updated_time"]'),
-        meta('meta[itemprop="dateModified"]'), ...jsonLd("dateModified")])
+      || (element ? dateFromText(element.textContent.trim(), false) : "");
+  }
+
+  // Else the last update: modification metadata, else the text after "Updated", "Mis à jour le"… (emergentmind.com:
+  // "Updated 11 January 2026"), else a Google Sites page's last publication (data-last-updated-at-time, ms, shown in
+  // its "Page updated" info), local date
+  function updatedDate() {
+    const updatedAt = Number(document.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
+    return firstDate([meta('meta[property="article:modified_time"]'), meta('meta[property="og:updated_time"]'),
+      meta('meta[itemprop="dateModified"]'), ...jsonLd("dateModified")])
       || afterLabel(/(last (?:updated|modified)(?: on)?|updated(?: on)?|mise? à jour(?: le)?|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
       || (updatedAt ? new Date(updatedAt - new Date(updatedAt).getTimezoneOffset() * 60000).toISOString().slice(0, 10) : "");
   }
 
   // "2021-11-14", "14.11.2021" (day first, or month first after an English label with slashes), "14 novembre 2021",
-  // "November 14, 2021"
+  // "November 14, 2021", "2024 Oct 3"; partial dates with "xx": "2026/07", "2024 Oct", "May 2015", "2011"
   function dateFromText(text, english) {
     const pad = n => String(n).padStart(2, "0");
     const months = { jan: 1, ene: 1, gen: 1, fev: 2, feb: 2, mar: 3, apr: 4, avr: 4, abr: 4, mai: 5, may: 5, mag: 5,
@@ -679,6 +688,12 @@ function readArticleInfo() {
     if (d && month(d[2])) return `${d[3]}-${pad(month(d[2]))}-${pad(d[1])}`;
     d = text.match(/^([^\s\d.,]{3,})\.?\s+(\d{1,2}),?\s+(\d{4})/);                // November 14, 2021
     if (d && month(d[1])) return `${d[3]}-${pad(month(d[1]))}-${pad(d[2])}`;
+    d = text.match(/^(\d{4})\s+([^\s\d.,]{3,})\.?(?:\s+(\d{1,2}))?\b/);                 // 2024 Oct 3, 2024 Oct
+    if (d && month(d[2])) return `${d[1]}-${pad(month(d[2]))}-${d[3] ? pad(d[3]) : "xx"}`;
+    d = text.match(/^([^\s\d.,]{3,})\.?\s+(\d{4})$/);                                     // May 2015
+    if (d && month(d[1])) return `${d[2]}-${pad(month(d[1]))}-xx`;
+    d = text.match(/^(\d{4})(?:[./-](\d{1,2}))?$/);                                         // 2026/07, 2011
+    if (d) return `${d[1]}-${d[2] ? pad(d[2]) : "xx"}-xx`;
     return "";
   }
 
@@ -951,6 +966,20 @@ function readRedditInfo() {
   }
 
   return { date, link };
+}
+
+// Runs in the page (must be self-contained)
+// NIDCD health page: publication month, the last line of the paragraph before the PDF note ("May 2015",
+// "NIH Pub. No. 23-DC-4235\nFebruary 2023"; its <time> is the "Last Updated Date"), else that update; always the
+// title (the user's format), without " | NIDCD"
+function readNidcdInfo() {
+  const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
+    "november", "december"];
+  const m = document.querySelector("#pdf")?.previousElementSibling?.innerText.trim().match(/([A-Za-z]+) (\d{4})$/);
+  const month = m && MONTHS.indexOf(m[1].toLowerCase()) + 1;
+  const date = month ? `${m[2]}-${String(month).padStart(2, "0")}-xx`
+    : document.querySelector("time[datetime]")?.getAttribute("datetime").slice(0, 10) || "";
+  return { date, title: document.title.replace(/\s+\|\s+NIDCD$/, ""), link: location.origin + location.pathname };
 }
 
 // Runs in the page (must be self-contained)
