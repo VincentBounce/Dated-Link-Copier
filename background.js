@@ -324,6 +324,11 @@ async function buildLine(tab) {
     return `${info.year ? `${info.year}-xx-xx` : "?"} ${info.link}`;
   }
 
+  if (/^https:\/\/arxiv\.org\/(abs|pdf|html)\//.test(url)) {
+    const info = await runInPage(tab, readArxivInfo);
+    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+  }
+
   if (/^https:\/\/www\.sony\.(com|net)\/([a-z]{2}\/)?SonyInfo\/News\//i.test(url)) {
     const info = await runInPage(tab, readSonyNewsInfo);
     return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
@@ -349,7 +354,7 @@ function flashBadge(tabId, text, color) {
 const FILENAME_SAFE = { "\\": "＼", "/": "／", ":": "：", "*": "＊", "?": "？", '"': "＂", ">": "＞", "<": "＜", "|": "｜" };
 
 function cleanText(s) {
-  return s.trim().replace(/ - /g, ", ").replace(/[\\/:*?"<>|]/g, ch => FILENAME_SAFE[ch]);
+  return s.trim().replace(/\s+/g, " ").replace(/ - /g, ", ").replace(/[\\/:*?"<>|]/g, ch => FILENAME_SAFE[ch]);
 }
 
 // X (Twitter) post IDs are "snowflakes": the top bits are the creation time in ms since
@@ -903,6 +908,21 @@ function readRedditInfo() {
   }
 
   return { date, link };
+}
+
+// Runs in the page (must be self-contained)
+// arXiv paper (abstract page, PDF or HTML version): date of the first version (citation_date; citation_online_date
+// is the last version's) and title of the abstract page, fetched when on the PDF (Chrome's viewer only has the
+// PDF's own title, often in capitals with line breaks) or the HTML version
+async function readArxivInfo() {
+  const id = location.pathname.match(/^\/(?:abs|pdf|html)\/(.+?)(?:v\d+)?(?:\.pdf)?\/?$/)?.[1];
+  const meta = (doc, name) => doc.querySelector(`meta[name="${name}"]`)?.content || "";
+  let doc = document;
+  if (meta(doc, "citation_arxiv_id") !== id) {
+    try { doc = new DOMParser().parseFromString(await (await fetch(`/abs/${id}`)).text(), "text/html"); } catch (e) {}
+  }
+  return { date: meta(doc, "citation_date").replace(/\//g, "-"), title: meta(doc, "citation_title"),
+    link: location.origin + location.pathname };
 }
 
 // Runs in the page (must be self-contained)

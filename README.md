@@ -119,6 +119,12 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2026-01-14 Intranasal Human NSC-Derived EVs Therapy Can Restrain Inflammatory Microglial Transcriptome, and NLRP3 and cGAS-STING Signaling, in Aged Hippocampus https://pubmed.ncbi.nlm.nih.gov/41648159/
 ```
 
+**arXiv papers** (abstract page, PDF or HTML version): date of the first version, with the title of the abstract page, and the link of the page being read
+
+```
+2021-01-26 The Rest of the Tilings of the Sphere by Regular Polygons https://arxiv.org/pdf/2101.10743
+```
+
 **SoundCloud tracks:** publish date and link
 
 ```
@@ -242,7 +248,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages without a publish date, the last update shown (`2024-01-26 https://sites.google.com/view/flowlenia/`, a Google Sites page), else the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, arXiv, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics and Sony news, `?` replaces a date that can't be found. On other pages without a publish date, the last update shown (`2024-01-26 https://sites.google.com/view/flowlenia/`, a Google Sites page), else the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
 
 ## Install
 
@@ -268,6 +274,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.44.0 | 2026-11-03 | Claude Code (Claude Opus 5.5) | arXiv papers: first version's date and the abstract page's title, also on the PDF; titles keep no line breaks |
 | 2.43.1 | 2026-11-02 | Claude Code (Claude Opus 5.5) | Amazon: price only in the site's own currency, never a converted one |
 | 2.43.0 | 2026-11-02 | Claude Code (Claude Opus 5.5) | Amazon: the price shown, after the month read (`(2026-11) €39.99`; currency code without a symbol: `AED39.99`) |
 | 2.42.0 | 2026-11-01 | Claude Code (Claude Opus 5.5) | Pages without a publication date: modification metadata (`article:modified_time`, `og:updated_time`, `dateModified`) and "Last modified", "Dernière mise à jour", year-first dates ("Last updated 2026-10-29") before the month read |
