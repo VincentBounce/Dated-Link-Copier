@@ -119,10 +119,11 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2026-01-14 Intranasal Human NSC-Derived EVs Therapy Can Restrain Inflammatory Microglial Transcriptome, and NLRP3 and cGAS-STING Signaling, in Aged Hippocampus https://pubmed.ncbi.nlm.nih.gov/41648159/
 ```
 
-**arXiv papers** (abstract page, PDF or HTML version): date of the first version, with the title of the abstract page, and the link of the page being read
+**arXiv papers** (abstract page, PDF, HTML version, ar5iv): date of the first version, with the title (its math in Unicode: `a³b²`), and the link of the abstract page or PDF (HTML versions give the PDF link)
 
 ```
 2021-01-26 The Rest of the Tilings of the Sphere by Regular Polygons https://arxiv.org/pdf/2101.10743
+2019-03-07 Tilings of the Sphere by Congruent Pentagons II： Edge Combination a³b² https://arxiv.org/pdf/1903.02712
 ```
 
 **SoundCloud tracks:** publish date and link
@@ -274,6 +275,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.45.0 | 2026-11-03 | Claude Code (Claude Opus 5.5) | arXiv: ar5iv pages too, HTML versions give the PDF link, title math in Unicode (`a³b²`); date and title from the paper's DOI record (DataCite) |
 | 2.44.0 | 2026-11-03 | Claude Code (Claude Opus 5.5) | arXiv papers: first version's date and the abstract page's title, also on the PDF; titles keep no line breaks |
 | 2.43.1 | 2026-11-02 | Claude Code (Claude Opus 5.5) | Amazon: price only in the site's own currency, never a converted one |
 | 2.43.0 | 2026-11-02 | Claude Code (Claude Opus 5.5) | Amazon: the price shown, after the month read (`(2026-11) €39.99`; currency code without a symbol: `AED39.99`) |

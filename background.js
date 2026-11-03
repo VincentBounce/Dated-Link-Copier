@@ -276,8 +276,9 @@ async function buildLine(tab) {
   }
 
   // GitHub and GitLab repositories, issues, pull or merge requests, commits; Wikipedia articles; npm packages;
-  // Firefox add-ons: public APIs
-  const apiLine = await forgeLine(url) || await wikipediaLine(url) || await npmLine(url) || await firefoxAddonLine(url);
+  // Firefox add-ons; arXiv papers: public APIs
+  const apiLine = await forgeLine(url) || await wikipediaLine(url) || await npmLine(url) || await firefoxAddonLine(url)
+    || await arxivLine(url);
   if (apiLine) return apiLine;
 
   // Apple user guides (support.apple.com/<locale>/guide/…) carry no date at all: the date read, and the link without
@@ -322,11 +323,6 @@ async function buildLine(tab) {
   if (/^https:\/\/www\.sciencedirect\.com\/topics\//.test(url)) {
     const info = await runInPage(tab, readScienceDirectTopicInfo);
     return `${info.year ? `${info.year}-xx-xx` : "?"} ${info.link}`;
-  }
-
-  if (/^https:\/\/arxiv\.org\/(abs|pdf|html)\//.test(url)) {
-    const info = await runInPage(tab, readArxivInfo);
-    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
   if (/^https:\/\/www\.sony\.(com|net)\/([a-z]{2}\/)?SonyInfo\/News\//i.test(url)) {
@@ -792,6 +788,53 @@ async function npmLine(url) {
   return `${date || "?"} https://www.npmjs.com/package/${name}`;
 }
 
+// arXiv papers (arxiv.org abstract page, PDF or HTML version; ar5iv HTML version): date of the first version
+// ("Submitted" v1, UTC date, the abstract page's citation_date) and title from the paper's DOI record at DataCite
+// (CORS allowed; arxiv.org sends no CORS header and ar5iv pages have no date), else the month of the ID ("1804" ->
+// 2018-04-xx). An HTML version gives the PDF link; the abstract page and the PDF keep theirs.
+async function arxivLine(url) {
+  const m = url.match(/^https:\/\/(?:(?:www\.|export\.)?arxiv\.org|ar5iv(?:\.labs)?\.arxiv\.org)\/(abs|pdf|html)\/((?:[a-z-]+(?:\.[A-Z]{2})?\/)?(\d{2})(\d{2})[\d.]+?)(v\d+)?(?:\.pdf)?\/?(?:[?#]|$)/);
+  if (!m) return null;
+  const [, kind, id, yy, mm, version = ""] = m;
+  let date = `${yy < 91 ? 20 : 19}${yy}-${mm}-xx`, title = "";
+  try {
+    const record = (await (await fetch(`https://api.datacite.org/dois/10.48550/arxiv.${id}`)).json()).data.attributes;
+    date = record.dates.find(d => d.dateType === "Submitted" && d.dateInformation === "v1")?.date.slice(0, 10) || date;
+    title = unicodeMath(record.titles[0]?.title || "");
+  } catch (e) {}
+  const link = `https://arxiv.org/${kind === "html" ? "pdf" : kind}/${id}${version}`;
+  return `${date} ${titleIfNotInLink(title, link)}${link}`;
+}
+
+// TeX math of a title in Unicode, as the paper prints it: "$a^3b^2$" -> "a³b²", "$\\alpha_{12}$" -> "α₁₂",
+// "$\\mathbb{R}^n$" -> "ℝⁿ"; a character without a Unicode superscript or subscript keeps its "^" or "_", other
+// commands their name
+function unicodeMath(text) {
+  const SUP = { 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹", "+": "⁺", "-": "⁻",
+    "=": "⁼", "(": "⁽", ")": "⁾", a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ",
+    k: "ᵏ", l: "ˡ", m: "ᵐ", n: "ⁿ", o: "ᵒ", p: "ᵖ", r: "ʳ", s: "ˢ", t: "ᵗ", u: "ᵘ", v: "ᵛ", w: "ʷ", x: "ˣ", y: "ʸ",
+    z: "ᶻ", "*": "*", "′": "′" };
+  const SUB = { 0: "₀", 1: "₁", 2: "₂", 3: "₃", 4: "₄", 5: "₅", 6: "₆", 7: "₇", 8: "₈", 9: "₉", "+": "₊", "-": "₋",
+    "=": "₌", "(": "₍", ")": "₎", a: "ₐ", e: "ₑ", h: "ₕ", i: "ᵢ", j: "ⱼ", k: "ₖ", l: "ₗ", m: "ₘ", n: "ₙ", o: "ₒ",
+    p: "ₚ", r: "ᵣ", s: "ₛ", t: "ₜ", u: "ᵤ", v: "ᵥ", x: "ₓ" };
+  const SYMBOLS = { alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", varepsilon: "ε", zeta: "ζ", eta: "η",
+    theta: "θ", iota: "ι", kappa: "κ", lambda: "λ", mu: "μ", nu: "ν", xi: "ξ", pi: "π", rho: "ρ", sigma: "σ",
+    tau: "τ", phi: "φ", varphi: "φ", chi: "χ", psi: "ψ", omega: "ω", Gamma: "Γ", Delta: "Δ", Theta: "Θ",
+    Lambda: "Λ", Xi: "Ξ", Pi: "Π", Sigma: "Σ", Phi: "Φ", Psi: "Ψ", Omega: "Ω", infty: "∞", times: "×", cdot: "·",
+    pm: "±", le: "≤", leq: "≤", ge: "≥", geq: "≥", neq: "≠", ne: "≠", approx: "≈", sim: "∼", to: "→",
+    rightarrow: "→", leftarrow: "←", in: "∈", subset: "⊂", cup: "∪", cap: "∩", partial: "∂", nabla: "∇",
+    ell: "ℓ", sqrt: "√", sum: "∑", prod: "∏", int: "∫", circ: "∘", otimes: "⊗", oplus: "⊕", prime: "′" };
+  const BB = { C: "ℂ", N: "ℕ", P: "ℙ", Q: "ℚ", R: "ℝ", Z: "ℤ" };
+  const script = (chars, table, mark) => [...chars].every(ch => table[ch]) ? [...chars].map(ch => table[ch]).join("")
+    : `${mark}${chars.length > 1 ? `(${chars})` : chars}`;
+  return text.replace(/\$([^$]+)\$/g, (_, math) => math
+    .replace(/\\mathbb\{([A-Z])\}/g, (all, l) => BB[l] || l)
+    .replace(/\\(?:mathrm|mathbf|mathit|mathcal|text|operatorname)\{([^{}]*)\}/g, "$1")
+    .replace(/\\([A-Za-z]+)/g, (all, name) => SYMBOLS[name] ?? name)              // (\log -> log)
+    .replace(/([\^_])(?:\{([^{}]*)\}|(.))/g, (all, mark, group, one) => script(group ?? one, mark === "^" ? SUP : SUB, mark))
+    .replace(/[{}]/g, "").replace(/\s+/g, " ").trim());
+}
+
 // Release date of an Android app or a Chrome extension on Chrome-Stats, fetched by the service worker (host
 // permission: the site sends no CORS header). Same JSON-LD as on its pages, read with a regex (no DOMParser here).
 async function chromeStatsDate(id) {
@@ -908,21 +951,6 @@ function readRedditInfo() {
   }
 
   return { date, link };
-}
-
-// Runs in the page (must be self-contained)
-// arXiv paper (abstract page, PDF or HTML version): date of the first version (citation_date; citation_online_date
-// is the last version's) and title of the abstract page, fetched when on the PDF (Chrome's viewer only has the
-// PDF's own title, often in capitals with line breaks) or the HTML version
-async function readArxivInfo() {
-  const id = location.pathname.match(/^\/(?:abs|pdf|html)\/(.+?)(?:v\d+)?(?:\.pdf)?\/?$/)?.[1];
-  const meta = (doc, name) => doc.querySelector(`meta[name="${name}"]`)?.content || "";
-  let doc = document;
-  if (meta(doc, "citation_arxiv_id") !== id) {
-    try { doc = new DOMParser().parseFromString(await (await fetch(`/abs/${id}`)).text(), "text/html"); } catch (e) {}
-  }
-  return { date: meta(doc, "citation_date").replace(/\//g, "-"), title: meta(doc, "citation_title"),
-    link: location.origin + location.pathname };
 }
 
 // Runs in the page (must be self-contained)
