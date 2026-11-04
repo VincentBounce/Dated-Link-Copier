@@ -1058,11 +1058,13 @@ function readAmazonProductInfo() {
     date = reviews.sort()[0] || "";
   }
 
-  // Canonical link (with the product name), without query parameters; when it names another product (a variant's
-  // parent), the page's own path up to the ASIN, which keeps the name it may have ("/-/en/Connected-16A-…/dp/<ASIN>")
-  const canonical = document.querySelector('link[rel="canonical"]')?.href;
+  // Link with the product name, always with the page's own ASIN (Amazon ignores the name): the canonical link's name;
+  // when the canonical link is a variant's parent, the page's own name if it has one ("/-/en/Connected-16A-…/dp/<ASIN>"),
+  // else the parent's ("/-/en/dp/B0D5D4LZDN" -> "/-/en/TONGOU-SY1-WIFI-Smart-Switch/dp/B0D5D4LZDN")
+  const canonical = document.querySelector('link[rel="canonical"]')?.href.match(/^https:\/\/[^/]+(.*?)\/(?:dp|gp\/product)\/([A-Z0-9]{10})/);
   const own = location.pathname.match(new RegExp(`^(.*?)/(?:dp|gp/product)/${asin}`))?.[1] || "";
-  const link = canonical && canonical.includes(`/dp/${asin}`) ? canonical.split("?")[0] : `${location.origin}${own}/dp/${asin}`;
+  const named = own.replace(/^\/-\/[\w-]+/, "") !== "";
+  const link = `${location.origin}${canonical && (canonical[2] === asin || !named) ? canonical[1] : own}/dp/${asin}`;
   // Price of the buy box, from its hidden form fields (amount "39.99", currency "EUR"); some sites have several
   // offers, the first one is the one shown. Only in the site's own currency: a visitor's currency preference
   // (Amazon Currency Converter, EUR on amazon.co.uk from France) converts it, and the page then has no original price
