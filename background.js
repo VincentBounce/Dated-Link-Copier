@@ -646,13 +646,26 @@ function readArticleInfo() {
 
   // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",
   // "Published on", "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021"),
-  // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>)
+  // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>), else the
+  // first text that is only a complete date (research.google: <p>October 27, 2026</p>, before the related posts')
   function shownDate() {
     const iso = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
     if (iso) return iso;
     const element = document.querySelector("article .date") || document.querySelector(".date");
     return afterLabel(/(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)/)
-      || (element ? dateFromText(element.textContent.trim(), false) : "");
+      || (element ? dateFromText(element.textContent.trim(), false) : "")
+      || bareDate();
+  }
+
+  function bareDate() {
+    const texts = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let node; (node = texts.nextNode());) {
+      const text = node.nodeValue.trim();
+      if (text.length < 8 || text.length > 30 || !/\d$/.test(text)) continue;
+      const date = dateFromText(text, false);
+      if (date && !date.includes("x")) return date;
+    }
+    return "";
   }
 
   // Else the last update: modification metadata, else the text after "Updated", "Mis à jour le"… (emergentmind.com:

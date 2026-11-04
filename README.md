@@ -287,6 +287,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.47.0 | 2026-11-04 | Claude Code (Claude Opus 5.5) | Pages without date tags: the first text that is only a date (`<p>October 27, 2026</p>` on the Google Research blog) |
 | 2.46.0 | 2026-11-03 | Claude Code (Claude Opus 5.5) | NIDCD health pages (publication month and title); article tags as "2024 Oct 3" (PMC), partial publication dates (`2011-xx-xx`) before update dates |
 | 2.45.0 | 2026-11-03 | Claude Code (Claude Opus 5.5) | arXiv: ar5iv pages too, HTML versions give the PDF link, title math in Unicode (`a³b²`); date and title from the paper's DOI record (DataCite) |
 | 2.44.0 | 2026-11-03 | Claude Code (Claude Opus 5.5) | arXiv papers: first version's date and the abstract page's title, also on the PDF; titles keep no line breaks |
