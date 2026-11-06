@@ -168,6 +168,12 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
 ```
 
+**Printables models:** first publication date (not the last republication) and model link
+
+```
+2021-12-21 https://www.printables.com/model/99861-klein-bottle
+```
+
 **YouTube channels:** date joined and channel link
 
 ```
@@ -261,7 +267,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, arXiv, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics, Sony news and NIDCD, `?` replaces a date that can't be found. On other pages without a publish date, the last update shown (`2024-01-26 https://sites.google.com/view/flowlenia/`, a Google Sites page), else the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, arXiv, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, Printables, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics, Sony news and NIDCD, `?` replaces a date that can't be found. On other pages without a publish date, the last update shown (`2024-01-26 https://sites.google.com/view/flowlenia/`, a Google Sites page), else the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
 
 ## Install
 
@@ -287,6 +293,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.48.0 | 2026-11-07 | Claude Code (Claude Opus 5.5) | Printables models: `date link` with the first publication date (`2021-12-21 https://www.printables.com/model/99861-klein-bottle`) |
 | 2.47.1 | 2026-11-04 | Claude Code (Claude Opus 5.5) | Amazon: a variant without a name in its link gets its parent product's name (`/-/en/TONGOU-SY1-WIFI-Smart-Switch/dp/B0D5D4LZDN/`) |
 | 2.47.0 | 2026-11-04 | Claude Code (Claude Opus 5.5) | Pages without date tags: the first text that is only a date (`<p>October 27, 2026</p>` on the Google Research blog) |
 | 2.46.0 | 2026-11-03 | Claude Code (Claude Opus 5.5) | NIDCD health pages (publication month and title); article tags as "2024 Oct 3" (PMC), partial publication dates (`2011-xx-xx`) before update dates |

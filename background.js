@@ -275,6 +275,12 @@ async function buildLine(tab) {
     return `${info.created ? localDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
   }
 
+  // Printables models: first publication (a republished model's datePublished is its last one), in the viewer's time zone
+  if (/^https:\/\/www\.printables\.com\/(?:[a-z]{2}\/)?model\/\d+/.test(url)) {
+    const info = await runInPage(tab, readPrintablesModelInfo);
+    return `${info.published ? localDate(Date.parse(info.published)) : "?"} ${info.link}`;
+  }
+
   // GitHub and GitLab repositories, issues, pull or merge requests, commits; Wikipedia articles; npm packages;
   // Firefox add-ons; arXiv papers: public APIs
   const apiLine = await forgeLine(url) || await wikipediaLine(url) || await npmLine(url) || await firefoxAddonLine(url)
@@ -1218,6 +1224,19 @@ async function readICloudShortcutInfo() {
   let record = {};
   try { record = await (await fetch(`/shortcuts/api/records/${id}`)).json(); } catch (e) {}
   return { created: record.created?.timestamp, name: record.fields?.name?.value || "", link: `https://www.icloud.com/shortcuts/${id}` };
+}
+
+// Runs in the page (must be self-contained)
+// The page is a Cloudflare-guarded app shell: "firstPublish" of the GraphQL API (CORS allows www.printables.com)
+async function readPrintablesModelInfo() {
+  const [, id, slug] = location.pathname.match(/\/model\/(\d+)(-[^/?#]*)?/);
+  let print = {};
+  try {
+    const res = await fetch("https://api.printables.com/graphql/", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "query($id: ID!) { print(id: $id) { slug firstPublish } }", variables: { id } }) });
+    print = (await res.json())?.data?.print || {};
+  } catch (e) {}
+  return { published: print.firstPublish, link: `https://www.printables.com/model/${id}${print.slug ? `-${print.slug}` : slug || ""}` };
 }
 
 // Runs in the page (must be self-contained)
