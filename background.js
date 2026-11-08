@@ -783,7 +783,15 @@ const FORGES = [
     root: /^https:\/\/github\.com\/[^/]+\/[^/?#]+\/?([?#]|$)/,
     api: (path, kind, ref) => `https://api.github.com/repos/${path}${kind ? `/${{ issues: "issues", pull: "pulls", commit: "commits" }[kind]}/${ref}` : ""}`,
     link: (path, kind, ref) => `https://github.com/${path}${kind ? `/${kind}/${ref}` : ""}`,
-    commit: data => ({ sha: data.sha, date: data.commit.committer.date, title: data.commit.message.split("\n")[0] }) },
+    commit: data => ({ sha: data.sha, date: data.commit.committer.date, title: data.commit.message.split("\n")[0] }),
+    // Date of the oldest commit: the last page of the history listed one commit per page (Link header)
+    firstCommit: async path => {
+      const api = `https://api.github.com/repos/${path}/commits?per_page=1`;
+      let res = await fetch(api);
+      const last = res.headers.get("Link")?.match(/[?&]page=(\d+)>; rel="last"/)?.[1];
+      if (last) res = await fetch(`${api}&page=${last}`);
+      return res.ok ? (await res.json())[0]?.commit.committer.date : undefined;
+    } },
   { pattern: /^https:\/\/gitlab\.com\/([^?#]+?)(?:\/-\/(issues|merge_requests|commit)\/([0-9a-f]+)(?:\/[^?#]*)?|\/-\/[^?#]*|\/)?([?#]|$)/,
     root: /^https:\/\/gitlab\.com\/(?:(?!\/-\/)[^?#])+([?#]|$)/,
     api: (path, kind, ref) => `https://gitlab.com/api/v4/projects/${encodeURIComponent(path)}${kind ? `/${kind === "commit" ? "repository/commits" : kind}/${ref}` : ""}`,
@@ -800,7 +808,12 @@ async function forgeLine(url) {
       const res = await fetch(forge.api(path, kind, ref));
       if (!res.ok) return null;
       const data = await res.json();
-      if (!kind) return `${localDate(Date.parse(data.created_at))} ${forge.link(path)}`;
+      // Repositories: creation date, or the first commit when older (history pushed into a new repository; commit dates
+      // are written by their author, so only an older one is taken, the user's choice)
+      if (!kind) {
+        const first = Date.parse(await forge.firstCommit?.(path).catch(() => undefined));
+        return `${localDate(Math.min(Date.parse(data.created_at), first || Infinity))} ${forge.link(path)}`;
+      }
       if (kind === "commit") {
         const commit = forge.commit(data);
         const link = forge.link(path, kind, commit.sha);

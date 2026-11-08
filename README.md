@@ -193,7 +193,7 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2026-10-29 https://mastodon.social/@Gargron/117525141761759792
 ```
 
-**GitHub and GitLab repositories, issues, pull or merge requests, commits:** creation date (with the title when the link lacks it) and link
+**GitHub and GitLab repositories, issues, pull or merge requests, commits:** creation date (a GitHub repository: its first commit when older; with the title when the link lacks it) and link
 
 ```
 2008-07-23 https://github.com/git/git
@@ -300,6 +300,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.52.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | GitHub repositories: the first commit's date when older than the repository (`2026-10-21 https://github.com/MithrilMan/voice-workshop`, `2005-04-17 https://github.com/torvalds/linux`) |
 | 2.51.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | LinkedIn company pages: the same line on every tab, with the About tab's link; signed in, the founding year is read from the About tab (`2000-xx-xx https://www.linkedin.com/company/interencheres/about/`) |
 | 2.50.2 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Instagram profiles: the date read and the profile link, without the page title (`(2026-11) https://www.instagram.com/interencheres/`) |
 | 2.50.1 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Pages that write "Posted by <author> on May 14, 2013" (WordPress themes): that date (`2013-05-14 https://www.freeindiegam.es/2013/05/doodal-pishtaco/`) |
