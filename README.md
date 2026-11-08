@@ -88,7 +88,7 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2023-04-29 https://bsky.app/profile/jay.bsky.team/post/3juk2oypfkc2g
 ```
 
-**LinkedIn company pages:** founding year and link
+**LinkedIn company pages:** founding year and the About tab link, from any tab
 
 ```
 2024-xx-xx https://www.linkedin.com/company/bflai/about/
@@ -300,6 +300,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.51.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | LinkedIn company pages: the same line on every tab, with the About tab's link; signed in, the founding year is read from the About tab (`2000-xx-xx https://www.linkedin.com/company/interencheres/about/`) |
 | 2.50.2 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Instagram profiles: the date read and the profile link, without the page title (`(2026-11) https://www.instagram.com/interencheres/`) |
 | 2.50.1 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Pages that write "Posted by <author> on May 14, 2013" (WordPress themes): that date (`2013-05-14 https://www.freeindiegam.es/2013/05/doodal-pishtaco/`) |
 | 2.50.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Wayback Machine captures: the archived link's line, else the archived page's date, else the month of the first capture (`(2017-03) https://web.archive.org/web/20170319021736/http://dood.al/pinktrombone/`) |

@@ -225,11 +225,12 @@ async function buildLine(tab) {
   }
 
   if (/^https:\/\/(www\.)?linkedin\.com\//.test(url)) {
-    // Company pages: founding year, as "2024-xx-xx"
-    const company = url.match(/^https:\/\/(?:www\.)?linkedin\.com\/(company\/[^/?#]+(?:\/[^?#]*)?)/);
+    // Company pages, any tab: founding year, as "2024-xx-xx", and the link of the About tab, which shows it
+    const company = url.match(/^https:\/\/(?:www\.)?linkedin\.com\/company\/([^/?#]+)/)?.[1];
     if (company) {
-      const year = await runInPage(tab, readLinkedInFoundedYear);
-      return `${year ? `${year}-xx-xx` : "?"} https://www.linkedin.com/${company[1].replace(/\/?$/, "/")}`;
+      const about = `https://www.linkedin.com/company/${company}/about/`;
+      const year = await runInPage(tab, readLinkedInFoundedYear, "ISOLATED", [about]);
+      return `${year ? `${year}-xx-xx` : "?"} ${about}`;
     }
     // Not a post (Pulse articles…): handled like any other page below
   }
@@ -1372,8 +1373,18 @@ function readHibpBreachInfo() {
 // Runs in the page (must be self-contained)
 // LinkedIn company "About" list: <dt>Founded</dt><dd>2024</dd> (signed out: the company page; signed in: its /about/
 // tab). The label is in the page's language, but Founded is the only entry that is a bare year, so that dd is it.
-function readLinkedInFoundedYear() {
-  return [...document.querySelectorAll("dd")].map(dd => dd.textContent.trim()).find(t => /^(19|20)\d\d$/.test(t)) || "";
+// Signed in on another tab, the /about/ tab is fetched: its list, else "foundedOn":{"year":2000} of its page data
+async function readLinkedInFoundedYear(about) {
+  const yearIn = doc => [...doc.querySelectorAll("dd")].map(dd => dd.textContent.trim()).find(t => /^(19|20)\d\d$/.test(t));
+  let year = yearIn(document);
+  if (!year) {
+    try {
+      const html = await (await fetch(about)).text();
+      year = yearIn(new DOMParser().parseFromString(html, "text/html"))
+        || html.replace(/&quot;/g, '"').match(/"foundedOn":\{[^}]*"year":((?:19|20)\d\d)/)?.[1];
+    } catch (e) {}
+  }
+  return year || "";
 }
 
 // Runs in the page (must be self-contained)
