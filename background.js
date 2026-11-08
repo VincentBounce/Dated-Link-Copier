@@ -124,6 +124,13 @@ async function buildLine(tab) {
   const known = await linkLine(url, tab);
   if (known) return known;
 
+  // Instagram profiles show no date (the date joined needs sign-in) and their title ("Name (@user) • Instagram photos
+  // and videos") adds nothing to the link: the date read and the profile link
+  const instagramProfile = url.match(/^https:\/\/www\.instagram\.com\/([A-Za-z0-9._]+)\/?(?:[?#]|$)/)?.[1];
+  if (instagramProfile && !/^(explore|reels|direct|accounts|stories)$/.test(instagramProfile)) {
+    return `${consultedDate()} https://www.instagram.com/${instagramProfile}/`;
+  }
+
   // Wayback Machine captures (web.archive.org/web/<timestamp>/<link>): the archived link's own line when its date comes
   // from the link alone; else the archived page's date and the capture link; else the month of the link's first
   // capture, "(2017-03)": the page existed then (the user's convention)

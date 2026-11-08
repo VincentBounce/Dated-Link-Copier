@@ -300,6 +300,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.50.2 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Instagram profiles: the date read and the profile link, without the page title (`(2026-11) https://www.instagram.com/interencheres/`) |
 | 2.50.1 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Pages that write "Posted by <author> on May 14, 2013" (WordPress themes): that date (`2013-05-14 https://www.freeindiegam.es/2013/05/doodal-pishtaco/`) |
 | 2.50.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Wayback Machine captures: the archived link's line, else the archived page's date, else the month of the first capture (`(2017-03) https://web.archive.org/web/20170319021736/http://dood.al/pinktrombone/`) |
 | 2.49.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | YouTube videos: `[video ID]` before the link (`… [L8km_swzsq0] https://youtu.be/L8km_swzsq0`) |
