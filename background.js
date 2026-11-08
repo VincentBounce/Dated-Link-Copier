@@ -294,6 +294,14 @@ async function buildLine(tab) {
     return `${info.created ? localDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
   }
 
+  // Medium publications (medium.com/<publication>, its About, archive and other tabs, not its posts): date of the
+  // first post, the publication's start
+  const medium = url.match(/^https:\/\/medium\.com\/([a-z0-9-]+)\/?(?:(?:about|archive|all|latest|tagged)\b[^?#]*)?(?:[?#]|$)/)?.[1];
+  if (medium && !/^(about|tag|tags|search|me|m|p|plans|membership|creators|policy|topics)$/.test(medium)) {
+    const first = await runInPage(tab, readMediumFirstPost, "ISOLATED", [medium]);
+    if (first !== null) return `${first ? localDate(first) : "?"} https://medium.com/${medium}/`;
+  }
+
   // Printables models: first publication (a republished model's datePublished is its last one), in the viewer's time zone
   if (/^https:\/\/www\.printables\.com\/(?:[a-z]{2}\/)?model\/\d+/.test(url)) {
     const info = await runInPage(tab, readPrintablesModelInfo);
@@ -1266,6 +1274,20 @@ async function readICloudShortcutInfo() {
   let record = {};
   try { record = await (await fetch(`/shortcuts/api/records/${id}`)).json(); } catch (e) {}
   return { created: record.created?.timestamp, name: record.fields?.name?.value || "", link: `https://www.icloud.com/shortcuts/${id}` };
+}
+
+// Runs in the page (must be self-contained)
+// Medium publication: firstPublishedAt (ms) of its oldest post, from the same-site GraphQL API its archive pages use
+// (sorted by publication date, ascending); null when the slug is no publication
+async function readMediumFirstPost(slug) {
+  try {
+    const query = "query($ref: PublicationRef!) { publicationByRef(ref: $ref) { publicationPostsConnection(first: 1, after: \"\","
+      + " orderBy: { publishedAt: ASC }, filter: { published: true }) { edges { node { firstPublishedAt } } } } }";
+    const res = await fetch("/_/graphql", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, variables: { ref: { slug, domain: null } } }) });
+    const publication = (await res.json()).data?.publicationByRef;
+    return publication ? publication.publicationPostsConnection.edges[0]?.node.firstPublishedAt || 0 : null;
+  } catch (e) { return null; }
 }
 
 // Runs in the page (must be self-contained)

@@ -168,6 +168,12 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
 ```
 
+**Medium publications:** date of the first post and publication link, from any tab (About, archive…)
+
+```
+2018-01-25 https://medium.com/doctolib/
+```
+
 **Printables models:** first publication date (not the last republication) and model link
 
 ```
@@ -274,7 +280,7 @@ When the link doesn't carry the title (fewer than half of the title's words appe
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
 
-On YouTube, Google Play, Reddit, Hacker News, PubMed, arXiv, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, Printables, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics, Sony news and NIDCD, `?` replaces a date that can't be found. On other pages without a publish date, the last update shown (`2024-01-26 https://sites.google.com/view/flowlenia/`, a Google Sites page), else the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
+On YouTube, Google Play, Reddit, Hacker News, PubMed, arXiv, Amazon, SoundCloud, Pouët, Suno, Shadertoy, iCloud shortcuts, Medium publications, Printables, GitHub releases, Crunchbase, PyPI, Have I Been Pwned, Y Combinator companies, ScienceDirect Topics, Sony news and NIDCD, `?` replaces a date that can't be found. On other pages without a publish date, the last update shown (`2024-01-26 https://sites.google.com/view/flowlenia/`, a Google Sites page), else the month the page was read, in parentheses: `(2026-10) https://www.tuya.com/product/app-management/all-in-one-app`.
 
 ## Install
 
@@ -300,6 +306,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.53.0 | 2026-11-09 | Claude Code (Claude Opus 5.5) | Medium publications: date of the first post (`2018-01-25 https://medium.com/doctolib/`) |
 | 2.52.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | GitHub repositories: the first commit's date when older than the repository (`2026-10-21 https://github.com/MithrilMan/voice-workshop`, `2005-04-17 https://github.com/torvalds/linux`) |
 | 2.51.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | LinkedIn company pages: the same line on every tab, with the About tab's link; signed in, the founding year is read from the About tab (`2000-xx-xx https://www.linkedin.com/company/interencheres/about/`) |
 | 2.50.2 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Instagram profiles: the date read and the profile link, without the page title (`(2026-11) https://www.instagram.com/interencheres/`) |
