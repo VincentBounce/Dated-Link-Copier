@@ -6,10 +6,10 @@ Chrome extension that copies a dated link to the page you're on, in one click.
 
 Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit, X and LinkedIn pages other than posts, Amazon pages other than products, new tab, `chrome://` pages and local files.
 
-**YouTube videos:** publish date, channels, title and short link
+**YouTube videos:** publish date, channels, title, `[video ID]` and short link
 
 ```
-2025-02-06 @Katie Couric - Microplastics are accumulating in human brains at an alarming rate https://youtu.be/0PT5c1z3LL8
+2025-02-06 @Katie Couric - Microplastics are accumulating in human brains at an alarming rate [0PT5c1z3LL8] https://youtu.be/0PT5c1z3LL8
 ```
 
 - `YYYY-MM-DD` publish date, as shown by YouTube
@@ -293,6 +293,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.49.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | YouTube videos: `[video ID]` before the link (`… [L8km_swzsq0] https://youtu.be/L8km_swzsq0`) |
 | 2.48.0 | 2026-11-07 | Claude Code (Claude Opus 5.5) | Printables models: `date link` with the first publication date (`2021-12-21 https://www.printables.com/model/99861-klein-bottle`) |
 | 2.47.1 | 2026-11-04 | Claude Code (Claude Opus 5.5) | Amazon: a variant without a name in its link gets its parent product's name (`/-/en/TONGOU-SY1-WIFI-Smart-Switch/dp/B0D5D4LZDN/`) |
 | 2.47.0 | 2026-11-04 | Claude Code (Claude Opus 5.5) | Pages without date tags: the first text that is only a date (`<p>October 27, 2026</p>` on the Google Research blog) |

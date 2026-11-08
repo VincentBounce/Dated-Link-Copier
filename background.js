@@ -128,10 +128,10 @@ async function buildLine(tab) {
     // MAIN world: gives access to the YouTube player's data for the current video
     const info = await runInPage(tab, readVideoInfo, "MAIN");
     if (!info) return null;
-    // Replace " - " in channels and title; one "@" per channel (collaborations have several)
+    // Replace " - " in channels and title; one "@" per channel (collaborations have several); "[ID]" before the link
     const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
     const cleanTitle = cleanText(info.title);
-    return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id}`;
+    return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} [${info.id}] https://youtu.be/${info.id}`;
   }
 
   if (/^https:\/\/play\.google\.com\/store\/apps\/details\?/.test(url)) {
