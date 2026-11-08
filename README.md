@@ -174,6 +174,13 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2021-12-21 https://www.printables.com/model/99861-klein-bottle
 ```
 
+**Wayback Machine captures:** the archived link's own line when it is dated from the link alone (X, LinkedIn… posts, GitHub, Wikipedia…), else the archived page's date and the capture link, else the month of the link's first capture in parentheses (the page existed then)
+
+```
+(2017-03) https://web.archive.org/web/20170319021736/http://dood.al/pinktrombone/
+2023-12-06 Introducing Gemini： our largest and most capable AI model https://web.archive.org/web/20241231005116/https://blog.google/technology/ai/google-gemini-ai/
+```
+
 **YouTube channels:** date joined and channel link
 
 ```
@@ -293,6 +300,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.50.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | Wayback Machine captures: the archived link's line, else the archived page's date, else the month of the first capture (`(2017-03) https://web.archive.org/web/20170319021736/http://dood.al/pinktrombone/`) |
 | 2.49.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | YouTube videos: `[video ID]` before the link (`… [L8km_swzsq0] https://youtu.be/L8km_swzsq0`) |
 | 2.48.0 | 2026-11-07 | Claude Code (Claude Opus 5.5) | Printables models: `date link` with the first publication date (`2021-12-21 https://www.printables.com/model/99861-klein-bottle`) |
 | 2.47.1 | 2026-11-04 | Claude Code (Claude Opus 5.5) | Amazon: a variant without a name in its link gets its parent product's name (`/-/en/TONGOU-SY1-WIFI-Smart-Switch/dp/B0D5D4LZDN/`) |

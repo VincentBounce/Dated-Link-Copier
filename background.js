@@ -119,6 +119,24 @@ async function runInPage(tab, func, world = "ISOLATED", args = []) {
 async function buildLine(tab) {
   const url = tab.url || "";
 
+  // Lines dated from the link alone: X, LinkedIn, TikTok, Instagram, Threads, Bluesky, Mastodon posts; GitHub and
+  // GitLab, Wikipedia, npm, Firefox add-ons, arXiv (public APIs)
+  const known = await linkLine(url, tab);
+  if (known) return known;
+
+  // Wayback Machine captures (web.archive.org/web/<timestamp>/<link>): the archived link's own line when its date comes
+  // from the link alone; else the archived page's date and the capture link; else the month of the link's first
+  // capture, "(2017-03)": the page existed then (the user's convention)
+  const archived = url.match(/^https:\/\/web\.archive\.org\/web\/\d+[a-z_]*\/(https?:\/\/[^#]+)/)?.[1];
+  if (archived) {
+    const line = await linkLine(archived.replace(/^http:/, "https:"), null);
+    if (line) return line;
+    const info = await runInPage(tab, readArticleInfo);
+    const first = await runInPage(tab, readWaybackFirstCapture, "ISOLATED", [archived]);
+    const date = formatDate(info.published) || (first ? `(${first.slice(0, 4)}-${first.slice(4, 6)})` : "?");
+    return `${date} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+  }
+
   if (/^https:\/\/(www|m)\.youtube\.com\//.test(url)) {
     // Channels: date joined, written in the page's language
     if (new RegExp(YOUTUBE_CHANNEL).test(url)) {
@@ -193,20 +211,13 @@ async function buildLine(tab) {
   }
 
   if (/^https:\/\/((www|mobile)\.)?(x|twitter)\.com\//.test(url)) {
-    if (/\/status\/\d+/.test(url)) return xPostLine(url);
     // Profiles (x.com/<user>): month joined, the day isn't shown
     const info = await runInPage(tab, readXProfileInfo);
     const date = info && localizedDate(info.joined, info.lang);
     return date ? `${date} https://x.com/${info.user}` : null;
   }
 
-  // TikTok videos, Instagram and Threads posts, Bluesky posts: dated by their ID, like X and LinkedIn
-  const idLine = await idPostLine(url, tab);
-  if (idLine) return idLine;
-
   if (/^https:\/\/(www\.)?linkedin\.com\//.test(url)) {
-    const line = linkedinPostLine(url);
-    if (line) return line;
     // Company pages: founding year, as "2024-xx-xx"
     const company = url.match(/^https:\/\/(?:www\.)?linkedin\.com\/(company\/[^/?#]+(?:\/[^?#]*)?)/);
     if (company) {
@@ -281,12 +292,6 @@ async function buildLine(tab) {
     return `${info.published ? localDate(Date.parse(info.published)) : "?"} ${info.link}`;
   }
 
-  // GitHub and GitLab repositories, issues, pull or merge requests, commits; Wikipedia articles; npm packages;
-  // Firefox add-ons; arXiv papers: public APIs
-  const apiLine = await forgeLine(url) || await wikipediaLine(url) || await npmLine(url) || await firefoxAddonLine(url)
-    || await arxivLine(url);
-  if (apiLine) return apiLine;
-
   // Apple user guides (support.apple.com/<locale>/guide/…) carry no date at all: the date read, and the link without
   // the locale (support.apple.com serves the reader's)
   const appleGuide = url.match(/^https:\/\/support\.apple\.com\/(?:[a-z]{2}-[a-z0-9]{2,4}\/)?(guide\/[^?#]+)/);
@@ -349,6 +354,22 @@ async function buildLine(tab) {
   }
 
   return null;
+}
+
+// Lines that need no page access (tab: only to name an Instagram post's creator; null for an archived link)
+async function linkLine(url, tab) {
+  if (/^https:\/\/((www|mobile)\.)?(x|twitter)\.com\/[^/?#]+\/status\/\d+/.test(url)) return xPostLine(url);
+  if (/^https:\/\/(www\.)?linkedin\.com\//.test(url) && linkedinPostLine(url)) return linkedinPostLine(url);
+  return await idPostLine(url, tab) || await forgeLine(url) || await wikipediaLine(url) || await npmLine(url)
+    || await firefoxAddonLine(url) || await arxivLine(url);
+}
+
+// Runs in the page (must be self-contained)
+// Timestamp of a link's first Wayback Machine capture ("20170319021736"), from the same-site CDX API
+async function readWaybackFirstCapture(link) {
+  try {
+    return (await (await fetch(`/cdx/search/cdx?url=${encodeURIComponent(link)}&limit=1&fl=timestamp`)).text()).trim();
+  } catch (e) { return ""; }
 }
 
 function flashBadge(tabId, text, color) {
@@ -448,7 +469,7 @@ async function idPostLine(url, tab) {
     const date = id < 1n << 40n ? "?" : localDate(Number((id >> 23n) + 1314220021721n));
     if (threads) return `${date} https://www.threads.com/${threads[1]}/post/${code}`;
     // Instagram links rarely name the creator: "date @user link" like YouTube
-    const user = instagram[1] || await runInPage(tab, readInstagramUser, "ISOLATED", [code]);
+    const user = instagram[1] || tab && await runInPage(tab, readInstagramUser, "ISOLATED", [code]);
     return `${date} ${user ? `@${user} ` : ""}https://www.instagram.com/${instagram[2].replace("reels", "reel")}/${code}/`;
   }
   // Mastodon posts on any server (/@user/<id>, /@user@server/<id>): id >> 16 = ms; the oldest posts have sequential IDs
