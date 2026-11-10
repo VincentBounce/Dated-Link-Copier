@@ -463,6 +463,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.62.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis: the article link is built from the wiki's settings, so LifeWiki's info page gives it too (`…&action=info` → `2009-05-14 https://conwaylife.com/wiki/OTCA_metapixel`) |
 | 2.62.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis: Fandom article links from history pages; Lemmy comment links give their post's date and link (`lemmy.ml/comment/28913983` → `2026-11-09 … https://lemmy.ml/post/55101879`) |
 | 2.61.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis on MediaWiki (LifeWiki, Arch Wiki, Minecraft Wiki…): creation date from the wiki's API and the article link, also from history and info pages (`2010-09-17 https://wiki.archlinux.org/title/Systemd`) |
 | 2.60.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: FluxBB, Discuz! and ProBoards (first post's date), first page of Vanilla, ProBoards, Discuz! and FluxBB threads from later pages or post links |

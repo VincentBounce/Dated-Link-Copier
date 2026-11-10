@@ -759,9 +759,9 @@ async function readArticleInfo() {
 
   // MediaWiki sites (LifeWiki, Arch Wiki, Minecraft Wiki…, known by their generator tag; Wikipedia is read from its link
   // alone): creation date = first revision, from the wiki's own API (its EditURI link, else the REST search link's
-  // folder), UTC date like Wikipedia; the page name is the page's configuration ("wgPageName":"OTCA_metapixel"), also the
-  // line's title, and the link the article's, from its "View the content page" link (access key c: the namespace tab,
-  // also on Fandom), so also from its history or info page ("…&action=info", whose own title is "Information for …")
+  // folder), UTC date like Wikipedia, with the wiki's server and article path ("/wiki/$1") in the same request: the link
+  // is the article's whatever the page (history, info: "…&action=info", whose own title is "Information for …") or
+  // the skin; the page name is the page's configuration ("wgPageName":"OTCA_metapixel"), the title the API's
   async function mediaWiki() {
     if (!/^MediaWiki/.test(doc.querySelector('meta[name="generator"]')?.content)) return null;
     const page = doc.documentElement.innerHTML.match(/"wgPageName":("(?:[^"\\]|\\.)*")/)?.[1];
@@ -770,10 +770,12 @@ async function readArticleInfo() {
     try {
       const api = new URL(entry.replace(/[^/]*(rest\.php.*)?$/, "api.php"));
       api.search = new URLSearchParams({ action: "query", format: "json", redirects: 1, prop: "revisions", rvdir: "newer",
-        rvlimit: 1, rvprop: "timestamp", titles: JSON.parse(page) });
-      const created = Object.values((await (await fetch(api)).json()).query.pages)[0].revisions?.[0]?.timestamp || "";
-      return { date: created.slice(0, 10), link: doc.querySelector('a[accesskey="c"]')?.href,
-        title: JSON.parse(page).replace(/_/g, " ") };
+        rvlimit: 1, rvprop: "timestamp", meta: "siteinfo", siprop: "general", titles: JSON.parse(page) });
+      const { pages, general } = (await (await fetch(api)).json()).query;
+      const { title, revisions } = Object.values(pages)[0];
+      const path = encodeURIComponent(title.replace(/ /g, "_")).replace(/%2F/g, "/").replace(/%3A/g, ":");
+      return { date: revisions?.[0]?.timestamp.slice(0, 10) || "", title,
+        link: new URL(general.articlepath.replace("$1", path), new URL(general.server, pageUrl)).href };
     } catch (e) { return null; }
   }
 
