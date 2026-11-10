@@ -691,14 +691,35 @@ async function readPlayAppInfo(fetchRegions) {
 }
 
 // Runs in the page (must be self-contained)
-function readArticleInfo() {
-  const meta = sel => document.querySelector(sel)?.content;
+async function readArticleInfo() {
+  // A forum thread's later page, or a link to a later post, shows later posts: its first page, fetched, has the
+  // initial post, and gives the line's link. phpBB's canonical link is the first page; MyBB ("thread-12-page-2.html",
+  // "-post-34", "-lastpost"), XenForo ("/threads/title.12/page-2"), Invision ("/topic/12-title/page/2/") and SMF
+  // ("topic=12.20", "topic=12.msg34") write the page or post in the link
+  const first = new URL(location.href);
+  first.hash = "";
+  const phpBBFirst = document.querySelector('link[rel="canonical"]')?.href;
+  if (/\/viewtopic\.php$/.test(first.pathname) && /[?&](start|p)=/.test(first.search) && phpBBFirst?.includes("viewtopic.php")) {
+    first.href = phpBBFirst;
+  }
+  first.pathname = first.pathname.replace(/(\/thread-\d+)-(?:page-\d+|post-\d+|lastpost|newpost)\.html$/, "$1.html")
+    .replace(/(\/threads\/[^/]+)\/(?:page|post)-\d+\/?$/, "$1/").replace(/(\/topic\/[^/]+)\/page\/\d+\/?$/, "$1/");
+  first.search = first.search.replace(/([?&;]topic=\d+)\.\w+/, "$1.0");
+  if (first.pathname.endsWith("/showthread.php")) first.searchParams.delete("page");
+  let doc = document, pageUrl = location.href;
+  if (first.href !== location.href.replace(/#.*/, "")) {
+    try {
+      doc = new DOMParser().parseFromString(await (await fetch(first.href)).text(), "text/html");
+      pageUrl = first.href;
+    } catch (e) {}
+  }
+  const meta = sel => doc.querySelector(sel)?.content;
   // Dates of the usual tags, complete first. Scientific journals (Nature…) use citation_* / Dublin Core tags, as
   // "2025/06/03" or "2024 Oct 3" (PMC); their citation_publication_date can be the print issue month only
   // ("2026/07", "2011"), so the online date comes first, and a partial date only after the dates shown on the page
   const dates = list => list.map(d => dateFromText((d || "").trim(), false)).filter(Boolean);
   const firstDate = list => dates(list).find(d => !d.includes("x")) || "";
-  const jsonLd = key => [...document.querySelectorAll('script[type="application/ld+json"]')]
+  const jsonLd = key => [...doc.querySelectorAll('script[type="application/ld+json"]')]
     .map(s => s.textContent.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`))?.[1]);
   const publishedTags = [
     meta('meta[property="article:published_time"]'),
@@ -712,7 +733,7 @@ function readArticleInfo() {
   ];
   // English labels write the month first with slashes ("11/14/2021")
   const afterLabel = label => {
-    const m = document.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
+    const m = doc.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
     return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
   };
   const published = forumDate() || firstDate(publishedTags) || shownDate() || dates(publishedTags)[0] || updatedDate();
@@ -722,9 +743,9 @@ function readArticleInfo() {
   // its <time> being the current time in the header); SMF 1.1 and 2.0: the first .smalltext "« on: May 05, 2013, …»".
   // Others need nothing: phpBB 3, XenForo, Invision (first <time datetime>), Discourse, NodeBB (article:published_time)
   function forumDate() {
-    const myBB = document.querySelector("#posts .post_date")?.firstChild;
-    const smf = document.querySelector("#forumposts .postinfo a.smalltext")
-      || [...document.querySelectorAll(".smalltext")].find(e => e.textContent.trim().startsWith("«"));
+    const myBB = doc.querySelector("#posts .post_date")?.firstChild;
+    const smf = doc.querySelector("#forumposts .postinfo a.smalltext")
+      || [...doc.querySelectorAll(".smalltext")].find(e => e.textContent.trim().startsWith("«"));
     const text = myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent) : smf?.textContent || "";
     return dateFromText(text.trim().replace(/^«[^:]*:\s*/, ""), !!myBB);
   }
@@ -734,16 +755,16 @@ function readArticleInfo() {
   // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>), else the
   // first text that is only a complete date (research.google: <p>October 27, 2026</p>, before the related posts')
   function shownDate() {
-    const iso = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+    const iso = doc.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
     if (iso) return iso;
-    const element = document.querySelector("article .date") || document.querySelector(".date");
+    const element = doc.querySelector("article .date") || doc.querySelector(".date");
     return afterLabel(/(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: by [^\n]{1,40}? on| on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)/)
       || (element ? dateFromText(element.textContent.trim(), false) : "")
       || bareDate();
   }
 
   function bareDate() {
-    const texts = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const texts = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
     for (let node; (node = texts.nextNode());) {
       const text = node.nodeValue.trim();
       if (text.length < 8 || text.length > 30 || !/\d$/.test(text)) continue;
@@ -757,7 +778,7 @@ function readArticleInfo() {
   // "Updated 11 January 2026"), else a Google Sites page's last publication (data-last-updated-at-time, ms, shown in
   // its "Page updated" info), local date
   function updatedDate() {
-    const updatedAt = Number(document.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
+    const updatedAt = Number(doc.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
     return firstDate([meta('meta[property="article:modified_time"]'), meta('meta[property="og:updated_time"]'),
       meta('meta[itemprop="dateModified"]'), ...jsonLd("dateModified")])
       || afterLabel(/(last (?:updated|modified)(?: on)?|updated(?: on)?|mise? à jour(?: le)?|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
@@ -796,12 +817,12 @@ function readArticleInfo() {
   }
 
   // Canonical link if it's on the same site, otherwise the current URL without tracking parameters
-  const canonical = document.querySelector('link[rel="canonical"]')?.href;
+  const canonical = doc.querySelector('link[rel="canonical"]')?.href;
   let link;
-  if (canonical && new URL(canonical).hostname === location.hostname) {
+  if (canonical && new URL(canonical).hostname === new URL(pageUrl).hostname) {
     link = canonical;
   } else {
-    const u = new URL(location.href);
+    const u = new URL(pageUrl);
     u.hash = "";
     // Tracking parameters: families by prefix (utm_source…, Matomo, Piwik, HubSpot ads), else exact names
     // (ad click IDs, Google result links, social networks, newsletters); the rest of the query stays
@@ -814,7 +835,7 @@ function readArticleInfo() {
   // Title without the site name (" | Scientific Reports", " - Le Parisien")
   const site = meta('meta[property="og:site_name"]')?.trim();
   let title = meta('meta[name="citation_title"]') || meta('meta[name="dc.title"]') || meta('meta[name="DC.title"]')
-    || meta('meta[property="og:title"]') || document.title;
+    || meta('meta[property="og:title"]') || doc.title;
   title = (title || "").trim();
   if (site) title = title.replace(new RegExp(`\\s+[-|–—:]\\s+${site.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "");
   // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")
