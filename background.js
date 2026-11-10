@@ -313,6 +313,22 @@ async function buildLine(tab) {
     if (first !== null) return `${first ? localDate(first) : "?"} https://medium.com/${medium}/`;
   }
 
+  // Google Groups threads (also a message's link, /c/<thread>/m/<message>): date of the first message, with the subject
+  const groupsThread = url.match(/^https:\/\/groups\.google\.com\/((?:a\/[^/]+\/)?g\/[^/]+\/c\/[\w-]+)/)?.[1];
+  if (groupsThread) {
+    const info = await runInPage(tab, readGoogleGroupsThread, "ISOLATED", [groupsThread]);
+    const link = `https://groups.google.com/${groupsThread}`;
+    return `${info.first ? localDate(info.first * 1000) : "?"} ${titleIfNotInLink(info.subject, link)}${link}`;
+  }
+
+  // Quora questions (also an answer's link, /<question>/answer/<user>, and the question's log): date the question was
+  // asked; other Quora pages (profiles, topics, spaces) go to the generic reader
+  const quora = url.match(/^https:\/\/(?:www\.|[a-z]{2}\.)?quora\.com\/([^/?#]+)(?:\/(?:answer\/[^/?#]+|log))?\/?(?:[?#]|$)/);
+  if (quora && !/^(profile|topic|search|spaces|answer|about|careers|press|contact|settings|notifications|q)$/.test(quora[1])) {
+    const created = await runInPage(tab, readQuoraQuestionCreated, "ISOLATED", [quora[1]]);
+    if (created) return `${localDate(created / 1000)} ${new URL(url).origin}/${quora[1]}`;
+  }
+
   // Printables models: first publication (a republished model's datePublished is its last one), in the viewer's time zone
   if (/^https:\/\/www\.printables\.com\/(?:[a-z]{2}\/)?model\/\d+/.test(url)) {
     const info = await runInPage(tab, readPrintablesModelInfo);
@@ -1430,6 +1446,35 @@ async function readFacebookPageCreated(page) {
     } catch (e) {}
   }
   return { created: created || "", lang };
+}
+
+// Runs in the page (must be self-contained)
+// Google Groups thread: its page data (AF_initDataCallback blocks naming the thread) gives each message's sent time as
+// [seconds, nanoseconds] ([1708121897,243000000]; 9 digits before 2001, Usenet archives), the oldest being the first message; the page is fetched (~0.7 s), as
+// in-page navigation keeps the first thread's data
+async function readGoogleGroupsThread(thread) {
+  try {
+    const html = await (await fetch(`/${thread}`)).text();
+    const id = thread.match(/[\w-]+$/)[0];
+    const times = [...html.matchAll(/AF_initDataCallback\(([\s\S]*?)\);<\/script>/g)].map(m => m[1])
+      .filter(block => block.includes(`"${id}"`)).flatMap(block => [...block.matchAll(/\[(\d{9,10}),\d{1,9}\]/g)].map(m => Number(m[1])));
+    // Subject from <title> (Google's Trusted Types forbid DOMParser on the page), its character references decoded
+    const subject = (html.match(/<title>([^<]*)<\/title>/)?.[1] || "").replace(/ - Google Groups$/, "")
+      .replace(/&#(x?)([\da-f]+);/gi, (m, x, n) => String.fromCodePoint(parseInt(n, x ? 16 : 10)))
+      .replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    return { first: times.length ? Math.min(...times) : 0, subject };
+  } catch (e) { return { first: 0, subject: "" }; }
+}
+
+// Runs in the page (must be self-contained)
+// Quora question: its log page (/<question>/log) holds the question's "creationTime" (microseconds), after its "url"
+// (the question page itself only has its answers' and users'), fetched (~1 s)
+async function readQuoraQuestionCreated(slug) {
+  try {
+    const html = (await (await fetch(`/${slug}/log`)).text()).replace(/\\"/g, '"');
+    const at = html.indexOf(`"url":"/${decodeURIComponent(slug)}"`);
+    return at < 0 ? 0 : Number(html.slice(at).match(/"creationTime":(\d{16})/)?.[1] || 0);
+  } catch (e) { return 0; }
 }
 
 // Runs in the page (must be self-contained)
