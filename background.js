@@ -694,8 +694,9 @@ async function readPlayAppInfo(fetchRegions) {
 async function readArticleInfo() {
   // A forum thread's later page, or a link to a later post, shows later posts: its first page, fetched, has the
   // initial post, and gives the line's link. phpBB's canonical link is the first page; MyBB ("thread-12-page-2.html",
-  // "-post-34", "-lastpost"), XenForo ("/threads/title.12/page-2"), Invision ("/topic/12-title/page/2/") and SMF
-  // ("topic=12.20", "topic=12.msg34") write the page or post in the link
+  // "-post-34", "-lastpost"), XenForo ("/threads/title.12/page-2"), Invision ("/topic/12-title/page/2/"), SMF
+  // ("topic=12.20", "topic=12.msg34") and vBulletin ("title-12-2.html", "12-title/page2", "&page=2", known by its
+  // generator tag, as these links are common) write the page or post in the link
   const first = new URL(location.href);
   first.hash = "";
   const phpBBFirst = document.querySelector('link[rel="canonical"]')?.href;
@@ -706,11 +707,18 @@ async function readArticleInfo() {
     .replace(/(\/threads\/[^/]+)\/(?:page|post)-\d+\/?$/, "$1/").replace(/(\/topic\/[^/]+)\/page\/\d+\/?$/, "$1/");
   first.search = first.search.replace(/([?&;]topic=\d+)\.\w+/, "$1.0");
   if (first.pathname.endsWith("/showthread.php")) first.searchParams.delete("page");
+  if (/vBulletin/i.test(document.querySelector('meta[name="generator"]')?.content)) {
+    first.pathname = first.pathname.replace(/(-\d+)-\d+\.html$/, "$1.html").replace(/\/page\d+$/, "");
+    first.search = first.search.replace(/\/page\d+$/, "");
+  }
   let doc = document, pageUrl = location.href;
   if (first.href !== location.href.replace(/#.*/, "")) {
     try {
-      doc = new DOMParser().parseFromString(await (await fetch(first.href)).text(), "text/html");
-      pageUrl = first.href;
+      const res = await fetch(first.href);
+      if (res.ok) {
+        doc = new DOMParser().parseFromString(await res.text(), "text/html");
+        pageUrl = first.href;
+      }
     } catch (e) {}
   }
   const meta = sel => doc.querySelector(sel)?.content;
@@ -740,14 +748,23 @@ async function readArticleInfo() {
 
   // Forum engines without date metadata: the first post's date as written. MyBB: .post_date ("2023-06-30, 01:35 PM";
   // a relative "Yesterday" carries the date in its title); SMF 2.1: .postinfo a.smalltext ("March 08, 2026, 08:49:59 AM",
-  // its <time> being the current time in the header); SMF 1.1 and 2.0: the first .smalltext "« on: May 05, 2013, …»".
-  // Others need nothing: phpBB 3, XenForo, Invision (first <time datetime>), Discourse, NodeBB (article:published_time)
+  // its <time> being the current time in the header); SMF 1.1 and 2.0: the first .smalltext "« on: May 05, 2013, …»";
+  // vBulletin 3: the post table's first .thead ("30-10-2026, 13:27"), 4: .postdate .date. "Today" and "Yesterday" (SMF,
+  // vBulletin) are the local date. Others need nothing: phpBB 3, XenForo, Invision (first <time datetime>), Discourse,
+  // NodeBB (article:published_time)
   function forumDate() {
     const myBB = doc.querySelector("#posts .post_date")?.firstChild;
-    const smf = doc.querySelector("#forumposts .postinfo a.smalltext")
-      || [...doc.querySelectorAll(".smalltext")].find(e => e.textContent.trim().startsWith("«"));
-    const text = myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent) : smf?.textContent || "";
-    return dateFromText(text.trim().replace(/^«[^:]*:\s*/, ""), !!myBB);
+    const other = doc.querySelector("#forumposts .postinfo a.smalltext")
+      || [...doc.querySelectorAll(".smalltext")].find(e => e.textContent.trim().startsWith("«"))
+      || doc.querySelector('#posts table[id^="post"] td.thead, #posts .postdate .date');
+    const text = (myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent) : other?.textContent || "")
+      .trim().replace(/^«[^:]*:\s*/, "");
+    const relative = text.match(/^(?:(today|aujourd'hui|heute|hoy|oggi)|(yesterday|hier|gestern|ayer|ieri))\b/i);
+    if (relative) {
+      const day = new Date(Date.now() - (relative[2] ? 864e5 : 0));
+      return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+    }
+    return dateFromText(text, !!myBB);
   }
 
   // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",

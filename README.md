@@ -318,6 +318,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.58.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: vBulletin 3 and 4 (first post's date, first page from later pages), "Today" and "Yesterday" dates |
 | 2.57.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: on a later page, or a link to a later post, the first page is read: the initial post's date and the thread's link (`…/index.php?topic=33260.20` → `2013-05-05 … https://forums.tigsource.com/index.php?topic=33260.0`) |
 | 2.56.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: first post's date on MyBB and SMF (`2013-05-05 Doodal - doodling with portals https://forums.tigsource.com/index.php?topic=33260.0`); phpBB 3, XenForo, Invision, Discourse and NodeBB already gave it |
 | 2.55.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Instagram profiles: link without the final slash (`https://www.instagram.com/relayfinancial`) |
