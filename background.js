@@ -1287,16 +1287,21 @@ async function readICloudShortcutInfo() {
 
 // Runs in the page (must be self-contained)
 // Facebook page or profile creation date, "March 10, 2020" in the page's language: the "creation_date" field of
-// Page transparency, in the loaded page's data when it is that tab, else in that tab fetched (~1-4 s, 15 MB: the full
-// page data only comes with an Accept: text/html request)
+// Page transparency, which only the signed-out layout has: in the loaded page's data when it is that tab signed out,
+// else that tab fetched without cookies (~1-4 s, 15 MB: the full page data only comes with an Accept: text/html request)
 async function readFacebookPageCreated(page) {
   const createdIn = html => html.match(/"text":"([^"]{4,40})"\},"field_type":"creation_date"/)?.[1];
   let created = createdIn(document.documentElement.innerHTML);
+  let lang = document.documentElement.lang;
   if (!created) {
     const transparency = page.startsWith("profile.php") ? `/${page}&sk=about_profile_transparency` : `/${page}/about_profile_transparency`;
-    try { created = createdIn(await (await fetch(transparency, { headers: { Accept: "text/html" } })).text()); } catch (e) {}
+    try {
+      const html = await (await fetch(transparency, { headers: { Accept: "text/html" }, credentials: "omit" })).text();
+      created = createdIn(html);
+      lang = html.match(/<html[^>]* lang="([^"]+)"/)?.[1] || lang;
+    } catch (e) {}
   }
-  return { created: created || "", lang: document.documentElement.lang };
+  return { created: created || "", lang };
 }
 
 // Runs in the page (must be self-contained)

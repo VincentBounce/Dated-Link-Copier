@@ -312,6 +312,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.54.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Facebook: the creation date also when signed in (Page transparency is read from the signed-out page) |
 | 2.54.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Facebook pages and profiles: creation date from Page transparency, no title (`2020-03-10 https://www.facebook.com/relayfinancial`) |
 | 2.53.0 | 2026-11-09 | Claude Code (Claude Opus 5.5) | Medium publications: date of the first post (`2018-01-25 https://medium.com/doctolib/`) |
 | 2.52.0 | 2026-11-08 | Claude Code (Claude Opus 5.5) | GitHub repositories: the first commit's date when older than the repository (`2026-10-21 https://github.com/MithrilMan/voice-workshop`, `2005-04-17 https://github.com/torvalds/linux`) |
