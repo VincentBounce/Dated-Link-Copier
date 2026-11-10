@@ -267,13 +267,6 @@ Source: [groups.google.com/g/comp.lang.python/c/oOThDCtK0R0](https://groups.goog
 2024-02-16 Can one output something other than 'nan' for not a number values？ https://groups.google.com/g/comp.lang.python/c/oOThDCtK0R0
 ```
 
-**Quora questions:** date the question was asked (from its log), also from an answer's link
-
-Source: [www.quora.com/What-is-the-best-way-to-learn-programming](https://www.quora.com/What-is-the-best-way-to-learn-programming)
-```
-2011-01-11 https://www.quora.com/What-is-the-best-way-to-learn-programming
-```
-
 **Hacker News:** post or comment date and link, with the story title (the link doesn't carry it)
 
 Source: [news.ycombinator.com/item?id=50028275](https://news.ycombinator.com/item?id=50028275)
@@ -477,6 +470,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.63.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Quora questions removed: Cloudflare blocks the background read of the question's log, so the date read stays |
 | 2.63.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Google Groups threads (first message's date and subject) and Quora questions (date asked, from the question's log) |
 | 2.62.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis: the article link is built from the wiki's settings, so LifeWiki's info page gives it too (`…&action=info` → `2009-05-14 https://conwaylife.com/wiki/OTCA_metapixel`) |
 | 2.62.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis: Fandom article links from history pages; Lemmy comment links give their post's date and link (`lemmy.ml/comment/28913983` → `2026-11-09 … https://lemmy.ml/post/55101879`) |

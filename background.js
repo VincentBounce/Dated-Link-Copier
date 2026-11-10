@@ -321,14 +321,6 @@ async function buildLine(tab) {
     return `${info.first ? localDate(info.first * 1000) : "?"} ${titleIfNotInLink(info.subject, link)}${link}`;
   }
 
-  // Quora questions (also an answer's link, /<question>/answer/<user>, and the question's log): date the question was
-  // asked; other Quora pages (profiles, topics, spaces) go to the generic reader
-  const quora = url.match(/^https:\/\/(?:www\.|[a-z]{2}\.)?quora\.com\/([^/?#]+)(?:\/(?:answer\/[^/?#]+|log))?\/?(?:[?#]|$)/);
-  if (quora && !/^(profile|topic|search|spaces|answer|about|careers|press|contact|settings|notifications|q)$/.test(quora[1])) {
-    const created = await runInPage(tab, readQuoraQuestionCreated, "ISOLATED", [quora[1]]);
-    if (created) return `${localDate(created / 1000)} ${new URL(url).origin}/${quora[1]}`;
-  }
-
   // Printables models: first publication (a republished model's datePublished is its last one), in the viewer's time zone
   if (/^https:\/\/www\.printables\.com\/(?:[a-z]{2}\/)?model\/\d+/.test(url)) {
     const info = await runInPage(tab, readPrintablesModelInfo);
@@ -1464,17 +1456,6 @@ async function readGoogleGroupsThread(thread) {
       .replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
     return { first: times.length ? Math.min(...times) : 0, subject };
   } catch (e) { return { first: 0, subject: "" }; }
-}
-
-// Runs in the page (must be self-contained)
-// Quora question: its log page (/<question>/log) holds the question's "creationTime" (microseconds), after its "url"
-// (the question page itself only has its answers' and users'), fetched (~1 s)
-async function readQuoraQuestionCreated(slug) {
-  try {
-    const html = (await (await fetch(`/${slug}/log`)).text()).replace(/\\"/g, '"');
-    const at = html.indexOf(`"url":"/${decodeURIComponent(slug)}"`);
-    return at < 0 ? 0 : Number(html.slice(at).match(/"creationTime":(\d{16})/)?.[1] || 0);
-  } catch (e) { return 0; }
 }
 
 // Runs in the page (must be self-contained)
