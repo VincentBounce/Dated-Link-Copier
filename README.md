@@ -253,7 +253,7 @@ Source: [stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-f
 2012-06-27 https://stackoverflow.com/questions/11227809/why-is-conditional-processing-of-a-sorted-array-faster-than-of-an-unsorted-array
 ```
 
-**Lemmy posts (any server):** publication date from the server's API (the pages carry none), with the title
+**Lemmy posts (any server):** publication date from the server's API (the pages carry none), with the title; a comment's link gives its post
 
 Source: [lemmy.world/post/54180129](https://lemmy.world/post/54180129)
 ```
@@ -344,7 +344,7 @@ Source: [en.wikipedia.org/wiki/Mastodon_(social_network)](https://en.wikipedia.o
 2017-01-11 https://en.wikipedia.org/wiki/Mastodon_(social_network)
 ```
 
-**Other wikis (MediaWiki: LifeWiki, Arch Wiki, Minecraft Wiki…):** creation date (first revision) and article link, also from the page's history or info page
+**Other wikis (MediaWiki: LifeWiki, Arch Wiki, Minecraft Wiki, Fandom…):** creation date (first revision) and article link, also from the page's history or info page
 
 Sources: [wiki.archlinux.org/index.php?title=Systemd&action=info](https://wiki.archlinux.org/index.php?title=Systemd&action=info) · [minecraft.wiki/w/Creeper](https://minecraft.wiki/w/Creeper)
 ```
@@ -463,6 +463,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.62.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis: Fandom article links from history pages; Lemmy comment links give their post's date and link (`lemmy.ml/comment/28913983` → `2026-11-09 … https://lemmy.ml/post/55101879`) |
 | 2.61.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis on MediaWiki (LifeWiki, Arch Wiki, Minecraft Wiki…): creation date from the wiki's API and the article link, also from history and info pages (`2010-09-17 https://wiki.archlinux.org/title/Systemd`) |
 | 2.60.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: FluxBB, Discuz! and ProBoards (first post's date), first page of Vanilla, ProBoards, Discuz! and FluxBB threads from later pages or post links |
 | 2.59.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Lemmy posts on any server: publication date from the server's API (`2026-11-09 … https://lemmy.world/post/54180129`); Flarum and Stack Exchange already gave theirs |

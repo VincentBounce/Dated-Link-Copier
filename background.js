@@ -753,14 +753,15 @@ async function readArticleInfo() {
     return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
   };
   const wiki = await mediaWiki();
-  const published = wiki?.date || await lemmyDate() || forumDate() || firstDate(publishedTags) || shownDate()
+  const lemmy = await lemmyPost();
+  const published = wiki?.date || lemmy?.date || forumDate() || firstDate(publishedTags) || shownDate()
     || dates(publishedTags)[0] || updatedDate();
 
   // MediaWiki sites (LifeWiki, Arch Wiki, Minecraft Wiki…, known by their generator tag; Wikipedia is read from its link
   // alone): creation date = first revision, from the wiki's own API (its EditURI link, else the REST search link's
   // folder), UTC date like Wikipedia; the page name is the page's configuration ("wgPageName":"OTCA_metapixel"), also the
-  // line's title, and the link the article's, from its namespace tab ("Page"), so also from its history or info page
-  // ("…&action=info", whose own title is "Information for …")
+  // line's title, and the link the article's, from its "View the content page" link (access key c: the namespace tab,
+  // also on Fandom), so also from its history or info page ("…&action=info", whose own title is "Information for …")
   async function mediaWiki() {
     if (!/^MediaWiki/.test(doc.querySelector('meta[name="generator"]')?.content)) return null;
     const page = doc.documentElement.innerHTML.match(/"wgPageName":("(?:[^"\\]|\\.)*")/)?.[1];
@@ -771,7 +772,7 @@ async function readArticleInfo() {
       api.search = new URLSearchParams({ action: "query", format: "json", redirects: 1, prop: "revisions", rvdir: "newer",
         rvlimit: 1, rvprop: "timestamp", titles: JSON.parse(page) });
       const created = Object.values((await (await fetch(api)).json()).query.pages)[0].revisions?.[0]?.timestamp || "";
-      return { date: created.slice(0, 10), link: doc.querySelector('[id^="ca-nstab-"] a')?.href,
+      return { date: created.slice(0, 10), link: doc.querySelector('a[accesskey="c"]')?.href,
         title: JSON.parse(page).replace(/_/g, " ") };
     } catch (e) { return null; }
   }
@@ -783,13 +784,16 @@ async function readArticleInfo() {
   }
 
   // Lemmy posts (/post/<id> on any server, known by its <meta name="Description" content="Lemmy">) carry no date: the
-  // post's "published" (UTC) from the server's public API, shown as the local date like Lemmy does
-  async function lemmyDate() {
-    const id = new URL(pageUrl).pathname.match(/^\/post\/(\d+)/)?.[1];
-    if (!id || doc.querySelector('meta[name="Description"]')?.content !== "Lemmy") return "";
+  // post's "published" (UTC) from the server's public API, shown as the local date like Lemmy does; a comment's link
+  // (/comment/<id>) gives its post's date and link, like a forum reply
+  async function lemmyPost() {
+    const [, kind, id] = new URL(pageUrl).pathname.match(/^\/(post|comment)\/(\d+)/) || [];
+    if (!id || doc.querySelector('meta[name="Description"]')?.content !== "Lemmy") return null;
     try {
-      return localDay(Date.parse((await (await fetch(`/api/v3/post?id=${id}`)).json()).post_view.post.published));
-    } catch (e) { return ""; }
+      const data = await (await fetch(`/api/v3/${kind}?id=${id}`)).json();
+      const post = (data.post_view || data.comment_view).post;
+      return { date: localDay(Date.parse(post.published)), link: `${new URL(pageUrl).origin}/post/${post.id}` };
+    } catch (e) { return null; }
   }
 
   // Forum engines without date metadata: the first post's date as written. MyBB: .post_date ("2023-06-30, 01:35 PM";
@@ -898,7 +902,7 @@ async function readArticleInfo() {
     }
     link = u.href;
   }
-  if (wiki?.link) link = wiki.link;
+  link = wiki?.link || lemmy?.link || link;
   // Title without the site name (" | Scientific Reports", " - Le Parisien")
   const site = meta('meta[property="og:site_name"]')?.trim();
   let title = meta('meta[name="citation_title"]') || meta('meta[name="dc.title"]') || meta('meta[name="DC.title"]')
