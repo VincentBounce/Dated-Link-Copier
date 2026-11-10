@@ -167,7 +167,7 @@ async function buildLine(tab) {
     // Replace " - " in channels and title; one "@" per channel (collaborations have several); "[ID]" before the link
     const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
     const cleanTitle = cleanText(info.title);
-    return `${formatDate(info.published)} ${cleanChannels} - ${cleanTitle} [${info.id}] https://youtu.be/${info.id}`;
+    return `${formatDate(info.published) || "?"} ${cleanChannels} - ${cleanTitle} [${info.id}] https://youtu.be/${info.id}`;
   }
 
   if (/^https:\/\/play\.google\.com\/store\/apps\/details\?/.test(url)) {

@@ -69,7 +69,7 @@ Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapo
 Sources: [apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000](https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000) · [apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574](https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574) · [apps.apple.com/us/app/golly/id553184760](https://apps.apple.com/us/app/golly/id553184760)
 ```
 iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000
-macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
+(macOS)-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
 (macOS)-iPadOS 2012-08-28 https://apps.apple.com/us/app/golly/id553184760
 ```
 
@@ -231,7 +231,7 @@ Discuz!, from [www.52pojie.cn/thread-147931-1-1.html](https://www.52pojie.cn/thr
 ```
 Discourse, from [meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829](https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829)
 ```
-2025-02-18 https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829
+2025-02-18 PDF support in Discourse AI (RAG), Documentation ／ Site Management https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829
 ```
 NodeBB, from [community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts/7](https://community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts/7)
 ```
@@ -334,7 +334,7 @@ Source: [pmc.ncbi.nlm.nih.gov/articles/PMC11479185/](https://pmc.ncbi.nlm.nih.go
 
 Source: [www.nidcd.nih.gov/health/how-do-we-hear](https://www.nidcd.nih.gov/health/how-do-we-hear)
 ```
-2015-05-xx How Do We Hear? https://www.nidcd.nih.gov/health/how-do-we-hear
+2015-05-xx How Do We Hear？ https://www.nidcd.nih.gov/health/how-do-we-hear
 ```
 
 **ScienceDirect Topics:** these pages compile excerpts and have no date of their own, so the year of the source their definition is based on is used (else the oldest excerpt)
@@ -426,7 +426,7 @@ Source: [haveibeenpwned.com/Breach/Ledger](https://haveibeenpwned.com/Breach/Led
 
 Source: [support.apple.com/en-us/guide/watch/apd521a8a902/watchos](https://support.apple.com/en-us/guide/watch/apd521a8a902/watchos)
 ```
-(2026-10) https://support.apple.com/guide/watch/apd521a8a902/watchos
+(2026-11) https://support.apple.com/guide/watch/restart-applewatch-apd521a8a902/watchos
 ```
 
 **Any other page (news articles, blogs…):** publish date from the page metadata, else a date shown on the page (`<time>`, "Publié le 14.11.2021", "Posted by Terry on May 14, 2013"…), and link
@@ -470,6 +470,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.63.2 | 2026-11-10 | Claude Code (Claude Opus 5.5) | YouTube videos: `?` when the player has no date (YouTube's bot check), instead of an empty date |
 | 2.63.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Quora questions removed: Cloudflare blocks the background read of the question's log, so the date read stays |
 | 2.63.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Google Groups threads (first message's date and subject) and Quora questions (date asked, from the question's log) |
 | 2.62.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis: the article link is built from the wiki's settings, so LifeWiki's info page gives it too (`…&action=info` → `2009-05-14 https://conwaylife.com/wiki/OTCA_metapixel`) |
