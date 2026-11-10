@@ -744,7 +744,24 @@ async function readArticleInfo() {
     const m = doc.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
     return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
   };
-  const published = forumDate() || firstDate(publishedTags) || shownDate() || dates(publishedTags)[0] || updatedDate();
+  const published = await lemmyDate() || forumDate() || firstDate(publishedTags) || shownDate() || dates(publishedTags)[0]
+    || updatedDate();
+
+  // Local date of a time in ms, "2026-11-09"
+  function localDay(ms) {
+    const day = new Date(ms);
+    return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+  }
+
+  // Lemmy posts (/post/<id> on any server, known by its <meta name="Description" content="Lemmy">) carry no date: the
+  // post's "published" (UTC) from the server's public API, shown as the local date like Lemmy does
+  async function lemmyDate() {
+    const id = new URL(pageUrl).pathname.match(/^\/post\/(\d+)/)?.[1];
+    if (!id || doc.querySelector('meta[name="Description"]')?.content !== "Lemmy") return "";
+    try {
+      return localDay(Date.parse((await (await fetch(`/api/v3/post?id=${id}`)).json()).post_view.post.published));
+    } catch (e) { return ""; }
+  }
 
   // Forum engines without date metadata: the first post's date as written. MyBB: .post_date ("2023-06-30, 01:35 PM";
   // a relative "Yesterday" carries the date in its title); SMF 2.1: .postinfo a.smalltext ("March 08, 2026, 08:49:59 AM",
@@ -760,10 +777,7 @@ async function readArticleInfo() {
     const text = (myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent) : other?.textContent || "")
       .trim().replace(/^«[^:]*:\s*/, "");
     const relative = text.match(/^(?:(today|aujourd'hui|heute|hoy|oggi)|(yesterday|hier|gestern|ayer|ieri))\b/i);
-    if (relative) {
-      const day = new Date(Date.now() - (relative[2] ? 864e5 : 0));
-      return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
-    }
+    if (relative) return localDay(Date.now() - (relative[2] ? 864e5 : 0));
     return dateFromText(text, !!myBB);
   }
 
