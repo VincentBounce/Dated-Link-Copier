@@ -131,6 +131,15 @@ async function buildLine(tab) {
     return `${consultedDate()} https://www.instagram.com/${instagramProfile}/`;
   }
 
+  // Facebook pages and profiles (any tab but single posts, photos, videos): creation date shown in Page transparency,
+  // in the page's language, without the page title ("(6) Facebook" signed in)
+  const facebook = url.match(/^https:\/\/(?:www|m|web)\.facebook\.com\/(?:profile\.php\?(?:[^#]*&)?id=(\d+)|([A-Za-z0-9.-]+)\/?(?:(?:about[^/?#]*|photos|videos|reels|followers|following|friends|mentions|reviews|events)\/?)?(?:[?#]|$))/);
+  if (facebook && !/^(watch|groups|events|marketplace|gaming|reel|reels|photo|photo\.php|story\.php|permalink\.php|share|login|help|settings|notifications|messages|friends|pages|search|hashtag|ads|business|privacy|policies|home\.php|saved|bookmarks|memories)$/.test(facebook[2] || "")) {
+    const page = facebook[1] ? `profile.php?id=${facebook[1]}` : facebook[2];
+    const info = await runInPage(tab, readFacebookPageCreated, "ISOLATED", [page]);
+    return `${localizedDate(info.created, info.lang) || consultedDate()} https://www.facebook.com/${page}`;
+  }
+
   // Wayback Machine captures (web.archive.org/web/<timestamp>/<link>): the archived link's own line when its date comes
   // from the link alone; else the archived page's date and the capture link; else the month of the link's first
   // capture, "(2017-03)": the page existed then (the user's convention)
@@ -1274,6 +1283,20 @@ async function readICloudShortcutInfo() {
   let record = {};
   try { record = await (await fetch(`/shortcuts/api/records/${id}`)).json(); } catch (e) {}
   return { created: record.created?.timestamp, name: record.fields?.name?.value || "", link: `https://www.icloud.com/shortcuts/${id}` };
+}
+
+// Runs in the page (must be self-contained)
+// Facebook page or profile creation date, "March 10, 2020" in the page's language: the "creation_date" field of
+// Page transparency, in the loaded page's data when it is that tab, else in that tab fetched (~1-4 s, 15 MB: the full
+// page data only comes with an Accept: text/html request)
+async function readFacebookPageCreated(page) {
+  const createdIn = html => html.match(/"text":"([^"]{4,40})"\},"field_type":"creation_date"/)?.[1];
+  let created = createdIn(document.documentElement.innerHTML);
+  if (!created) {
+    const transparency = page.startsWith("profile.php") ? `/${page}&sk=about_profile_transparency` : `/${page}/about_profile_transparency`;
+    try { created = createdIn(await (await fetch(transparency, { headers: { Accept: "text/html" } })).text()); } catch (e) {}
+  }
+  return { created: created || "", lang: document.documentElement.lang };
 }
 
 // Runs in the page (must be self-contained)
