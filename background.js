@@ -124,11 +124,13 @@ async function buildLine(tab) {
   const known = await linkLine(url, tab);
   if (known) return known;
 
-  // Instagram profiles show no date (the date joined needs sign-in) and their title ("Name (@user) • Instagram photos
-  // and videos") adds nothing to the link: the date read and the profile link
+  // Instagram profiles: month joined ("About this account", signed in only), else the date read; their title ("Name
+  // (@user) • Instagram photos and videos") adds nothing to the link
   const instagramProfile = url.match(/^https:\/\/www\.instagram\.com\/([A-Za-z0-9._]+)\/?(?:[?#]|$)/)?.[1];
   if (instagramProfile && !/^(explore|reels|direct|accounts|stories)$/.test(instagramProfile)) {
-    return `${consultedDate()} https://www.instagram.com/${instagramProfile}/`;
+    const info = await runInPage(tab, readInstagramJoined, "ISOLATED", [instagramProfile]);
+    const joined = info.texts.map(text => localizedDate(text, info.lang)).find(Boolean);
+    return `${joined || consultedDate()} https://www.instagram.com/${instagramProfile}/`;
   }
 
   // Facebook pages and profiles (any tab but single posts, photos, videos): creation date shown in Page transparency,
@@ -507,6 +509,25 @@ async function idPostLine(url, tab) {
     return `${date} https://bsky.app/profile/${m[1]}/post/${m[2]}`;
   }
   return null;
+}
+
+// Runs in the page (must be self-contained)
+// Texts of an Instagram profile's "About this account" sheet ("Date joined", "April 2022", "Account based in"…, in the
+// UI language), from the same-site Bloks request the sheet makes; it needs the session tokens (fb_dtsg, LSD) and the
+// Bloks version, read with the account ID from the profile page fetched (~0.4 s; the loaded page keeps the first
+// profile's data after in-page navigation). Signed out, no tokens: no texts
+async function readInstagramJoined(user) {
+  try {
+    const html = await (await fetch(`/${user}/`)).text();
+    const token = name => html.match(new RegExp(`"${name}",\\[\\],\\{"(?:token|versioningID)":"([^"]+)"`))?.[1];
+    const [id, dtsg, lsd, bkv] = [html.match(/"profilePage_(\d+)"/)?.[1], token("DTSGInitialData"), token("LSD"), token("WebBloksVersioningID")];
+    if (!id || !dtsg || !bkv) return { texts: [] };
+    const body = new URLSearchParams({ __a: "1", fb_dtsg: dtsg, lsd: lsd || "",
+      params: JSON.stringify({ referer_type: "ProfileUsername", target_user_id: id }) });
+    const sheet = await (await fetch(`/async/wbloks/fetch/?appid=com.bloks.www.ig.about_this_account&type=app&__bkv=${bkv}`,
+      { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body })).text();
+    return { texts: [...sheet.matchAll(/"\)":"([^"]{2,60})"/g)].map(m => m[1]), lang: document.documentElement.lang };
+  } catch (e) { return { texts: [] }; }
 }
 
 // Runs in the page (must be self-contained)

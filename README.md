@@ -168,6 +168,12 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
 ```
 
+**Instagram profiles:** month joined ("About this account", signed in only; else the month read) and profile link
+
+```
+2022-04-xx https://www.instagram.com/relayfinancial/
+```
+
 **Facebook pages and profiles:** creation date (Page transparency) and link, from any tab
 
 ```
@@ -312,6 +318,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.55.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Instagram profiles: month joined from "About this account" when signed in (`2022-04-xx https://www.instagram.com/relayfinancial/`) |
 | 2.54.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Facebook: the creation date also when signed in (Page transparency is read from the signed-out page) |
 | 2.54.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Facebook pages and profiles: creation date from Page transparency, no title (`2020-03-10 https://www.facebook.com/relayfinancial`) |
 | 2.53.0 | 2026-11-09 | Claude Code (Claude Opus 5.5) | Medium publications: date of the first post (`2018-01-25 https://medium.com/doctolib/`) |
