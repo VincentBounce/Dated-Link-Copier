@@ -693,23 +693,31 @@ async function readPlayAppInfo(fetchRegions) {
 // Runs in the page (must be self-contained)
 async function readArticleInfo() {
   // A forum thread's later page, or a link to a later post, shows later posts: its first page, fetched, has the
-  // initial post, and gives the line's link. phpBB's canonical link is the first page; MyBB ("thread-12-page-2.html",
-  // "-post-34", "-lastpost"), XenForo ("/threads/title.12/page-2"), Invision ("/topic/12-title/page/2/"), SMF
-  // ("topic=12.20", "topic=12.msg34") and vBulletin ("title-12-2.html", "12-title/page2", "&page=2", known by its
-  // generator tag, as these links are common) write the page or post in the link
+  // initial post, and gives the line's link. phpBB's and FluxBB's canonical link is the topic's first page (FluxBB's
+  // page is "p="); MyBB ("thread-12-page-2.html", "-post-34", "-lastpost"), XenForo ("/threads/title.12/page-2"),
+  // Invision ("/topic/12-title/page/2/"), Vanilla ("/discussion/12/title/p2"), ProBoards ("/thread/12/title?page=2"),
+  // SMF ("topic=12.20", "topic=12.msg34"), vBulletin and Discuz! ("title-12-2.html", "12-title/page2", "thread-12-2-1.html",
+  // known by their generator tag, as these links are common) write the page or post in the link
   const first = new URL(location.href);
   first.hash = "";
   const phpBBFirst = document.querySelector('link[rel="canonical"]')?.href;
-  if (/\/viewtopic\.php$/.test(first.pathname) && /[?&](start|p)=/.test(first.search) && phpBBFirst?.includes("viewtopic.php")) {
+  if (/\/viewtopic\.php$/.test(first.pathname) && /[?&](start|p|pid)=/.test(first.search) && phpBBFirst?.includes("viewtopic.php")) {
     first.href = phpBBFirst;
+    first.searchParams.delete("p");
   }
   first.pathname = first.pathname.replace(/(\/thread-\d+)-(?:page-\d+|post-\d+|lastpost|newpost)\.html$/, "$1.html")
-    .replace(/(\/threads\/[^/]+)\/(?:page|post)-\d+\/?$/, "$1/").replace(/(\/topic\/[^/]+)\/page\/\d+\/?$/, "$1/");
+    .replace(/(\/threads\/[^/]+)\/(?:page|post)-\d+\/?$/, "$1/").replace(/(\/topic\/[^/]+)\/page\/\d+\/?$/, "$1/")
+    .replace(/(\/discussion\/\d+(?:\/[^/]+)?)\/p\d+$/, "$1");
   first.search = first.search.replace(/([?&;]topic=\d+)\.\w+/, "$1.0");
-  if (first.pathname.endsWith("/showthread.php")) first.searchParams.delete("page");
-  if (/vBulletin/i.test(document.querySelector('meta[name="generator"]')?.content)) {
+  if (first.pathname.endsWith("/showthread.php") || /^\/thread\/\d+/.test(first.pathname)) first.searchParams.delete("page");
+  const generator = document.querySelector('meta[name="generator"]')?.content || "";
+  if (/vBulletin/i.test(generator)) {
     first.pathname = first.pathname.replace(/(-\d+)-\d+\.html$/, "$1.html").replace(/\/page\d+$/, "");
     first.search = first.search.replace(/\/page\d+$/, "");
+  }
+  if (/Discuz!/i.test(generator)) {
+    first.pathname = first.pathname.replace(/(\/thread-\d+)-\d+-\d+\.html$/, "$1-1-1.html");
+    if (first.searchParams.get("mod") === "viewthread") first.searchParams.delete("page");
   }
   let doc = document, pageUrl = location.href;
   if (first.href !== location.href.replace(/#.*/, "")) {
@@ -766,16 +774,22 @@ async function readArticleInfo() {
   // Forum engines without date metadata: the first post's date as written. MyBB: .post_date ("2023-06-30, 01:35 PM";
   // a relative "Yesterday" carries the date in its title); SMF 2.1: .postinfo a.smalltext ("March 08, 2026, 08:49:59 AM",
   // its <time> being the current time in the header); SMF 1.1 and 2.0: the first .smalltext "« on: May 05, 2013, …»";
-  // vBulletin 3: the post table's first .thead ("30-10-2026, 13:27"), 4: .postdate .date. "Today" and "Yesterday" (SMF,
-  // vBulletin) are the local date. Others need nothing: phpBB 3, XenForo, Invision (first <time datetime>), Discourse,
-  // NodeBB (article:published_time)
+  // vBulletin 3: the post table's first .thead ("30-10-2026, 13:27"), 4: .postdate .date; FluxBB: .blockpost h2 a
+  // ("2010-06-27 16:20:13"); Discuz!: [id^=authorposton] ("发表于 2012-5-9 18:03", a relative "3 天前" carries the date in
+  // its span's title); ProBoards: abbr.o-timestamp data-timestamp (ms). "Today" and "Yesterday" (SMF, vBulletin, FluxBB)
+  // are the local date. Others need nothing: phpBB 3, XenForo, Invision, Vanilla (first <time datetime>), Discourse,
+  // NodeBB, Flarum (article:published_time), Stack Exchange (time[itemprop=dateCreated])
   function forumDate() {
+    const proBoards = doc.querySelector(".post abbr.o-timestamp[data-timestamp]")?.dataset.timestamp;
+    if (proBoards) return localDay(Number(proBoards));
     const myBB = doc.querySelector("#posts .post_date")?.firstChild;
+    const discuz = doc.querySelector('#postlist [id^="authorposton"]');
     const other = doc.querySelector("#forumposts .postinfo a.smalltext")
       || [...doc.querySelectorAll(".smalltext")].find(e => e.textContent.trim().startsWith("«"))
-      || doc.querySelector('#posts table[id^="post"] td.thead, #posts .postdate .date');
-    const text = (myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent) : other?.textContent || "")
-      .trim().replace(/^«[^:]*:\s*/, "");
+      || doc.querySelector('#posts table[id^="post"] td.thead, #posts .postdate .date, .blockpost h2 a');
+    const text = (myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent)
+      : discuz ? discuz.querySelector("span[title]")?.title || discuz.textContent.replace(/^\D+/, "")
+      : other?.textContent || "").trim().replace(/^«[^:]*:\s*/, "");
     const relative = text.match(/^(?:(today|aujourd'hui|heute|hoy|oggi)|(yesterday|hier|gestern|ayer|ieri))\b/i);
     if (relative) return localDay(Date.now() - (relative[2] ? 864e5 : 0));
     return dateFromText(text, !!myBB);
