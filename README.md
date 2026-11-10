@@ -6,8 +6,11 @@ Chrome extension that copies a dated link to the page you're on, in one click.
 
 Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit, X and LinkedIn pages other than posts, Amazon pages other than products, new tab, `chrome://` pages and local files.
 
+### Video and music
+
 **YouTube videos:** publish date, channels, title, `[video ID]` and short link
 
+Source: [www.youtube.com/watch?v=0PT5c1z3LL8](https://www.youtube.com/watch?v=0PT5c1z3LL8)
 ```
 2025-02-06 @Katie Couric - Microplastics are accumulating in human brains at an alarming rate [0PT5c1z3LL8] https://youtu.be/0PT5c1z3LL8
 ```
@@ -17,14 +20,53 @@ Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. Th
 - ` - ` inside the channel names and the title is replaced with `, `
 - Characters forbidden in file names (`\ / : * ? " > < |`) are replaced with full-width look-alikes (`＼／：＊？＂＞＜｜`), so the line can be used as a file name
 
+**YouTube channels:** date joined and channel link
+
+Source: [www.youtube.com/@mkbhd](https://www.youtube.com/@mkbhd)
+```
+2008-03-21 https://www.youtube.com/@mkbhd
+```
+
+**SoundCloud tracks:** publish date and link
+
+Source: [soundcloud.com/dubstep/bullet-train-by-stephen-swartz](https://soundcloud.com/dubstep/bullet-train-by-stephen-swartz)
+```
+2012-08-28 https://soundcloud.com/dubstep/bullet-train-by-stephen-swartz
+```
+
+**Suno songs:** creation date, artist and title like YouTube, and the share link
+
+Source: [suno.com/s/VMQ54WCwvvaYSw3b](https://suno.com/s/VMQ54WCwvvaYSw3b)
+```
+2026-10-26 @toutankamo - The future speaks to us https://suno.com/s/VMQ54WCwvvaYSw3b
+```
+
+**Pouët productions:** date added to Pouët, groups and name like YouTube
+
+Source: [www.pouet.net/prod.php?which=106210](https://www.pouet.net/prod.php?which=106210)
+```
+2026-05-17 @Desire - Wake Up! 16b https://www.pouet.net/prod.php?which=106210
+```
+
+**Shadertoy shaders:** upload date and shader name (the link only has the ID)
+
+Source: [www.shadertoy.com/view/73ySRh](https://www.shadertoy.com/view/73ySRh)
+```
+2026-10-24 Vor∞noi https://www.shadertoy.com/view/73ySRh
+```
+
+### App stores and add-ons
+
 **Google Play apps:** release date and store link
 
+Source: [play.google.com/store/apps/details?id=fr.laposte.lapostemobile](https://play.google.com/store/apps/details?id=fr.laposte.lapostemobile)
 ```
 Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapostemobile
 ```
 
 **App Store apps:** compatible platforms, first release date and link (an iPhone/iPad app that also runs on Apple silicon Macs or Apple Vision Pro, without being native there, shows `(macOS)` / `(visionOS)`)
 
+Sources: [apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000](https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000) · [apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574](https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574) · [apps.apple.com/us/app/golly/id553184760](https://apps.apple.com/us/app/golly/id553184760)
 ```
 iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000
 macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
@@ -33,12 +75,14 @@ macOS-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carro
 
 **Chrome Web Store extensions:** release date (from Chrome-Stats, as the Store shows only the last update) and link
 
+Source: [chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng](https://chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng)
 ```
 Chrome ext 2021-05-31 https://chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng
 ```
 
 **Edge, Firefox add-ons; Steam, Meta Quest, Microsoft Store, Flathub apps:** platform (with the app type, UWP or Win32, on the Microsoft Store), release date and link
 
+Sources: [microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak](https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak) · [addons.mozilla.org/firefox/addon/ublock-origin/](https://addons.mozilla.org/firefox/addon/ublock-origin/) · [store.steampowered.com/app/620/Portal_2/](https://store.steampowered.com/app/620/Portal_2/) · [www.meta.com/experiences/beat-saber/2448060205267927/](https://www.meta.com/experiences/beat-saber/2448060205267927/) · [apps.microsoft.com/detail/9wzdncrfj3tj](https://apps.microsoft.com/detail/9wzdncrfj3tj) · [apps.microsoft.com/detail/9wzdncrfj3ps](https://apps.microsoft.com/detail/9wzdncrfj3ps) · [flathub.org/apps/com.spotify.Client](https://flathub.org/apps/com.spotify.Client)
 ```
 Edge ext 2022-02-10 https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak
 Firefox ext 2015-04-25 https://addons.mozilla.org/firefox/addon/ublock-origin/
@@ -51,36 +95,30 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 
 **Chrome-Stats pages:** release date and link of the Android app or browser extension, without the page title
 
+Source: [chrome-stats.com/d/com.anthropic.aibo](https://chrome-stats.com/d/com.anthropic.aibo)
 ```
 2026-10-24 https://chrome-stats.com/d/com.anthropic.aibo
 ```
 
-**Reddit posts:** post date and link (old and new Reddit; comment links are copied as the post link)
-
-```
-2026-10-07 https://www.reddit.com/r/chrome/comments/1abcde/my_post_title/
-```
-
-**Reddit subreddits:** date the subreddit was created ("Created Jan 25, 2008") and its link (old and new Reddit, also on the sort tabs)
-
-```
-2008-01-25 https://www.reddit.com/r/apple/
-```
+### Social networks
 
 **X (Twitter) posts:** post date and link, read from the post ID (works without signing in; `?` for posts older than November 2010)
 
+Source: [x.com/RobertDaleSmith/status/2108787905225245094](https://x.com/RobertDaleSmith/status/2108787905225245094)
 ```
 2026-10-10 https://x.com/RobertDaleSmith/status/2108787905225245094
 ```
 
 **X (Twitter) profiles:** month the account joined X ("Joined October 2021", in any page language) and profile link
 
+Source: [x.com/iamlaurael](https://x.com/iamlaurael)
 ```
 2021-10-xx https://x.com/iamlaurael
 ```
 
 **TikTok videos, Instagram and Threads posts, Bluesky posts:** post date and link, read from the post ID like on X (works signed in or out); on Instagram, whose links rarely name the creator, `@user` before the link
 
+Sources: [www.tiktok.com/@scout2015/video/6718335390845095173](https://www.tiktok.com/@scout2015/video/6718335390845095173) · [www.instagram.com/reel/DfFSUCaB3Ty/](https://www.instagram.com/reel/DfFSUCaB3Ty/) · [www.threads.com/@zuck/post/DeZtp-TkQHh](https://www.threads.com/@zuck/post/DeZtp-TkQHh) · [bsky.app/profile/jay.bsky.team/post/3juk2oypfkc2g](https://bsky.app/profile/jay.bsky.team/post/3juk2oypfkc2g)
 ```
 2019-07-27 https://www.tiktok.com/@scout2015/video/6718335390845095173
 2026-10-29 @instagram https://www.instagram.com/reel/DfFSUCaB3Ty/
@@ -88,206 +126,305 @@ Linux 2017-06-18 https://flathub.org/apps/com.spotify.Client
 2023-04-29 https://bsky.app/profile/jay.bsky.team/post/3juk2oypfkc2g
 ```
 
-**LinkedIn company pages:** founding year and the About tab link, from any tab
+**Mastodon posts (any server):** post date and link, read from the post ID
 
+Source: [mastodon.social/@Gargron/117525141761759792](https://mastodon.social/@Gargron/117525141761759792)
 ```
-2024-xx-xx https://www.linkedin.com/company/bflai/about/
-```
-
-**LinkedIn posts:** post date and link, read from the post ID like on X (works signed in or out)
-
-```
-2026-05-13 https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/
-```
-
-**Amazon products:** "Date First Available" from the product details, else the date of the oldest review shown (amazon.com, .ca, .co.uk, .fr, .de, .es, .it), the product link without search parameters, then the month read and the price shown in the site's own currency (the currency's symbol, else its code: `AED39.99`; no price when Amazon converts it to the visitor's currency, as it then doesn't show the original)
-
-```
-2025-06-02 https://www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/ (2026-11) €39.99
-2023-01-17 https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/
-```
-
-**Hacker News:** post or comment date and link, with the story title (the link doesn't carry it)
-
-```
-2026-10-10 REA Reverse – Engineer Anything https://news.ycombinator.com/item?id=50028275
-```
-
-**PubMed:** online (Epub) date, else the issue date (`2026-01-xx` when the day or month is missing), with the title
-
-```
-2026-01-14 Intranasal Human NSC-Derived EVs Therapy Can Restrain Inflammatory Microglial Transcriptome, and NLRP3 and cGAS-STING Signaling, in Aged Hippocampus https://pubmed.ncbi.nlm.nih.gov/41648159/
-```
-
-**NIDCD health pages:** publication month, with the title
-
-```
-2015-05-xx How Do We Hear? https://www.nidcd.nih.gov/health/how-do-we-hear
-```
-
-**PMC articles** (generic reader): publication date of the article tags, also as "2024 Oct 3", else a partial one (`2011-xx-xx`)
-
-```
-2024-10-03 WiFi-Based Human Identification with Machine Learning： A Comprehensive Survey https://pmc.ncbi.nlm.nih.gov/articles/PMC11479185/
-```
-
-**arXiv papers** (abstract page, PDF, HTML version, ar5iv): date of the first version, with the title (its math in Unicode: `a³b²`), and the link of the abstract page or PDF (HTML versions give the PDF link)
-
-```
-2021-01-26 The Rest of the Tilings of the Sphere by Regular Polygons https://arxiv.org/pdf/2101.10743
-2019-03-07 Tilings of the Sphere by Congruent Pentagons II： Edge Combination a³b² https://arxiv.org/pdf/1903.02712
-```
-
-**SoundCloud tracks:** publish date and link
-
-```
-2012-08-28 https://soundcloud.com/dubstep/bullet-train-by-stephen-swartz
-```
-
-**Pouët productions:** date added to Pouët, groups and name like YouTube
-
-```
-2026-05-17 @Desire - Wake Up! 16b https://www.pouet.net/prod.php?which=106210
-```
-
-**Suno songs:** creation date, artist and title like YouTube, and the share link
-
-```
-2026-10-26 @toutankamo - The future speaks to us https://suno.com/s/VMQ54WCwvvaYSw3b
-```
-
-**Shadertoy shaders:** upload date and shader name (the link only has the ID)
-
-```
-2026-10-24 Vor∞noi https://www.shadertoy.com/view/73ySRh
-```
-
-**iCloud shared shortcuts:** creation date and shortcut name (the link only has the ID)
-
-```
-2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
+2026-10-29 https://mastodon.social/@Gargron/117525141761759792
 ```
 
 **Instagram profiles:** month joined ("About this account", signed in only; else the month read) and profile link
 
+Source: [www.instagram.com/relayfinancial/](https://www.instagram.com/relayfinancial/)
 ```
 2022-04-xx https://www.instagram.com/relayfinancial
 ```
 
 **Facebook pages and profiles:** creation date (Page transparency) and link, from any tab
 
+Source: [www.facebook.com/relayfinancial](https://www.facebook.com/relayfinancial)
 ```
 2020-03-10 https://www.facebook.com/relayfinancial
 ```
 
+**LinkedIn posts:** post date and link, read from the post ID like on X (works signed in or out)
+
+Source: [www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/](https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/)
+```
+2026-05-13 https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/
+```
+
+**LinkedIn company pages:** founding year and the About tab link, from any tab
+
+Source: [www.linkedin.com/company/interencheres](https://www.linkedin.com/company/interencheres)
+```
+2000-xx-xx https://www.linkedin.com/company/interencheres/about/
+```
+
+**Reddit posts:** post date and link (old and new Reddit; comment links are copied as the post link)
+
+```
+YYYY-MM-DD https://www.reddit.com/r/<subreddit>/comments/<id>/<title>/
+```
+
+**Reddit subreddits:** date the subreddit was created ("Created Jan 25, 2008") and its link (old and new Reddit, also on the sort tabs)
+
+Source: [www.reddit.com/r/apple/](https://www.reddit.com/r/apple/)
+```
+2008-01-25 https://www.reddit.com/r/apple/
+```
+
 **Medium publications:** date of the first post and publication link, from any tab (About, archive…)
 
+Source: [medium.com/doctolib/about](https://medium.com/doctolib/about)
 ```
 2018-01-25 https://medium.com/doctolib/
 ```
 
-**Printables models:** first publication date (not the last republication) and model link
+### Forums and communities
 
+**Forum threads:** date of the initial post and the thread link, also from a later page or a link to a reply (the first page is then read); the title when the link lacks it, like on any page
+
+phpBB 3, from [forums.debian.net/viewtopic.php?t=168444&start=20](https://forums.debian.net/viewtopic.php?t=168444&start=20)
 ```
-2021-12-21 https://www.printables.com/model/99861-klein-bottle
+2026-10-08 Adobe Suite & Photoshop For Linux.. or wait Artcraft Suite & Photocraft.. Developers and Rust people look at this please, Debian User Forums https://forums.debian.net/viewtopic.php?t=168444
+```
+XenForo, from [xenforo.com/community/threads/xenforo-vs-vbulletin-6.236977/page-4](https://xenforo.com/community/threads/xenforo-vs-vbulletin-6.236977/page-4)
+```
+2026-04-11 https://xenforo.com/community/threads/xenforo-vs-vbulletin-6.236977/
+```
+vBulletin 3, from [www.cruisersforum.com/forums/f124/what-is-best-deck-product-302690-2.html](https://www.cruisersforum.com/forums/f124/what-is-best-deck-product-302690-2.html)
+```
+2026-10-30 https://www.cruisersforum.com/forums/f124/what-is-best-deck-product-302690.html
+```
+vBulletin 6, from [forum.vbulletin.com/forum/vbulletin-announcements/vbulletin-announcements_aa/4513020-vbulletin-6-2-4-is-available-for-download](https://forum.vbulletin.com/forum/vbulletin-announcements/vbulletin-announcements_aa/4513020-vbulletin-6-2-4-is-available-for-download)
+```
+2026-10-22 https://forum.vbulletin.com/forum/vbulletin-announcements/vbulletin-announcements_aa/4513020-vbulletin-6-2-4-is-available-for-download
+```
+Invision, from [invisioncommunity.com/forums/topic/488183-4726-is-now-available/](https://invisioncommunity.com/forums/topic/488183-4726-is-now-available/)
+```
+2026-11-09 https://invisioncommunity.com/forums/topic/488183-4726-is-now-available/
+```
+MyBB, from [community.mybb.com/thread-223638-page-2.html](https://community.mybb.com/thread-223638-page-2.html)
+```
+2019-06-27 SCEditor Issues and Resolutions [1.8.21 upgrade] https://community.mybb.com/thread-223638.html
+```
+SMF 1.1, from [forums.tigsource.com/index.php?topic=33260.20](https://forums.tigsource.com/index.php?topic=33260.20)
+```
+2013-05-05 Doodal, doodling with portals https://forums.tigsource.com/index.php?topic=33260.0
+```
+SMF 2.1, from [www.simplemachines.org/community/index.php?topic=593921.0](https://www.simplemachines.org/community/index.php?topic=593921.0)
+```
+2026-03-08 SMF 2.1.7 Released https://www.simplemachines.org/community/index.php?topic=593921.0
+```
+FluxBB, from [bbs.archlinux.org/viewtopic.php?pid=782509#p782509](https://bbs.archlinux.org/viewtopic.php?pid=782509#p782509)
+```
+2010-06-27 slow／unresponsive keyboard in tty (with nVidia) ／ Applications & Desktop Environments ／ Arch Linux Forums https://bbs.archlinux.org/viewtopic.php?id=100000
+```
+ProBoards, from [support.proboards.com/thread/663410/using-v5-calendar](https://support.proboards.com/thread/663410/using-v5-calendar)
+```
+2013-03-25 https://support.proboards.com/thread/663410/using-v5-calendar
+```
+Discuz!, from [www.52pojie.cn/thread-147931-1-1.html](https://www.52pojie.cn/thread-147931-1-1.html)
+```
+2012-05-09 【吾爱破解论坛导航帖】, [让你快速融入吾爱破解大家庭], 吾爱破解, 52pojie.cn https://www.52pojie.cn/thread-147931-1-1.html
+```
+Discourse, from [meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829](https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829)
+```
+2025-02-18 https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829
+```
+NodeBB, from [community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts/7](https://community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts/7)
+```
+2026-01-21 https://community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts
+```
+Flarum, from [discuss.flarum.org/d/40274-no-password-no-password-leak-would-you-run-flarum-without-passwords/5](https://discuss.flarum.org/d/40274-no-password-no-password-leak-would-you-run-flarum-without-passwords/5)
+```
+2026-11-04 https://discuss.flarum.org/d/40274-no-password-no-password-leak-would-you-run-flarum-without-passwords
+```
+Vanilla, from [success.vanillaforums.com/discussion/4232/a-new-support-communication-channel](https://success.vanillaforums.com/discussion/4232/a-new-support-communication-channel)
+```
+2026-05-01 https://success.vanillaforums.com/discussion/4232/a-new-support-communication-channel
 ```
 
-**Wayback Machine captures:** the archived link's own line when it is dated from the link alone (X, LinkedIn… posts, GitHub, Wikipedia…), else the archived page's date and the capture link, else the month of the link's first capture in parentheses (the page existed then)
+**Stack Exchange questions:** date the question was asked and its canonical link (with the current title)
 
+Source: [stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-faster-than-processing-an-unsorted-array](https://stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-faster-than-processing-an-unsorted-array)
 ```
-(2017-03) https://web.archive.org/web/20170319021736/http://dood.al/pinktrombone/
-2023-12-06 Introducing Gemini： our largest and most capable AI model https://web.archive.org/web/20241231005116/https://blog.google/technology/ai/google-gemini-ai/
-```
-
-**YouTube channels:** date joined and channel link
-
-```
-2008-03-21 https://www.youtube.com/@mkbhd
+2012-06-27 https://stackoverflow.com/questions/11227809/why-is-conditional-processing-of-a-sorted-array-faster-than-of-an-unsorted-array
 ```
 
-**Mastodon posts (any server):** post date and link, read from the post ID
+**Lemmy posts (any server):** publication date from the server's API (the pages carry none), with the title
 
+Source: [lemmy.world/post/54180129](https://lemmy.world/post/54180129)
 ```
-2026-10-29 https://mastodon.social/@Gargron/117525141761759792
+2026-11-09 Nvidia CEO Jensen Huang admits affair, board to launch investigation https://lemmy.world/post/54180129
 ```
 
-**GitHub and GitLab repositories, issues, pull or merge requests, commits:** creation date (a GitHub repository: its first commit when older; with the title when the link lacks it) and link
+**Hacker News:** post or comment date and link, with the story title (the link doesn't carry it)
 
+Source: [news.ycombinator.com/item?id=50028275](https://news.ycombinator.com/item?id=50028275)
 ```
-2008-07-23 https://github.com/git/git
+2026-10-10 REA Reverse – Engineer Anything https://news.ycombinator.com/item?id=50028275
+```
+
+### Code and packages
+
+**GitHub and GitLab repositories, issues, pull or merge requests, commits:** creation date (a GitHub repository: its first commit when older, as for git/git, created on GitHub in 2008; with the title when the link lacks it) and link
+
+Sources: [github.com/git/git](https://github.com/git/git) · [github.com/microsoft/vscode/issues/100](https://github.com/microsoft/vscode/issues/100) · [github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290](https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290)
+```
+2005-04-08 https://github.com/git/git
 2015-11-18 GitHub link on page is broken https://github.com/microsoft/vscode/issues/100
 2005-04-08 Initial revision of ＂git＂, the information manager from hell https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290
 ```
 
-**Wikipedia articles:** creation date (first revision) and link
-
-```
-2017-01-11 https://en.wikipedia.org/wiki/Mastodon_(social_network)
-```
-
-**npm packages:** date of the first release and link
-
-```
-2014-03-14 https://www.npmjs.com/package/left-pad
-```
-
-**Apple user guides:** no date on the page, so the month they were read, in parentheses (the format of every date read), and the link without the locale
-
-```
-(2026-10) https://support.apple.com/guide/watch/apd521a8a902/watchos
-```
-
 **GitHub releases:** publication date and link
 
+Source: [github.com/VincentBounce/Dated-Link-Copier/releases/tag/v2.32.0](https://github.com/VincentBounce/Dated-Link-Copier/releases/tag/v2.32.0)
 ```
 2026-10-29 https://github.com/VincentBounce/Dated-Link-Copier/releases/tag/v2.32.0
 ```
 
+**npm packages:** date of the first release and link
+
+Source: [www.npmjs.com/package/left-pad](https://www.npmjs.com/package/left-pad)
+```
+2014-03-14 https://www.npmjs.com/package/left-pad
+```
+
+**PyPI projects:** date of the first release and link
+
+Source: [pypi.org/project/textual-paint/](https://pypi.org/project/textual-paint/)
+```
+2023-07-24 https://pypi.org/project/textual-paint/
+```
+
+### Science and reference
+
+**arXiv papers:** (abstract page, PDF, HTML version, ar5iv): date of the first version, with the title (its math in Unicode: `a³b²`), and the link of the abstract page or PDF (HTML versions give the PDF link)
+
+Sources: [arxiv.org/pdf/2101.10743](https://arxiv.org/pdf/2101.10743) · [arxiv.org/pdf/1903.02712](https://arxiv.org/pdf/1903.02712)
+```
+2021-01-26 The Rest of the Tilings of the Sphere by Regular Polygons https://arxiv.org/pdf/2101.10743
+2019-03-07 Tilings of the Sphere by Congruent Pentagons II： Edge Combination a³b² https://arxiv.org/pdf/1903.02712
+```
+
+**PubMed:** online (Epub) date, else the issue date (`2026-01-xx` when the day or month is missing), with the title
+
+Source: [pubmed.ncbi.nlm.nih.gov/41648159/](https://pubmed.ncbi.nlm.nih.gov/41648159/)
+```
+2026-01-14 Intranasal Human NSC-Derived EVs Therapy Can Restrain Inflammatory Microglial Transcriptome, and NLRP3 and cGAS-STING Signaling, in Aged Hippocampus https://pubmed.ncbi.nlm.nih.gov/41648159/
+```
+
+**PMC articles:** (generic reader): publication date of the article tags, also as "2024 Oct 3", else a partial one (`2011-xx-xx`)
+
+Source: [pmc.ncbi.nlm.nih.gov/articles/PMC11479185/](https://pmc.ncbi.nlm.nih.gov/articles/PMC11479185/)
+```
+2024-10-03 WiFi-Based Human Identification with Machine Learning： A Comprehensive Survey https://pmc.ncbi.nlm.nih.gov/articles/PMC11479185/
+```
+
+**NIDCD health pages:** publication month, with the title
+
+Source: [www.nidcd.nih.gov/health/how-do-we-hear](https://www.nidcd.nih.gov/health/how-do-we-hear)
+```
+2015-05-xx How Do We Hear? https://www.nidcd.nih.gov/health/how-do-we-hear
+```
+
+**ScienceDirect Topics:** these pages compile excerpts and have no date of their own, so the year of the source their definition is based on is used (else the oldest excerpt)
+
+Source: [www.sciencedirect.com/topics/engineering/photon-polymerization](https://www.sciencedirect.com/topics/engineering/photon-polymerization)
+```
+2022-xx-xx https://www.sciencedirect.com/topics/engineering/photon-polymerization
+```
+
+**Wikipedia articles:** creation date (first revision) and link
+
+Source: [en.wikipedia.org/wiki/Mastodon_(social_network)](https://en.wikipedia.org/wiki/Mastodon_(social_network))
+```
+2017-01-11 https://en.wikipedia.org/wiki/Mastodon_(social_network)
+```
+
+### Shopping and companies
+
+**Amazon products:** "Date First Available" from the product details, else the date of the oldest review shown (amazon.com, .ca, .co.uk, .fr, .de, .es, .it), the product link without search parameters (a variant without a name in its link gets its parent product's name), then the month read and the price shown in the site's own currency (the currency's symbol, else its code: `AED39.99`; no price when Amazon converts it to the visitor's currency, as it then doesn't show the original)
+
+Sources: [www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/](https://www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/) · [www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/](https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/)
+```
+2025-06-02 https://www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/ (2026-11) €39.99
+2023-01-17 https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/
+```
+
 **Crunchbase organizations:** founding date, as precise as Crunchbase knows it, and link
 
+Sources: [www.crunchbase.com/organization/openai](https://www.crunchbase.com/organization/openai) · [www.crunchbase.com/organization/arcads](https://www.crunchbase.com/organization/arcads)
 ```
 2015-12-11 https://www.crunchbase.com/organization/openai
 2024-xx-xx https://www.crunchbase.com/organization/arcads
 ```
 
-**PyPI projects:** date of the first release and link
-
-```
-2023-07-24 https://pypi.org/project/textual-paint/
-```
-
-**Have I Been Pwned breaches:** date the breach was added to HIBP and link
-
-```
-2020-12-20 https://haveibeenpwned.com/Breach/Ledger
-```
-
 **Y Combinator companies:** founding year ("Founded: 2023") and link
 
+Source: [www.ycombinator.com/companies/nanocorp](https://www.ycombinator.com/companies/nanocorp)
 ```
 2023-xx-xx https://www.ycombinator.com/companies/nanocorp
 ```
 
-**ScienceDirect Topics:** these pages compile excerpts and have no date of their own, so the year of the source their definition is based on is used (else the oldest excerpt)
-
-```
-2022-xx-xx https://www.sciencedirect.com/topics/engineering/photon-polymerization
-```
-
 **Sony news and press releases:** release date and link (English and Japanese pages)
 
+Source: [www.sony.com/en/SonyInfo/News/Press/199809/98-101/](https://www.sony.com/en/SonyInfo/News/Press/199809/98-101/)
 ```
 1998-09-29 Sony Announces New Personal LCD Monitor PC Glasstron https://www.sony.com/en/SonyInfo/News/Press/199809/98-101/
 ```
 
-**Any other page (news articles, blogs…):** publish date from the page metadata, else a date shown on the page (`<time>`, "Publié le 14.11.2021", "Published on November 14, 2021"…), and link
+### Archives and other sites
 
+**Wayback Machine captures:** the archived link's own line when it is dated from the link alone (X, LinkedIn… posts, GitHub, Wikipedia…), else the archived page's date and the capture link, else the month of the link's first capture in parentheses (the page existed then)
+
+Sources: [web.archive.org/web/20170319021736/http://dood.al/pinktrombone/](https://web.archive.org/web/20170319021736/http://dood.al/pinktrombone/) · [web.archive.org/web/20241231005116/blog.google/technology/ai/google-gemini-ai/](https://web.archive.org/web/20241231005116/https://blog.google/technology/ai/google-gemini-ai/)
+```
+(2017-03) https://web.archive.org/web/20170319021736/http://dood.al/pinktrombone/
+2023-12-06 Introducing Gemini： our largest and most capable AI model https://web.archive.org/web/20241231005116/https://blog.google/technology/ai/google-gemini-ai/
+```
+
+**Printables models:** first publication date (not the last republication) and model link
+
+Source: [www.printables.com/model/99861-klein-bottle](https://www.printables.com/model/99861-klein-bottle)
+```
+2021-12-21 https://www.printables.com/model/99861-klein-bottle
+```
+
+**iCloud shared shortcuts:** creation date and shortcut name (the link only has the ID)
+
+Source: [www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1](https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1)
+```
+2025-12-15 Remove Tracking From URL https://www.icloud.com/shortcuts/ab1ded25b53442968da40a1dd677b2a1
+```
+
+**Have I Been Pwned breaches:** date the breach was added to HIBP and link
+
+Source: [haveibeenpwned.com/Breach/Ledger](https://haveibeenpwned.com/Breach/Ledger)
+```
+2020-12-20 https://haveibeenpwned.com/Breach/Ledger
+```
+
+**Apple user guides:** no date on the page, so the month they were read, in parentheses (the format of every date read), and the link without the locale
+
+Source: [support.apple.com/en-us/guide/watch/apd521a8a902/watchos](https://support.apple.com/en-us/guide/watch/apd521a8a902/watchos)
+```
+(2026-10) https://support.apple.com/guide/watch/apd521a8a902/watchos
+```
+
+**Any other page (news articles, blogs…):** publish date from the page metadata, else a date shown on the page (`<time>`, "Publié le 14.11.2021", "Posted by Terry on May 14, 2013"…), and link
+
+Sources: [www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php](https://www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php) · [www.freeindiegam.es/2013/05/doodal-pishtaco/](https://www.freeindiegam.es/2013/05/doodal-pishtaco/)
 ```
 2026-09-30 https://www.leparisien.fr/seine-saint-denis-93/soupconnee-davoir-ecrit-son-devoir-avec-une-ia-une-etudiante-exclue-de-luniversite-sorbonne-paris-nord-4NEZKAEZDJGRDA4BPS5GTNIVNM.php
+2013-05-14 https://www.freeindiegam.es/2013/05/doodal-pishtaco/
 ```
 
 When the link doesn't carry the title (fewer than half of the title's words appear in it), the title is added, made file name safe like on YouTube. Scientific journals' `citation_*` and Dublin Core dates are read too:
 
+Source: [www.nature.com/articles/s41598-025-97652-6](https://www.nature.com/articles/s41598-025-97652-6)
 ```
 2025-06-03 AI tutoring outperforms in-class active learning： an RCT introducing a novel research-based design in an authentic educational setting https://www.nature.com/articles/s41598-025-97652-6
 ```
@@ -321,8 +458,8 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 | 2.60.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: FluxBB, Discuz! and ProBoards (first post's date), first page of Vanilla, ProBoards, Discuz! and FluxBB threads from later pages or post links |
 | 2.59.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Lemmy posts on any server: publication date from the server's API (`2026-11-09 … https://lemmy.world/post/54180129`); Flarum and Stack Exchange already gave theirs |
 | 2.58.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: vBulletin 3 and 4 (first post's date, first page from later pages), "Today" and "Yesterday" dates |
-| 2.57.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: on a later page, or a link to a later post, the first page is read: the initial post's date and the thread's link (`…/index.php?topic=33260.20` → `2013-05-05 … https://forums.tigsource.com/index.php?topic=33260.0`) |
-| 2.56.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: first post's date on MyBB and SMF (`2013-05-05 Doodal - doodling with portals https://forums.tigsource.com/index.php?topic=33260.0`); phpBB 3, XenForo, Invision, Discourse and NodeBB already gave it |
+| 2.57.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: on a later page, or a link to a later post, the first page is read: the initial post's date and the thread's link (`…/index.php?topic=33260.20` → `2013-05-05 Doodal, doodling with portals https://forums.tigsource.com/index.php?topic=33260.0`) |
+| 2.56.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: first post's date on MyBB and SMF (`2013-05-05 Doodal, doodling with portals https://forums.tigsource.com/index.php?topic=33260.0`); phpBB 3, XenForo, Invision, Discourse and NodeBB already gave it |
 | 2.55.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Instagram profiles: link without the final slash (`https://www.instagram.com/relayfinancial`) |
 | 2.55.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Instagram profiles: month joined from "About this account" when signed in (`2022-04-xx https://www.instagram.com/relayfinancial/`) |
 | 2.54.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Facebook: the creation date also when signed in (Page transparency is read from the signed-out page) |
