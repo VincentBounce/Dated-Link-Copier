@@ -752,8 +752,29 @@ async function readArticleInfo() {
     const m = doc.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
     return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
   };
-  const published = await lemmyDate() || forumDate() || firstDate(publishedTags) || shownDate() || dates(publishedTags)[0]
-    || updatedDate();
+  const wiki = await mediaWiki();
+  const published = wiki?.date || await lemmyDate() || forumDate() || firstDate(publishedTags) || shownDate()
+    || dates(publishedTags)[0] || updatedDate();
+
+  // MediaWiki sites (LifeWiki, Arch Wiki, Minecraft Wiki…, known by their generator tag; Wikipedia is read from its link
+  // alone): creation date = first revision, from the wiki's own API (its EditURI link, else the REST search link's
+  // folder), UTC date like Wikipedia; the page name is the page's configuration ("wgPageName":"OTCA_metapixel"), also the
+  // line's title, and the link the article's, from its namespace tab ("Page"), so also from its history or info page
+  // ("…&action=info", whose own title is "Information for …")
+  async function mediaWiki() {
+    if (!/^MediaWiki/.test(doc.querySelector('meta[name="generator"]')?.content)) return null;
+    const page = doc.documentElement.innerHTML.match(/"wgPageName":("(?:[^"\\]|\\.)*")/)?.[1];
+    const entry = (doc.querySelector('link[rel="EditURI"]') || doc.querySelector('link[rel="search"][href*="/rest.php"]'))?.href;
+    if (!page || !entry) return null;
+    try {
+      const api = new URL(entry.replace(/[^/]*(rest\.php.*)?$/, "api.php"));
+      api.search = new URLSearchParams({ action: "query", format: "json", redirects: 1, prop: "revisions", rvdir: "newer",
+        rvlimit: 1, rvprop: "timestamp", titles: JSON.parse(page) });
+      const created = Object.values((await (await fetch(api)).json()).query.pages)[0].revisions?.[0]?.timestamp || "";
+      return { date: created.slice(0, 10), link: doc.querySelector('[id^="ca-nstab-"] a')?.href,
+        title: JSON.parse(page).replace(/_/g, " ") };
+    } catch (e) { return null; }
+  }
 
   // Local date of a time in ms, "2026-11-09"
   function localDay(ms) {
@@ -877,6 +898,7 @@ async function readArticleInfo() {
     }
     link = u.href;
   }
+  if (wiki?.link) link = wiki.link;
   // Title without the site name (" | Scientific Reports", " - Le Parisien")
   const site = meta('meta[property="og:site_name"]')?.trim();
   let title = meta('meta[name="citation_title"]') || meta('meta[name="dc.title"]') || meta('meta[name="DC.title"]')
@@ -885,6 +907,7 @@ async function readArticleInfo() {
   if (site) title = title.replace(new RegExp(`\\s+[-|–—:]\\s+${site.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "");
   // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")
   title = title.replace(/\s+\|\s+[^|]*$/, "");
+  if (wiki) title = wiki.title;
   return { published, link, title };
 }
 

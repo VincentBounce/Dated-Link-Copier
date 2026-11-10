@@ -344,6 +344,14 @@ Source: [en.wikipedia.org/wiki/Mastodon_(social_network)](https://en.wikipedia.o
 2017-01-11 https://en.wikipedia.org/wiki/Mastodon_(social_network)
 ```
 
+**Other wikis (MediaWiki: LifeWiki, Arch Wiki, Minecraft Wiki…):** creation date (first revision) and article link, also from the page's history or info page
+
+Sources: [wiki.archlinux.org/index.php?title=Systemd&action=info](https://wiki.archlinux.org/index.php?title=Systemd&action=info) · [minecraft.wiki/w/Creeper](https://minecraft.wiki/w/Creeper)
+```
+2010-09-17 https://wiki.archlinux.org/title/Systemd
+2009-09-01 https://minecraft.wiki/w/Creeper
+```
+
 ### Shopping and companies
 
 **Amazon products:** "Date First Available" from the product details, else the date of the oldest review shown (amazon.com, .ca, .co.uk, .fr, .de, .es, .it), the product link without search parameters (a variant without a name in its link gets its parent product's name), then the month read and the price shown in the site's own currency (the currency's symbol, else its code: `AED39.99`; no price when Amazon converts it to the visitor's currency, as it then doesn't show the original)
@@ -455,6 +463,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.61.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Wikis on MediaWiki (LifeWiki, Arch Wiki, Minecraft Wiki…): creation date from the wiki's API and the article link, also from history and info pages (`2010-09-17 https://wiki.archlinux.org/title/Systemd`) |
 | 2.60.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: FluxBB, Discuz! and ProBoards (first post's date), first page of Vanilla, ProBoards, Discuz! and FluxBB threads from later pages or post links |
 | 2.59.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Lemmy posts on any server: publication date from the server's API (`2026-11-09 … https://lemmy.world/post/54180129`); Flarum and Stack Exchange already gave theirs |
 | 2.58.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: vBulletin 3 and 4 (first post's date, first page from later pages), "Today" and "Yesterday" dates |
