@@ -715,7 +715,19 @@ function readArticleInfo() {
     const m = document.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
     return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
   };
-  const published = firstDate(publishedTags) || shownDate() || dates(publishedTags)[0] || updatedDate();
+  const published = forumDate() || firstDate(publishedTags) || shownDate() || dates(publishedTags)[0] || updatedDate();
+
+  // Forum engines without date metadata: the first post's date as written. MyBB: .post_date ("2023-06-30, 01:35 PM";
+  // a relative "Yesterday" carries the date in its title); SMF 2.1: .postinfo a.smalltext ("March 08, 2026, 08:49:59 AM",
+  // its <time> being the current time in the header); SMF 1.1 and 2.0: the first .smalltext "« on: May 05, 2013, …»".
+  // Others need nothing: phpBB 3, XenForo, Invision (first <time datetime>), Discourse, NodeBB (article:published_time)
+  function forumDate() {
+    const myBB = document.querySelector("#posts .post_date")?.firstChild;
+    const smf = document.querySelector("#forumposts .postinfo a.smalltext")
+      || [...document.querySelectorAll(".smalltext")].find(e => e.textContent.trim().startsWith("«"));
+    const text = myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent) : smf?.textContent || "";
+    return dateFromText(text.trim().replace(/^«[^:]*:\s*/, ""), !!myBB);
+  }
 
   // Without metadata, a date shown on the page: <time datetime>, else the text after "Publié le",
   // "Published on", "Posted by <author> on" (WordPress themes), "Veröffentlicht am"… ("Publié le 14.11.2021", "14 novembre 2021", "November 14, 2021"),
@@ -765,9 +777,9 @@ function readArticleInfo() {
     };
     let d = text.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})/);              // 2021-11-14, 2021/11/14
     if (d) return `${d[1]}-${pad(d[2])}-${pad(d[3])}`;
-    d = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);              // 14.11.2021, 14/11/2021 (11/14/2021 in English)
+    d = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);   // 14.11.2021, 14/11/2021 (11/14/2021, 11-14-2021 in English)
     if (d) {
-      const [day, mon] = english && text.includes("/") ? [d[2], d[1]] : [d[1], d[2]];
+      const [day, mon] = (english && /^\d+[/-]/.test(text) && d[1] <= 12) || d[2] > 12 ? [d[2], d[1]] : [d[1], d[2]];
       return `${d[3]}-${pad(mon)}-${pad(day)}`;
     }
     d = text.match(/^(\d{1,2})\.?\s+(?:de\s+)?([^\s\d.,]{3,})\.?\s+(?:de\s+)?(\d{4})/);   // 14 novembre 2021, 14. November 2021

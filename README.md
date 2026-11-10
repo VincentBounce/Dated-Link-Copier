@@ -318,6 +318,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.56.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Forum threads: first post's date on MyBB and SMF (`2013-05-05 Doodal - doodling with portals https://forums.tigsource.com/index.php?topic=33260.0`); phpBB 3, XenForo, Invision, Discourse and NodeBB already gave it |
 | 2.55.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Instagram profiles: link without the final slash (`https://www.instagram.com/relayfinancial`) |
 | 2.55.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Instagram profiles: month joined from "About this account" when signed in (`2022-04-xx https://www.instagram.com/relayfinancial/`) |
 | 2.54.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Facebook: the creation date also when signed in (Page transparency is read from the signed-out page) |
