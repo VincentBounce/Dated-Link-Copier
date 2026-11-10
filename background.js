@@ -130,7 +130,7 @@ async function buildLine(tab) {
   if (instagramProfile && !/^(explore|reels|direct|accounts|stories)$/.test(instagramProfile)) {
     const info = await runInPage(tab, readInstagramJoined, "ISOLATED", [instagramProfile]);
     const joined = info.texts.map(text => localizedDate(text, info.lang)).find(Boolean);
-    return `${joined || consultedDate()} https://www.instagram.com/${instagramProfile}/`;
+    return `${joined || consultedDate()} https://www.instagram.com/${instagramProfile}`;
   }
 
   // Facebook pages and profiles (any tab but single posts, photos, videos): creation date shown in Page transparency,
