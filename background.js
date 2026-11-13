@@ -130,7 +130,7 @@ async function buildLine(tab) {
   if (instagramProfile && !/^(explore|reels|direct|accounts|stories)$/.test(instagramProfile)) {
     const info = await runInPage(tab, readInstagramJoined, "ISOLATED", [instagramProfile]);
     const joined = info.texts.map(text => localizedDate(text, info.lang)).find(Boolean);
-    return `${joined || consultedDate()} https://www.instagram.com/${instagramProfile}`;
+    return `${joined || consultedDate()} https://instagr.am/${instagramProfile}`;
   }
 
   // Facebook pages and profiles (any tab but single posts, photos, videos): creation date shown in Page transparency,
@@ -506,7 +506,9 @@ async function idPostLine(url, tab) {
     if (threads) return `${date} https://www.threads.com/${threads[1]}/post/${code}`;
     // Instagram links rarely name the creator: "date @user link" like YouTube
     const user = instagram[1] || tab && await runInPage(tab, readInstagramUser, "ISOLATED", [code]);
-    return `${date} ${user ? `@${user} ` : ""}https://www.instagram.com/${instagram[2].replace("reels", "reel")}/${code}/`;
+    // instagr.am, Instagram's short host, keeps profile and /p/ paths, not /reel/ or /tv/ (404)
+    const kind = instagram[2].replace("reels", "reel");
+    return `${date} ${user ? `@${user} ` : ""}${kind === "p" ? "https://instagr.am" : "https://www.instagram.com"}/${kind}/${code}/`;
   }
   // Mastodon posts on any server (/@user/<id>, /@user@server/<id>): id >> 16 = ms; the oldest posts have sequential IDs
   if ((m = u.pathname.match(/^\/(@[^/]+)\/(\d{6,19})\/?$/))) {
@@ -1266,7 +1268,9 @@ function readAmazonProductInfo() {
   const canonical = document.querySelector('link[rel="canonical"]')?.href.match(/^https:\/\/[^/]+(.*?)\/(?:dp|gp\/product)\/([A-Z0-9]{10})/);
   const own = location.pathname.match(new RegExp(`^(.*?)/(?:dp|gp/product)/${asin}`))?.[1] || "";
   const named = own.replace(/^\/-\/[\w-]+/, "") !== "";
-  const link = `${location.origin}${canonical && (canonical[2] === asin || !named) ? canonical[1] : own}/dp/${asin}`;
+  // amazon.com links on amzn.com, Amazon's short host, which keeps the path (the user's choice; the other sites have none)
+  const origin = location.hostname === "www.amazon.com" ? "https://amzn.com" : location.origin;
+  const link = `${origin}${canonical && (canonical[2] === asin || !named) ? canonical[1] : own}/dp/${asin}`;
   // Price of the buy box, from its hidden form fields (amount "39.99", currency "EUR"); some sites have several
   // offers, the first one is the one shown. Only in the site's own currency: a visitor's currency preference
   // (Amazon Currency Converter, EUR on amazon.co.uk from France) converts it, and the page then has no original price

@@ -137,7 +137,7 @@ Source: [mastodon.social/@Gargron/117525141761759792](https://mastodon.social/@G
 
 Source: [www.instagram.com/relayfinancial/](https://www.instagram.com/relayfinancial/)
 ```
-2022-04-xx https://www.instagram.com/relayfinancial
+2022-04-xx https://instagr.am/relayfinancial
 ```
 
 **Facebook pages and profiles:** creation date (Page transparency) and link, from any tab
@@ -366,7 +366,7 @@ Sources: [wiki.archlinux.org/index.php?title=Systemd&action=info](https://wiki.a
 Sources: [www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/](https://www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/) · [www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/](https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/)
 ```
 2025-06-02 https://www.amazon.fr/-/en/HyperX-Pulsefire-Haste-Core-Wireless/dp/B0D2BJTX1L/ (2026-11) €39.99
-2023-01-17 https://www.amazon.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/
+2023-01-17 https://amzn.com/Apple-MacBook-Laptop-12%E2%80%91core-19%E2%80%91core/dp/B0BSHF7WHW/
 ```
 
 **Crunchbase organizations:** founding date, as precise as Crunchbase knows it, and link
@@ -470,6 +470,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.65.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Short links: Instagram profiles and `/p/` posts on instagr.am, amazon.com products on amzn.com (reels and the other Amazon sites have no short host that keeps the path) |
 | 2.64.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Facebook pages and profiles: short link on fb.com (`2020-03-10 https://fb.com/relayfinancial`) |
 | 2.63.2 | 2026-11-10 | Claude Code (Claude Opus 5.5) | YouTube videos: `?` when the player has no date (YouTube's bot check), instead of an empty date |
 | 2.63.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Quora questions removed: Cloudflare blocks the background read of the question's log, so the date read stays |
