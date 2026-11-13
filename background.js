@@ -343,6 +343,14 @@ async function buildLine(tab) {
     return `${info.first ? pacificDate(info.first * 1000) : "?"} ${titleIfNotInLink(info.subject, link)}${link}`;
   }
 
+  // patch.gg projects (patch.gg/<user>/<project>, with their tabs): creation time of the project's repository
+  const patch = url.match(/^https:\/\/patch\.gg\/([\w.-]+)\/([\w.-]+)/);
+  if (patch && !patch[1].startsWith("@")) {
+    const created = await runInPage(tab, readPatchProjectCreated, "ISOLATED", [patch[1], patch[2]]);
+    const link = `https://patch.gg/${patch[1]}/${patch[2]}`;
+    return `${formatDate(created) || "?"} ${link}`;
+  }
+
   // Printables models: first publication (a republished model's datePublished is its last one), dated in PT
   if (/^https:\/\/www\.printables\.com\/(?:[a-z]{2}\/)?model\/\d+/.test(url)) {
     const info = await runInPage(tab, readPrintablesModelInfo);
@@ -1515,6 +1523,22 @@ async function readGoogleGroupsThread(thread) {
       .replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
     return { first: times.length ? Math.min(...times) : 0, subject };
   } catch (e) { return { first: 0, subject: "" }; }
+}
+
+// Runs in the page (must be self-contained)
+// patch.gg project: its Next.js data holds the project's repository, "clone_url":"https://git.patch.gg/<user>/<project>.git"
+// followed by its "created_at" (ISO, UTC); the loaded page's when it has this project (in-page navigation keeps the first
+// page's data), else the project page fetched
+async function readPatchProjectCreated(user, project) {
+  const createdIn = text => {
+    const at = text.replace(/\\"/g, '"').indexOf(`"clone_url":"https://git.patch.gg/${user}/${project}.git"`);
+    return at < 0 ? "" : text.replace(/\\"/g, '"').slice(at, at + 1000).match(/"created_at":"([^"]+)"/)?.[1] || "";
+  };
+  let created = createdIn([...document.scripts].map(s => s.textContent).join("\n"));
+  if (!created) {
+    try { created = createdIn(await (await fetch(`/${user}/${project}`)).text()); } catch (e) {}
+  }
+  return created;
 }
 
 // Runs in the page (must be self-contained)

@@ -417,6 +417,13 @@ Sources: [web.archive.org/web/20170319021736/http://dood.al/pinktrombone/](https
 2023-12-06 Introducing Gemini： our largest and most capable AI model https://web.archive.org/web/20241231005116/https://blog.google/technology/ai/google-gemini-ai/
 ```
 
+**patch.gg projects:** creation date of the project and its link
+
+Source: [patch.gg/blendi/coloured-pencil](https://patch.gg/blendi/coloured-pencil)
+```
+2026-11-12 https://patch.gg/blendi/coloured-pencil
+```
+
 **Printables models:** first publication date (not the last republication) and model link
 
 Source: [www.printables.com/model/99861-klein-bottle](https://www.printables.com/model/99861-klein-bottle)
@@ -486,6 +493,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.69.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | patch.gg projects: creation date (`2026-11-12 https://patch.gg/blendi/coloured-pencil`) |
 | 2.68.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | One date rule everywhere: exact times are dated in Pacific Time, the same for everyone wherever they copy (they were in the viewer's time zone, UTC or PT depending on the site); dates written without a time zone are copied as written. Sony press releases: title from the release's heading again |
 | 2.67.2 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Google Play: the release date as the store shows it, California's, not UTC (`Android 2020-10-07 https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms`, released 2020-10-08 05:47 UTC) |
 | 2.67.1 | 2026-11-13 | Claude Code (Claude Opus 5.5) | App Store: recent Wayback captures read in their raw form, and the release date from the version history when Apple's lookup has none (`macOS-iOS-iPadOS 2020-10-08 https://web.archive.org/web/20260917050845/https://apps.apple.com/us/app/lego-mindstorms-inventor/id1515448947`) |
