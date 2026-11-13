@@ -130,7 +130,7 @@ async function playLine(tab, link, captureLink) {
 // App Store app pages (apps.apple.com/<country>/app/<name>/id<id>), live or archived, and their line
 const APP_STORE = /^https:\/\/apps\.apple\.com\/([a-z]{2}\/)?app\/([^/]+\/)?id\d+/;
 function appStoreLine(info, link) {
-  return `${info.platforms.join("-") || "?"} ${info.date || "?"} ${link}`;
+  return `${info.platforms.join("-") || "?"} ${formatDate(info.date) || "?"} ${link}`;
 }
 
 // One line per kind of page; "?" when the date isn't found
@@ -180,7 +180,8 @@ async function buildLine(tab) {
     }
     const info = await runInPage(tab, readArticleInfo);
     const first = await runInPage(tab, readWaybackFirstCapture, "ISOLATED", [archived]);
-    const date = formatDate(info.published) || (first ? `(${first.slice(0, 4)}-${first.slice(4, 6)})` : "?");
+    const captured = first && Date.UTC(first.slice(0, 4), first.slice(4, 6) - 1, first.slice(6, 8), first.slice(8, 10));
+    const date = formatDate(info.published) || (captured ? `(${pacificDate(captured).slice(0, 7)})` : "?");
     return `${date} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
@@ -227,7 +228,7 @@ async function buildLine(tab) {
   // Flathub apps: date added to Flathub
   if (/^https:\/\/flathub\.org\/([a-z]{2}([-_][A-Za-z]{2,4})?\/)?apps\/[A-Za-z0-9._-]+/.test(url)) {
     const info = await runInPage(tab, readFlathubAppInfo);
-    return `Linux ${info.added ? new Date(info.added * 1000).toISOString().slice(0, 10) : "?"} ${info.link}`;
+    return `Linux ${info.added ? pacificDate(info.added * 1000) : "?"} ${info.link}`;
   }
 
   // Microsoft Store apps and games: app type and release date
@@ -239,7 +240,7 @@ async function buildLine(tab) {
   // Chrome-Stats pages (chrome-stats.com/d/<id>: Android apps, browser extensions…): release date and link, no title
   if (/^https:\/\/chrome-stats\.com\//.test(url)) {
     const info = await runInPage(tab, readChromeStatsInfo);
-    if (info) return `${info.date || "?"} ${info.link}`;
+    if (info) return `${formatDate(info.date) || "?"} ${info.link}`;
     // Not an app or extension page: handled like any other page below
   }
 
@@ -270,32 +271,32 @@ async function buildLine(tab) {
   if (/^https:\/\/([a-z]+\.)?reddit\.com\//.test(url)) {
     const info = await runInPage(tab, readRedditInfo);
     if (!info) return null;
-    return `${info.date || "?"} ${info.link}`;
+    return `${formatDate(info.date) || "?"} ${info.link}`;
   }
 
   if (/^https:\/\/www\.amazon\.[a-z.]+\//.test(url)) {
     const info = await runInPage(tab, readAmazonProductInfo);
     if (!info) return null;
     // The price changes: it comes with the month it was read, "(2026-11) €39.99"
-    return `${info.date || "?"} ${info.link}${info.price ? ` ${consultedDate()} ${priceText(info.price, info.currency)}` : ""}`;
+    return `${formatDate(info.date) || "?"} ${info.link}${info.price ? ` ${consultedDate()} ${priceText(info.price, info.currency)}` : ""}`;
   }
 
   if (/^https:\/\/news\.ycombinator\.com\/item\?/.test(url)) {
     const info = await runInPage(tab, readHackerNewsItemInfo);
     if (!info) return null;
-    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+    return `${formatDate(info.date) || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
   if (/^https:\/\/pubmed\.ncbi\.nlm\.nih\.gov\/\d+/.test(url)) {
     const info = await runInPage(tab, readPubMedInfo);
     if (!info) return null;
-    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+    return `${formatDate(info.date) || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
   // SoundCloud tracks (soundcloud.com/<user>/<track>): publish date and link
   if (/^https:\/\/soundcloud\.com\/[^/?#]+\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readSoundCloudTrackInfo);
-    if (info) return `${info.date || "?"} ${info.link}`;
+    if (info) return `${formatDate(info.date) || "?"} ${info.link}`;
     // Not a track (sets, likes…): handled like any other page below
   }
 
@@ -304,26 +305,26 @@ async function buildLine(tab) {
     const info = await runInPage(tab, readPouetProdInfo);
     if (!info) return null;
     const groups = info.groups.map(g => "@" + cleanText(g)).join(" ");
-    return `${info.date || "?"} ${groups ? `${groups} - ` : ""}${cleanText(info.name)} ${info.link}`;
+    return `${formatDate(info.date) || "?"} ${groups ? `${groups} - ` : ""}${cleanText(info.name)} ${info.link}`;
   }
 
   // Suno songs: like YouTube, "date @artist - title link"; the share link (/s/<code>) is kept
   if (/^https:\/\/suno\.com\/song\/[0-9a-f-]{36}/.test(url)) {
     const info = await runInPage(tab, readSunoSongInfo);
     const who = info.handle ? `@${cleanText(info.handle)} - ` : "";
-    return `${info.date || "?"} ${who}${cleanText(info.title)} ${info.link}`;
+    return `${formatDate(info.date) || "?"} ${who}${cleanText(info.title)} ${info.link}`;
   }
 
   // Shadertoy shaders: upload date and shader name (the link only has the ID)
   if (/^https:\/\/www\.shadertoy\.com\/view\/\w+/.test(url)) {
     const info = await runInPage(tab, readShadertoyInfo, "MAIN");
-    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+    return `${formatDate(info.date) || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
   // iCloud shared shortcuts: creation date and name (the link only has the ID)
   if (/^https:\/\/www\.icloud\.com\/shortcuts\/[0-9a-f]{32}/.test(url)) {
     const info = await runInPage(tab, readICloudShortcutInfo);
-    return `${info.created ? localDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
+    return `${info.created ? pacificDate(info.created) : "?"} ${titleIfNotInLink(info.name, info.link)}${info.link}`;
   }
 
   // Medium publications (medium.com/<publication>, its About, archive and other tabs, not its posts): date of the
@@ -331,7 +332,7 @@ async function buildLine(tab) {
   const medium = url.match(/^https:\/\/medium\.com\/([a-z0-9-]+)\/?(?:(?:about|archive|all|latest|tagged)\b[^?#]*)?(?:[?#]|$)/)?.[1];
   if (medium && !/^(about|tag|tags|search|me|m|p|plans|membership|creators|policy|topics)$/.test(medium)) {
     const first = await runInPage(tab, readMediumFirstPost, "ISOLATED", [medium]);
-    if (first !== null) return `${first ? localDate(first) : "?"} https://medium.com/${medium}/`;
+    if (first !== null) return `${first ? pacificDate(first) : "?"} https://medium.com/${medium}/`;
   }
 
   // Google Groups threads (also a message's link, /c/<thread>/m/<message>): date of the first message, with the subject
@@ -339,13 +340,13 @@ async function buildLine(tab) {
   if (groupsThread) {
     const info = await runInPage(tab, readGoogleGroupsThread, "ISOLATED", [groupsThread]);
     const link = `https://groups.google.com/${groupsThread}`;
-    return `${info.first ? localDate(info.first * 1000) : "?"} ${titleIfNotInLink(info.subject, link)}${link}`;
+    return `${info.first ? pacificDate(info.first * 1000) : "?"} ${titleIfNotInLink(info.subject, link)}${link}`;
   }
 
-  // Printables models: first publication (a republished model's datePublished is its last one), in the viewer's time zone
+  // Printables models: first publication (a republished model's datePublished is its last one), dated in PT
   if (/^https:\/\/www\.printables\.com\/(?:[a-z]{2}\/)?model\/\d+/.test(url)) {
     const info = await runInPage(tab, readPrintablesModelInfo);
-    return `${info.published ? localDate(Date.parse(info.published)) : "?"} ${info.link}`;
+    return `${formatDate(info.published) || "?"} ${info.link}`;
   }
 
   // Apple user guides (support.apple.com/<locale>/guide/…) carry no date at all: the date read, and the link without
@@ -353,22 +354,22 @@ async function buildLine(tab) {
   const appleGuide = url.match(/^https:\/\/support\.apple\.com\/(?:[a-z]{2}-[a-z0-9]{2,4}\/)?(guide\/[^?#]+)/);
   if (appleGuide) return `${consultedDate()} https://support.apple.com/${appleGuide[1]}`;
 
-  // GitHub releases: publication date, shown in the viewer's time zone
+  // GitHub releases: publication date, dated in PT
   if (/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\/tag\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readGitHubReleaseInfo);
-    return `${info.published ? localDate(Date.parse(info.published)) : "?"} ${info.link}`;
+    return `${formatDate(info.published) || "?"} ${info.link}`;
   }
 
   // PyPI projects: date of the first release
   if (/^https:\/\/pypi\.org\/project\/[^/?#]+/.test(url)) {
     const info = await runInPage(tab, readPyPIProjectInfo);
-    return `${info.date || "?"} ${info.link}`;
+    return `${formatDate(info.date) || "?"} ${info.link}`;
   }
 
   // Have I Been Pwned breaches: date the breach was added to HIBP ("Added to HIBP: 20 Dec 2020")
   if (/^https:\/\/haveibeenpwned\.com\/Breach\/[^/?#]+/i.test(url)) {
     const info = await runInPage(tab, readHibpBreachInfo);
-    return `${info.date || "?"} ${info.link}`;
+    return `${formatDate(info.date) || "?"} ${info.link}`;
   }
 
   // Crunchbase organizations: founding date, as precise as Crunchbase knows it (day, month or year)
@@ -394,12 +395,12 @@ async function buildLine(tab) {
 
   if (/^https:\/\/www\.nidcd\.nih\.gov\/health\/./.test(url)) {
     const info = await runInPage(tab, readNidcdInfo);
-    return `${info.date || "?"} ${cleanText(info.title)} ${info.link}`;
+    return `${formatDate(info.date) || "?"} ${cleanText(info.title)} ${info.link}`;
   }
 
   if (/^https:\/\/www\.sony\.(com|net)\/([a-z]{2}\/)?SonyInfo\/News\//i.test(url)) {
     const info = await runInPage(tab, readSonyNewsInfo);
-    return `${info.date || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
+    return `${formatDate(info.date) || "?"} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
   // Any other web page (news articles like Le Parisien…): publish date from the page metadata;
@@ -448,8 +449,8 @@ function xPostLine(url) {
   if (!m) return null;
   const id = BigInt(m[2]);
   // Older posts (before November 2010) have small sequential IDs that carry no date.
-  // Local date, as X shows post times in the viewer's time zone.
-  const date = id < 10000000000000n ? "?" : localDate(Number((id >> 22n) + 1288834974657n));
+  // Dated in PT, like every exact time.
+  const date = id < 10000000000000n ? "?" : pacificDate(Number((id >> 22n) + 1288834974657n));
   return `${date} https://x.com/${m[1]}/status/${m[2]}`;
 }
 
@@ -496,13 +497,13 @@ function linkedinPostLine(url) {
   const u = new URL(url);
   const id = u.pathname.match(/(?:activity|share|ugcPost)[-:](\d{19})/)?.[1];
   if (!id) return null;
-  // Local date, as LinkedIn shows post times in the viewer's time zone
-  const date = localDate(Number(BigInt(id) >> 22n));
+  // Dated in PT, like every exact time
+  const date = pacificDate(Number(BigInt(id) >> 22n));
   return `${date} https://www.linkedin.com${u.pathname}`;
 }
 
 // Post IDs that carry their creation time, so the date needs no page access (these sites often require
-// sign-in). Local date, as the sites show times in the viewer's time zone. Checked on real posts:
+// sign-in). Dated in PT, like every exact time. Checked on real posts:
 // - TikTok /@user/video/<id> (also /photo/): id >> 32 = Unix seconds
 // - Instagram /p/<code>/, /reel/<code>/ and Threads /@user/post/<code>: the code is the media ID in base 64
 //   (A-Z a-z 0-9 - _), whose top bits are ms since 2011-08-24 21:07:01.721 UTC: (id >> 23) + 1314220021721;
@@ -515,14 +516,14 @@ async function idPostLine(url, tab) {
   const digits = (code, alphabet) => [...code].reduce((n, c) => n * BigInt(alphabet.length) + BigInt(alphabet.indexOf(c)), 0n);
   let m;
   if (host === "tiktok.com" && (m = u.pathname.match(/^\/(@[^/]+)\/(video|photo)\/(\d{19})/))) {
-    return `${localDate(Number(BigInt(m[3]) >> 32n) * 1000)} https://www.tiktok.com/${m[1]}/${m[2]}/${m[3]}`;
+    return `${pacificDate(Number(BigInt(m[3]) >> 32n) * 1000)} https://www.tiktok.com/${m[1]}/${m[2]}/${m[3]}`;
   }
   const instagram = host === "instagram.com" && u.pathname.match(/^\/(?:([^/]+)\/)?(p|reels?|tv)\/([A-Za-z0-9_-]{1,11})\/?$/);
   const threads = /^threads\.(com|net)$/.test(host) && u.pathname.match(/^\/(@[^/]+)\/post\/([A-Za-z0-9_-]{1,11})\/?$/);
   if (instagram || threads) {
     const code = instagram ? instagram[3] : threads[2];
     const id = digits(code, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
-    const date = id < 1n << 40n ? "?" : localDate(Number((id >> 23n) + 1314220021721n));
+    const date = id < 1n << 40n ? "?" : pacificDate(Number((id >> 23n) + 1314220021721n));
     if (threads) return `${date} https://www.threads.com/${threads[1]}/post/${code}`;
     // Instagram links rarely name the creator: "date @user link" like YouTube
     const user = instagram[1] || tab && await runInPage(tab, readInstagramUser, "ISOLATED", [code]);
@@ -533,10 +534,10 @@ async function idPostLine(url, tab) {
   // Mastodon posts on any server (/@user/<id>, /@user@server/<id>): id >> 16 = ms; the oldest posts have sequential IDs
   if ((m = u.pathname.match(/^\/(@[^/]+)\/(\d{6,19})\/?$/))) {
     const id = BigInt(m[2]);
-    return `${id < 1n << 40n ? "?" : localDate(Number(id >> 16n))} https://${u.hostname}/${m[1]}/${m[2]}`;
+    return `${id < 1n << 40n ? "?" : pacificDate(Number(id >> 16n))} https://${u.hostname}/${m[1]}/${m[2]}`;
   }
   if (host === "bsky.app" && (m = u.pathname.match(/^\/profile\/([^/]+)\/post\/([^/]+)/))) {
-    const date = /^[2-7a-z]{13}$/.test(m[2]) ? localDate(Number(digits(m[2], "234567abcdefghijklmnopqrstuvwxyz") >> 10n) / 1000) : "?";
+    const date = /^[2-7a-z]{13}$/.test(m[2]) ? pacificDate(Number(digits(m[2], "234567abcdefghijklmnopqrstuvwxyz") >> 10n) / 1000) : "?";
     return `${date} https://bsky.app/profile/${m[1]}/post/${m[2]}`;
   }
   return null;
@@ -577,7 +578,7 @@ async function readInstagramUser(code) {
 // Date a page was read, for pages with no date of their own: always the month in parentheses, "(2026-10)" (the user's
 // convention), so it shows at once that it is not the page's date and not to the day
 function consultedDate() {
-  return `(${localDate(Date.now()).slice(0, 7)})`;
+  return `(${pacificDate(Date.now()).slice(0, 7)})`;
 }
 
 // 39.99, "EUR" -> "€39.99": the currency's symbol ("CA$" for Canadian dollars), else a Unicode currency sign, else
@@ -591,10 +592,10 @@ function priceText(amount, currency) {
   return /^\p{Sc}\d/u.test(narrow) ? narrow : symbol;
 }
 
-// Time in ms -> "2025-12-15" in the viewer's time zone
-function localDate(ms) {
-  const d = new Date(ms);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+// Time in ms -> "2025-12-15", the day in Pacific Time (PT, America/Los_Angeles): every exact time gets the same date
+// for everyone, wherever they copy the link (the user's rule; the stores and YouTube date in PT too)
+function pacificDate(ms) {
+  return isFinite(ms) ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(ms) : "";
 }
 
 // Links that don't carry the title (nature.com/articles/s41598-025-97652-6, Sony press releases)
@@ -611,10 +612,17 @@ function titleIfNotInLink(title, link) {
   return words.length && inLink / words.length >= 0.5 ? "" : cleanText(title) + " ";
 }
 
-// "2005-04-23T20:31:52-07:00" -> "2005-04-23", the date YouTube displays
-// (converting to local time could shift it by one day)
+// The line's date: an exact time, with its time zone ("2025-02-18T04:32:27+00:00", "…Z", YouTube's "…-08:00"), is
+// the day in Pacific Time (pacificDate); a date written without a time zone ("2015-05-30", "2021-10-xx",
+// "2010-06-27 16:20:13") is kept as written, and so is a UTC midnight, a date stored as a time (the Microsoft
+// Store's "releaseDateUtc":"2010-10-18T00:00:00.0000000Z")
 function formatDate(s) {
-  return (s || "").match(/^\d{4}-(\d{2}|xx)-(\d{2}|xx)/)?.[0] || "";
+  s = String(s || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?\s*(Z|[+-]\d{2}:?\d{2})$/i.test(s)
+    && !/^\d{4}-\d{2}-\d{2}T00:00(:00(\.0+)?)?(Z|[+-]00:?00)$/i.test(s)) {
+    return pacificDate(Date.parse(s.replace(" ", "T").replace(/(\.\d{3})\d+/, "$1").replace(/([+-]\d{2})(\d{2})$/, "$1:$2")));
+  }
+  return s.match(/^\d{4}-(\d{2}|xx)-(\d{2}|xx)/)?.[0] || "";
 }
 
 // Runs in the page (must be self-contained)
@@ -702,9 +710,9 @@ async function readPlayAppInfo(fetchRegions, link = location.href) {
       try {
         const app = JSON.parse(m[1])?.[1]?.[2];
         if (app?.[77]?.[0] !== id) continue;
-        // The date Google Play shows is California's ("Oct 7, 2020" for 2020-10-08 05:47 UTC), like Chrome-Stats'
+        // An exact time: its Pacific date is the one Google Play shows ("Oct 7, 2020" for 2020-10-08 05:47 UTC)
         const ts = app[10]?.[1]?.[0];
-        return ts ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(ts * 1000) : "";
+        return ts ? new Date(ts * 1000).toISOString() : "";
       } catch (e) {}
     }
     return undefined;
@@ -791,7 +799,7 @@ async function readArticleInfo() {
 
   // MediaWiki sites (LifeWiki, Arch Wiki, Minecraft Wiki…, known by their generator tag; Wikipedia is read from its link
   // alone): creation date = first revision, from the wiki's own API (its EditURI link, else the REST search link's
-  // folder), UTC date like Wikipedia, with the wiki's server and article path ("/wiki/$1") in the same request: the link
+  // folder), dated in PT, with the wiki's server and article path ("/wiki/$1") in the same request: the link
   // is the article's whatever the page (history, info: "…&action=info", whose own title is "Information for …") or
   // the skin; the page name is the page's configuration ("wgPageName":"OTCA_metapixel"), the title the API's
   async function mediaWiki() {
@@ -806,19 +814,16 @@ async function readArticleInfo() {
       const { pages, general } = (await (await fetch(api)).json()).query;
       const { title, revisions } = Object.values(pages)[0];
       const path = encodeURIComponent(title.replace(/ /g, "_")).replace(/%2F/g, "/").replace(/%3A/g, ":");
-      return { date: revisions?.[0]?.timestamp.slice(0, 10) || "", title,
+      return { date: revisions?.[0]?.timestamp || "", title,
         link: new URL(general.articlepath.replace("$1", path), new URL(general.server, pageUrl)).href };
     } catch (e) { return null; }
   }
 
-  // Local date of a time in ms, "2026-11-09"
-  function localDay(ms) {
-    const day = new Date(ms);
-    return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
-  }
+  // An exact time in ms as ISO ("2026-11-09T03:59:13.378Z"): the service worker gives its Pacific date
+  const instant = ms => isFinite(ms) ? new Date(ms).toISOString() : "";
 
   // Lemmy posts (/post/<id> on any server, known by its <meta name="Description" content="Lemmy">) carry no date: the
-  // post's "published" (UTC) from the server's public API, shown as the local date like Lemmy does; a comment's link
+  // post's "published" (UTC) from the server's public API, dated in PT; a comment's link
   // (/comment/<id>) gives its post's date and link, like a forum reply
   async function lemmyPost() {
     const [, kind, id] = new URL(pageUrl).pathname.match(/^\/(post|comment)\/(\d+)/) || [];
@@ -826,7 +831,7 @@ async function readArticleInfo() {
     try {
       const data = await (await fetch(`/api/v3/${kind}?id=${id}`)).json();
       const post = (data.post_view || data.comment_view).post;
-      return { date: localDay(Date.parse(post.published)), link: `${new URL(pageUrl).origin}/post/${post.id}` };
+      return { date: instant(Date.parse(post.published)), link: `${new URL(pageUrl).origin}/post/${post.id}` };
     } catch (e) { return null; }
   }
 
@@ -836,11 +841,11 @@ async function readArticleInfo() {
   // vBulletin 3: the post table's first .thead ("30-10-2026, 13:27"), 4: .postdate .date; FluxBB: .blockpost h2 a
   // ("2010-06-27 16:20:13"); Discuz!: [id^=authorposton] ("发表于 2012-5-9 18:03", a relative "3 天前" carries the date in
   // its span's title); ProBoards: abbr.o-timestamp data-timestamp (ms). "Today" and "Yesterday" (SMF, vBulletin, FluxBB)
-  // are the local date. Others need nothing: phpBB 3, XenForo, Invision, Vanilla (first <time datetime>), Discourse,
+  // are today and yesterday, dated in PT. Others need nothing: phpBB 3, XenForo, Invision, Vanilla (first <time datetime>), Discourse,
   // NodeBB, Flarum (article:published_time), Stack Exchange (time[itemprop=dateCreated])
   function forumDate() {
     const proBoards = doc.querySelector(".post abbr.o-timestamp[data-timestamp]")?.dataset.timestamp;
-    if (proBoards) return localDay(Number(proBoards));
+    if (proBoards) return instant(Number(proBoards));
     const myBB = doc.querySelector("#posts .post_date")?.firstChild;
     const discuz = doc.querySelector('#postlist [id^="authorposton"]');
     const other = doc.querySelector("#forumposts .postinfo a.smalltext")
@@ -850,7 +855,7 @@ async function readArticleInfo() {
       : discuz ? discuz.querySelector("span[title]")?.title || discuz.textContent.replace(/^\D+/, "")
       : other?.textContent || "").trim().replace(/^«[^:]*:\s*/, "");
     const relative = text.match(/^(?:(today|aujourd'hui|heute|hoy|oggi)|(yesterday|hier|gestern|ayer|ieri))\b/i);
-    if (relative) return localDay(Date.now() - (relative[2] ? 864e5 : 0));
+    if (relative) return instant(Date.now() - (relative[2] ? 864e5 : 0));
     return dateFromText(text, !!myBB);
   }
 
@@ -859,8 +864,8 @@ async function readArticleInfo() {
   // else the text of the article's date element without label (ameli.fr: <p class="date">12 août 2025</p>), else the
   // first text that is only a complete date (research.google: <p>October 27, 2026</p>, before the related posts')
   function shownDate() {
-    const iso = doc.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
-    if (iso) return iso;
+    const time = dateFromText(doc.querySelector("time[datetime]")?.getAttribute("datetime") || "", false);
+    if (time && !time.includes("x")) return time;
     const element = doc.querySelector("article .date") || doc.querySelector(".date");
     return afterLabel(/(publi[ée]e? le|mis en ligne le|published(?: on)?|posted(?: by [^\n]{1,40}? on| on)?|ver[öo]ffentlicht(?: am)?|pubblicato(?: il)?|publicado(?: el)?)/)
       || (element ? dateFromText(element.textContent.trim(), false) : "")
@@ -880,13 +885,13 @@ async function readArticleInfo() {
 
   // Else the last update: modification metadata, else the text after "Updated", "Mis à jour le"… (emergentmind.com:
   // "Updated 11 January 2026"), else a Google Sites page's last publication (data-last-updated-at-time, ms, shown in
-  // its "Page updated" info), local date
+  // its "Page updated" info), dated in PT
   function updatedDate() {
     const updatedAt = Number(doc.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
     return firstDate([meta('meta[property="article:modified_time"]'), meta('meta[property="og:updated_time"]'),
       meta('meta[itemprop="dateModified"]'), ...jsonLd("dateModified")])
       || afterLabel(/(last (?:updated|modified)(?: on)?|updated(?: on)?|mise? à jour(?: le)?|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
-      || (updatedAt ? new Date(updatedAt - new Date(updatedAt).getTimezoneOffset() * 60000).toISOString().slice(0, 10) : "");
+      || (updatedAt ? instant(updatedAt) : "");
   }
 
   // "2021-11-14", "14.11.2021" (day first, or month first after an English label with slashes), "14 novembre 2021",
@@ -900,6 +905,8 @@ async function readArticleInfo() {
       const w = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
       return w.startsWith("juil") ? 7 : w.startsWith("juin") ? 6 : months[w.slice(0, 3)];
     };
+    // An exact time with its time zone stays whole ("2025-02-18T04:32:27+00:00"): the service worker dates it in PT
+    if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?\s*(Z|[+-]\d{2}:?\d{2})$/i.test(text)) return text;
     let d = text.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})/);              // 2021-11-14, 2021/11/14
     if (d) return `${d[1]}-${pad(d[2])}-${pad(d[3])}`;
     d = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);   // 14.11.2021, 14/11/2021 (11/14/2021, 11-14-2021 in English)
@@ -951,7 +958,7 @@ async function readArticleInfo() {
 
 // Code forges: repositories (creation), issues and pull or merge requests (opening, with their title), commits
 // (commit date, with their subject), from the public REST APIs (CORS allowed; GitHub: 60 requests an hour without
-// sign-in), local date as the sites show it. null on other pages (users, /features/…: the API has no such
+// sign-in), dated in PT. null on other pages (users, /features/…: the API has no such
 // repository) and when the API fails, then the generic reader.
 // GitHub: /<owner>/<repo>, /issues/<n>, /pull/<n> (own endpoint: repos with issues disabled answer 410 to /issues),
 // /commit/<sha>. GitLab: /<group>/…/<project>, /-/issues/<n>, /-/merge_requests/<n>, /-/commit/<sha>.
@@ -989,15 +996,15 @@ async function forgeLine(url) {
       // are written by their author, so only an older one is taken, the user's choice)
       if (!kind) {
         const first = Date.parse(await forge.firstCommit?.(path).catch(() => undefined));
-        return `${localDate(Math.min(Date.parse(data.created_at), first || Infinity))} ${forge.link(path)}`;
+        return `${pacificDate(Math.min(Date.parse(data.created_at), first || Infinity))} ${forge.link(path)}`;
       }
       if (kind === "commit") {
         const commit = forge.commit(data);
         const link = forge.link(path, kind, commit.sha);
-        return `${localDate(Date.parse(commit.date))} ${titleIfNotInLink(commit.title, link)}${link}`;
+        return `${pacificDate(Date.parse(commit.date))} ${titleIfNotInLink(commit.title, link)}${link}`;
       }
       const link = forge.link(path, kind, ref);
-      return `${localDate(Date.parse(data.created_at))} ${titleIfNotInLink(data.title, link)}${link}`;
+      return `${pacificDate(Date.parse(data.created_at))} ${titleIfNotInLink(data.title, link)}${link}`;
     } catch (e) {
       return null;
     }
@@ -1006,7 +1013,7 @@ async function forgeLine(url) {
 }
 
 // Firefox add-ons (addons.mozilla.org/<lang>/firefox/addon/<slug>/): date created, from the public API (CORS
-// allowed); "Firefox theme" for themes; UTC date like the stores
+// allowed); "Firefox theme" for themes; dated in PT
 async function firefoxAddonLine(url) {
   const m = url.match(/^https:\/\/addons\.mozilla\.org\/(?:[a-z]{2}(?:-[A-Z]{2})?\/)?(?:firefox|android)\/addon\/([^/?#]+)/);
   if (!m) return null;
@@ -1016,8 +1023,8 @@ async function firefoxAddonLine(url) {
 }
 
 
-// Wikipedia articles: creation date = timestamp of the first revision (API, CORS with origin=*), UTC date as
-// Wikipedia shows it to signed-out readers; redirects followed
+// Wikipedia articles: creation date = timestamp of the first revision (API, CORS with origin=*), dated in PT;
+// redirects followed
 async function wikipediaLine(url) {
   const m = url.match(/^https:\/\/([a-z-]+)(?:\.m)?\.wikipedia\.org\/wiki\/([^?#]+)/);
   if (!m) return null;
@@ -1031,7 +1038,7 @@ async function wikipediaLine(url) {
 }
 
 // npm packages: date of the first release, "time.created" of the registry document (CORS allowed; it lists every
-// version: 16 MB for typescript, ~0.3 s), UTC date like PyPI
+// version: 16 MB for typescript, ~0.3 s), dated in PT
 async function npmLine(url) {
   const m = url.match(/^https:\/\/www\.npmjs\.com\/package\/((?:@[^/?#]+\/)?[^/?#]+)/);
   if (!m) return null;
@@ -1042,7 +1049,7 @@ async function npmLine(url) {
 }
 
 // arXiv papers (arxiv.org abstract page, PDF or HTML version; ar5iv HTML version): date of the first version
-// ("Submitted" v1, UTC date, the abstract page's citation_date) and title from the paper's DOI record at DataCite
+// ("Submitted" v1, dated in PT, the abstract page's citation_date) and title from the paper's DOI record at DataCite
 // (CORS allowed; arxiv.org sends no CORS header and ar5iv pages have no date), else the month of the ID ("1804" ->
 // 2018-04-xx). An HTML version gives the PDF link; the abstract page and the PDF keep theirs.
 async function arxivLine(url) {
@@ -1052,7 +1059,7 @@ async function arxivLine(url) {
   let date = `${yy < 91 ? 20 : 19}${yy}-${mm}-xx`, title = "";
   try {
     const record = (await (await fetch(`https://api.datacite.org/dois/10.48550/arxiv.${id}`)).json()).data.attributes;
-    date = record.dates.find(d => d.dateType === "Submitted" && d.dateInformation === "v1")?.date.slice(0, 10) || date;
+    date = formatDate(record.dates.find(d => d.dateType === "Submitted" && d.dateInformation === "v1")?.date) || date;
     title = unicodeMath(record.titles[0]?.title || "");
   } catch (e) {}
   const link = `https://arxiv.org/${kind === "html" ? "pdf" : kind}/${id}${version}`;
@@ -1179,11 +1186,11 @@ async function readAppStoreInfo(link = location.href) {
   let date = "";
   try {
     const iso = (await (await fetch(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).json()).results[0]?.releaseDate || "";
-    date = iso.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+    date = iso;
   } catch (e) {}
   const versions = page?.shelfMapping?.mostRecentVersion?.seeAllAction?.pageData?.shelves?.[0]?.items || [];
   const first = Math.min(...versions.map(v => Date.parse(v.secondarySubtitle)).filter(Boolean));
-  date ||= (isFinite(first) ? new Date(first).toISOString().slice(0, 10) : "")
+  date ||= (isFinite(first) ? new Date(first).toISOString() : "")
     || Object.values(legacy?.platformAttributes || {}).map(p => p.releaseDate).filter(Boolean).sort()[0] || "";
   return { platforms, date, link: `https://apps.apple.com${path}` };
 }
@@ -1222,14 +1229,11 @@ function readRedditInfo() {
     link = `https://www.reddit.com/r/${sub}/`;
   } else return null;
 
-  // Local date, as Reddit shows times in the viewer's time zone
-  let date = "";
+  // An exact time (ISO or ms), dated in PT by the service worker
   const d = new Date(typeof created === "string"
     ? created.replace(/\.(\d{3})\d*/, ".$1").replace(/([+-]\d{2})(\d{2})$/, "$1:$2")
     : created);
-  if (created && !isNaN(d)) {
-    date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  }
+  const date = created && !isNaN(d) ? d.toISOString() : "";
 
   return { date, link };
 }
@@ -1244,7 +1248,7 @@ function readNidcdInfo() {
   const m = document.querySelector("#pdf")?.previousElementSibling?.innerText.trim().match(/([A-Za-z]+) (\d{4})$/);
   const month = m && MONTHS.indexOf(m[1].toLowerCase()) + 1;
   const date = month ? `${m[2]}-${String(month).padStart(2, "0")}-xx`
-    : document.querySelector("time[datetime]")?.getAttribute("datetime").slice(0, 10) || "";
+    : document.querySelector("time[datetime]")?.getAttribute("datetime") || "";
   return { date, title: document.title.replace(/\s+\|\s+NIDCD$/, ""), link: location.origin + location.pathname };
 }
 
@@ -1267,11 +1271,14 @@ function readSonyNewsInfo() {
   for (const el of document.querySelectorAll("p.mod_text.right")) {
     if ((date = parse(el.textContent))) break;
   }
-  if (!date) date = document.querySelector("time[datetime]")?.getAttribute("datetime")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
-  if (!date) date = document.querySelector('meta[property="article:published_time"]')?.content?.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+  if (!date) date = document.querySelector("time[datetime]")?.getAttribute("datetime") || "";
+  if (!date) date = document.querySelector('meta[property="article:published_time"]')?.content || "";
 
-  const title = (document.querySelector('meta[property="og:title"]')?.content
-    || document.querySelector("h1")?.textContent || "").trim();
+  // The release's own heading (h1.mod_title-h1; the page's first h1 is the section, "News Releases"), else og:title
+  // or <title> without " - Sony Group Portal"
+  const title = (document.querySelector("h1.mod_title-h1")?.textContent
+    || document.querySelector('meta[property="og:title"]')?.content
+    || document.title.replace(/\s+-\s+Sony[^-]*$/, "")).trim();
   return { date, title, link: location.origin + location.pathname.replace(/index\.html?$/, "") };
 }
 
@@ -1338,8 +1345,8 @@ function readHackerNewsItemInfo() {
   const age = document.querySelector(".fatitem .age[title]") || document.querySelector(".age[title]");
   const [iso, unix] = (age?.getAttribute("title") || "").split(" ");
   const d = unix ? new Date(Number(unix) * 1000) : new Date(iso ? `${iso}Z` : NaN);
-  // Local date, as for the other sites
-  const date = isNaN(d) ? "" : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  // An exact time, dated in PT by the service worker
+  const date = isNaN(d) ? "" : d.toISOString();
   // Story title (comments have none)
   const title = document.querySelector(".fatitem .titleline > a")?.textContent.trim() || "";
   return { date, title, link: `https://news.ycombinator.com/item?id=${id}` };
@@ -1386,9 +1393,8 @@ function readSoundCloudTrackInfo() {
   }
   if (!isTrack) return null;
   const d = new Date(iso);
-  // Local date, as SoundCloud shows it
-  const date = iso && !isNaN(d)
-    ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : "";
+  // An exact time, dated in PT by the service worker
+  const date = iso && !isNaN(d) ? d.toISOString() : "";
   return { date, link };
 }
 
@@ -1403,7 +1409,7 @@ function readPouetProdInfo() {
   }
   // Date the prod was added to Pouët (as in the JSON-LD, else "added on the 2026-05-17 02:36:13"),
   // else the release month ("release date : may 2026")
-  let date = (ld.uploadDate || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0]
+  let date = ld.uploadDate
     || document.body.innerText.match(/added on the (\d{4}-\d{2}-\d{2})/)?.[1] || "";
   if (!date) {
     const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
@@ -1431,9 +1437,8 @@ function readSunoSongInfo() {
     if (text.slice(Math.max(0, m.index - 3000), m.index + 3000).includes(`"id":"${id}"`)) { created = m[1]; break; }
   }
   const d = new Date(created);
-  // Local date, as Suno shows it
-  const date = created && !isNaN(d)
-    ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : "";
+  // An exact time, dated in PT by the service worker
+  const date = created && !isNaN(d) ? d.toISOString() : "";
   const meta = sel => document.querySelector(sel)?.content || "";
   // "The future speaks to us by toutankamo (@toutankamo). Listen and make your own on Suno."
   const handle = meta('meta[name="description"]').match(/\(@([^)]+)\)/)?.[1] || "";
@@ -1444,7 +1449,7 @@ function readSunoSongInfo() {
 // Runs in the page's MAIN world (must be self-contained)
 async function readShadertoyInfo() {
   const id = location.pathname.match(/^\/view\/(\w+)/)[1];
-  const utcDate = unix => new Date(Number(unix) * 1000).toISOString().slice(0, 10);
+  const utcDate = unix => new Date(Number(unix) * 1000).toISOString();
   // As shown under the shader: "Uploaded by <user> in 2026-10-24"
   let date = document.querySelector("#shaderAuthorDate")?.textContent.match(/\d{4}-\d{2}-\d{2}/)?.[0] || "";
   let title = document.querySelector("#shaderTitle")?.textContent.trim() || "";
@@ -1578,7 +1583,7 @@ function readMetaQuestAppInfo() {
 
 // Runs in the page (must be self-contained)
 // Flathub: "added_at" (Unix seconds) of the same-site search API's hit for the app id (the API refuses the service
-// worker's POST); it is the creation of the app's flathub/<id> repository when there is one. UTC date.
+// worker's POST); it is the creation of the app's flathub/<id> repository when there is one. Dated in PT.
 async function readFlathubAppInfo() {
   const id = location.pathname.match(/\/apps\/([A-Za-z0-9._-]+)/)[1];
   let added = 0;
@@ -1628,7 +1633,8 @@ async function readPyPIProjectInfo() {
     date = [...document.querySelectorAll(".release-timeline time[datetime], #history time[datetime]")]
       .map(t => t.getAttribute("datetime")).sort()[0] || "";
   }
-  return { date: date.slice(0, 10), link: `https://pypi.org/project/${name}/` };
+  // upload_time is UTC without its zone
+  return { date: /^\d{4}-\d{2}-\d{2}T[\d:.]+$/.test(date) ? `${date}Z` : date, link: `https://pypi.org/project/${name}/` };
 }
 
 // Runs in the page (must be self-contained)

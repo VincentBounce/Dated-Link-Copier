@@ -6,6 +6,8 @@ Chrome extension that copies a dated link to the page you're on, in one click.
 
 Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. The icon is greyed out where there is nothing to copy: YouTube pages other than videos (home, channels, search…), Google Play pages other than apps, Reddit, X and LinkedIn pages other than posts, Amazon pages other than products, new tab, `chrome://` pages and local files.
 
+**Dates:** when the source gives an exact time (a timestamp, an ID that encodes one, a date with its time and time zone), the line shows the day it was in Pacific Time (PT, the time zone of California, where the app stores and YouTube date their releases), so a link gives the same date to everyone, wherever they copy it. When the source only writes a date, without a time zone, it is copied as written. A date the page doesn't have is replaced with the month it was read, in parentheses: `(2026-11)`.
+
 ### Video and music
 
 **YouTube videos:** publish date, channels, title, `[video ID]` and short link
@@ -31,21 +33,21 @@ Source: [www.youtube.com/@mkbhd](https://www.youtube.com/@mkbhd)
 
 Source: [soundcloud.com/dubstep/bullet-train-by-stephen-swartz](https://soundcloud.com/dubstep/bullet-train-by-stephen-swartz)
 ```
-2012-08-28 https://soundcloud.com/dubstep/bullet-train-by-stephen-swartz
+2012-08-27 https://soundcloud.com/dubstep/bullet-train-by-stephen-swartz
 ```
 
 **Suno songs:** creation date, artist and title like YouTube, and the share link
 
 Source: [suno.com/s/VMQ54WCwvvaYSw3b](https://suno.com/s/VMQ54WCwvvaYSw3b)
 ```
-2026-10-26 @toutankamo - The future speaks to us https://suno.com/s/VMQ54WCwvvaYSw3b
+2026-10-25 @toutankamo - The future speaks to us https://suno.com/s/VMQ54WCwvvaYSw3b
 ```
 
 **Pouët productions:** date added to Pouët, groups and name like YouTube
 
 Source: [www.pouet.net/prod.php?which=106210](https://www.pouet.net/prod.php?which=106210)
 ```
-2026-05-17 @Desire - Wake Up! 16b https://www.pouet.net/prod.php?which=106210
+2026-05-16 @Desire - Wake Up! 16b https://www.pouet.net/prod.php?which=106210
 ```
 
 **Shadertoy shaders:** upload date and shader name (the link only has the ID)
@@ -77,7 +79,7 @@ Sources: [apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000](https://a
 ```
 iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000
 (macOS)-iOS-iPadOS-watchOS-visionOS 2015-03-19 https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574
-(macOS)-iPadOS 2012-08-28 https://apps.apple.com/us/app/golly/id553184760
+(macOS)-iPadOS 2012-08-27 https://apps.apple.com/us/app/golly/id553184760
 ```
 
 A Wayback capture of an app page gives the same line, with the capture link (removed apps live on there):
@@ -120,7 +122,7 @@ Source: [chrome-stats.com/d/com.anthropic.aibo](https://chrome-stats.com/d/com.a
 
 Source: [x.com/RobertDaleSmith/status/2108787905225245094](https://x.com/RobertDaleSmith/status/2108787905225245094)
 ```
-2026-10-10 https://x.com/RobertDaleSmith/status/2108787905225245094
+2026-10-09 https://x.com/RobertDaleSmith/status/2108787905225245094
 ```
 
 **X (Twitter) profiles:** month the account joined X ("Joined October 2021", in any page language) and profile link
@@ -165,7 +167,7 @@ Source: [www.facebook.com/relayfinancial](https://www.facebook.com/relayfinancia
 
 Source: [www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/](https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/)
 ```
-2026-05-13 https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/
+2026-05-12 https://www.linkedin.com/posts/nasrin-haghani-15020078_south-korean-scientists-reactivated-inner-share-7460201952430276608-TXVo/
 ```
 
 **LinkedIn company pages:** founding year and the About tab link, from any tab
@@ -245,15 +247,15 @@ Discuz!, from [www.52pojie.cn/thread-147931-1-1.html](https://www.52pojie.cn/thr
 ```
 Discourse, from [meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829](https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829)
 ```
-2025-02-18 PDF support in Discourse AI (RAG), Documentation ／ Site Management https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829
+2025-02-17 PDF support in Discourse AI (RAG), Documentation ／ Site Management https://meta.discourse.org/t/pdf-support-in-discourse-ai-rag/352829
 ```
 NodeBB, from [community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts/7](https://community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts/7)
 ```
-2026-01-21 https://community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts
+2026-01-20 https://community.nodebb.org/topic/19186/minor-issues-in-safari-w-admin-panel-shortcuts
 ```
 Flarum, from [discuss.flarum.org/d/40274-no-password-no-password-leak-would-you-run-flarum-without-passwords/5](https://discuss.flarum.org/d/40274-no-password-no-password-leak-would-you-run-flarum-without-passwords/5)
 ```
-2026-11-04 https://discuss.flarum.org/d/40274-no-password-no-password-leak-would-you-run-flarum-without-passwords
+2026-11-03 https://discuss.flarum.org/d/40274-no-password-no-password-leak-would-you-run-flarum-without-passwords
 ```
 Vanilla, from [success.vanillaforums.com/discussion/4232/a-new-support-communication-channel](https://success.vanillaforums.com/discussion/4232/a-new-support-communication-channel)
 ```
@@ -271,7 +273,7 @@ Source: [stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-f
 
 Source: [lemmy.world/post/54180129](https://lemmy.world/post/54180129)
 ```
-2026-11-09 Nvidia CEO Jensen Huang admits affair, board to launch investigation https://lemmy.world/post/54180129
+2026-11-08 Nvidia CEO Jensen Huang admits affair, board to launch investigation https://lemmy.world/post/54180129
 ```
 
 **Google Groups threads:** date of the first message, with the subject (the link only has the thread ID), also from a message's link
@@ -285,7 +287,7 @@ Source: [groups.google.com/g/comp.lang.python/c/oOThDCtK0R0](https://groups.goog
 
 Source: [news.ycombinator.com/item?id=50028275](https://news.ycombinator.com/item?id=50028275)
 ```
-2026-10-10 REA Reverse – Engineer Anything https://news.ycombinator.com/item?id=50028275
+2026-10-09 REA Reverse – Engineer Anything https://news.ycombinator.com/item?id=50028275
 ```
 
 ### Code and packages
@@ -294,9 +296,9 @@ Source: [news.ycombinator.com/item?id=50028275](https://news.ycombinator.com/ite
 
 Sources: [github.com/git/git](https://github.com/git/git) · [github.com/microsoft/vscode/issues/100](https://github.com/microsoft/vscode/issues/100) · [github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290](https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290)
 ```
-2005-04-08 https://github.com/git/git
+2005-04-07 https://github.com/git/git
 2015-11-18 GitHub link on page is broken https://github.com/microsoft/vscode/issues/100
-2005-04-08 Initial revision of ＂git＂, the information manager from hell https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290
+2005-04-07 Initial revision of ＂git＂, the information manager from hell https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290
 ```
 
 **GitHub releases:** publication date and link
@@ -327,7 +329,7 @@ Source: [pypi.org/project/textual-paint/](https://pypi.org/project/textual-paint
 Sources: [arxiv.org/pdf/2101.10743](https://arxiv.org/pdf/2101.10743) · [arxiv.org/pdf/1903.02712](https://arxiv.org/pdf/1903.02712)
 ```
 2021-01-26 The Rest of the Tilings of the Sphere by Regular Polygons https://arxiv.org/pdf/2101.10743
-2019-03-07 Tilings of the Sphere by Congruent Pentagons II： Edge Combination a³b² https://arxiv.org/pdf/1903.02712
+2019-03-06 Tilings of the Sphere by Congruent Pentagons II： Edge Combination a³b² https://arxiv.org/pdf/1903.02712
 ```
 
 **PubMed:** online (Epub) date, else the issue date (`2026-01-xx` when the day or month is missing), with the title
@@ -484,6 +486,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.68.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | One date rule everywhere: exact times are dated in Pacific Time, the same for everyone wherever they copy (they were in the viewer's time zone, UTC or PT depending on the site); dates written without a time zone are copied as written. Sony press releases: title from the release's heading again |
 | 2.67.2 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Google Play: the release date as the store shows it, California's, not UTC (`Android 2020-10-07 https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms`, released 2020-10-08 05:47 UTC) |
 | 2.67.1 | 2026-11-13 | Claude Code (Claude Opus 5.5) | App Store: recent Wayback captures read in their raw form, and the release date from the version history when Apple's lookup has none (`macOS-iOS-iPadOS 2020-10-08 https://web.archive.org/web/20260917050845/https://apps.apple.com/us/app/lego-mindstorms-inventor/id1515448947`) |
 | 2.67.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Google Play: Wayback captures of app pages give the release date too (`Android 2020-10-07 https://web.archive.org/web/20250830144254/https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms&hl=en_US`) |
