@@ -19,6 +19,7 @@ Source: [www.youtube.com/watch?v=0PT5c1z3LL8](https://www.youtube.com/watch?v=0P
 
 - `YYYY-MM-DD` publish date, as shown by YouTube
 - One `@` per channel, so collaborations list every channel: `@RMC @Les Grandes Gueules`
+- A title ending with ` | <channel>` (or ` - `, ` – `, ` · `) drops that repeated channel name: `Atlas on a Roll ｜ Classical Motor Controls and Whole-Body RL` ([NL65Awuv8gU](https://www.youtube.com/watch?v=NL65Awuv8gU))
 - ` - ` inside the channel names and the title is replaced with `, `
 - Characters forbidden in file names (`\ / : * ? " > < |`) are replaced with full-width look-alikes (`＼／：＊？＂＞＜｜`), so the line can be used as a file name
 
@@ -493,6 +494,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.70.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | YouTube videos: a trailing ` | <channel>` in the title is dropped (`… Whole-Body RL [NL65Awuv8gU]`) |
 | 2.69.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | patch.gg projects: creation date (`2026-11-12 https://patch.gg/blendi/coloured-pencil`) |
 | 2.68.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | One date rule everywhere: exact times are dated in Pacific Time, the same for everyone wherever they copy (they were in the viewer's time zone, UTC or PT depending on the site); dates written without a time zone are copied as written. Sony press releases: title from the release's heading again |
 | 2.67.2 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Google Play: the release date as the store shows it, California's, not UTC (`Android 2020-10-07 https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms`, released 2020-10-08 05:47 UTC) |

@@ -196,7 +196,7 @@ async function buildLine(tab) {
     if (!info) return null;
     // Replace " - " in channels and title; one "@" per channel (collaborations have several); "[ID]" before the link
     const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
-    const cleanTitle = cleanText(info.title);
+    const cleanTitle = cleanText(withoutChannelSuffix(info.title, info.channels));
     return `${formatDate(info.published) || "?"} ${cleanChannels} - ${cleanTitle} [${info.id}] https://youtu.be/${info.id}`;
   }
 
@@ -448,6 +448,14 @@ const FILENAME_SAFE = { "\\": "＼", "/": "／", ":": "：", "*": "＊", "?": "�
 
 function cleanText(s) {
   return s.trim().replace(/\s+/g, " ").replace(/ - /g, ", ").replace(/[\\/:*?"<>|]/g, ch => FILENAME_SAFE[ch]);
+}
+
+// A title ending with " | <channel>" (or " - ", " – ", " — ", " · ") repeats the channel: dropped
+function withoutChannelSuffix(title, channels) {
+  const t = title.trim();
+  const end = channels.find(c => c && t.toLowerCase().endsWith(c.trim().toLowerCase())
+    && /\s[|｜\-–—·•]\s*$/.test(t.slice(0, t.length - c.trim().length)));
+  return end ? t.slice(0, t.length - end.trim().length).replace(/\s[|｜\-–—·•]\s*$/, "") : t;
 }
 
 // X (Twitter) post IDs are "snowflakes": the top bits are the creation time in ms since
