@@ -702,8 +702,9 @@ async function readPlayAppInfo(fetchRegions, link = location.href) {
       try {
         const app = JSON.parse(m[1])?.[1]?.[2];
         if (app?.[77]?.[0] !== id) continue;
+        // The date Google Play shows is California's ("Oct 7, 2020" for 2020-10-08 05:47 UTC), like Chrome-Stats'
         const ts = app[10]?.[1]?.[0];
-        return ts ? new Date(ts * 1000).toISOString() : "";
+        return ts ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(ts * 1000) : "";
       } catch (e) {}
     }
     return undefined;
