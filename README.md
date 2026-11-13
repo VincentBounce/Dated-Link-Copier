@@ -64,6 +64,13 @@ Source: [play.google.com/store/apps/details?id=fr.laposte.lapostemobile](https:/
 Android 2012-12-14 https://play.google.com/store/apps/details?id=fr.laposte.lapostemobile
 ```
 
+A Wayback capture of an app page gives the same line, with the capture link:
+
+Source: [web.archive.org/web/20250830144254/https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms&hl=en_US](https://web.archive.org/web/20250830144254/https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms&hl=en_US)
+```
+Android 2020-10-08 https://web.archive.org/web/20250830144254/https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms&hl=en_US
+```
+
 **App Store apps:** compatible platforms, first release date and link (an iPhone/iPad app that also runs on Apple silicon Macs or Apple Vision Pro, without being native there, shows `(macOS)` / `(visionOS)`)
 
 Sources: [apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000](https://apps.apple.com/us/app/claude-duet-by-anthropic/id6803276000) · [apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574](https://apps.apple.com/us/app/carrot-weather-alerts-radar/id961390574) · [apps.apple.com/us/app/golly/id553184760](https://apps.apple.com/us/app/golly/id553184760)
@@ -477,6 +484,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.67.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Google Play: Wayback captures of app pages give the release date too (`Android 2020-10-08 https://web.archive.org/web/20250830144254/https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms&hl=en_US`) |
 | 2.66.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | App Store: Wayback captures of app pages give the platforms and release date too, also from the pre-2025 page layout (`iOS-iPadOS 2015-05-30 https://web.archive.org/web/20240329184808/https://apps.apple.com/us/app/xkcd-open-source/id995811425`) |
 | 2.65.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Short links: Instagram profiles and `/p/` posts on instagr.am, amazon.com products on amzn.com (reels and the other Amazon sites have no short host that keeps the path) |
 | 2.64.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Facebook pages and profiles: short link on fb.com (`2020-03-10 https://fb.com/relayfinancial`) |

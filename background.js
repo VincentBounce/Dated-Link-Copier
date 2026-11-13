@@ -115,6 +115,18 @@ async function runInPage(tab, func, world = "ISOLATED", args = []) {
   return result;
 }
 
+// Google Play app pages, live or archived (then with the capture link): release date from the page (instant); some
+// apps have none in any region (com.anthropic.aibo), so then Chrome-Stats (~0.1 s), and last, on a live page, the app
+// page for other regions (about 1 s each)
+const GOOGLE_PLAY = /^https:\/\/play\.google\.com\/store\/apps\/details\?/;
+async function playLine(tab, link, captureLink) {
+  const info = await runInPage(tab, readPlayAppInfo, "ISOLATED", [false, link]);
+  if (!info) return null;
+  const date = formatDate(info.released) || await chromeStatsDate(info.id)
+    || (captureLink ? "" : formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released));
+  return `Android ${date || "?"} ${captureLink || `https://play.google.com/store/apps/details?id=${info.id}`}`;
+}
+
 // App Store app pages (apps.apple.com/<country>/app/<name>/id<id>), live or archived, and their line
 const APP_STORE = /^https:\/\/apps\.apple\.com\/([a-z]{2}\/)?app\/([^/]+\/)?id\d+/;
 function appStoreLine(info, link) {
@@ -162,6 +174,10 @@ async function buildLine(tab) {
       const info = await runInPage(tab, readAppStoreInfo, "ISOLATED", [archived]);
       if (info) return appStoreLine(info, url.replace(/#.*/, ""));
     }
+    if (GOOGLE_PLAY.test(archived.replace(/^http:/, "https:"))) {
+      const line = await playLine(tab, archived, url.replace(/#.*/, ""));
+      if (line) return line;
+    }
     const info = await runInPage(tab, readArticleInfo);
     const first = await runInPage(tab, readWaybackFirstCapture, "ISOLATED", [archived]);
     const date = formatDate(info.published) || (first ? `(${first.slice(0, 4)}-${first.slice(4, 6)})` : "?");
@@ -183,15 +199,7 @@ async function buildLine(tab) {
     return `${formatDate(info.published) || "?"} ${cleanChannels} - ${cleanTitle} [${info.id}] https://youtu.be/${info.id}`;
   }
 
-  if (/^https:\/\/play\.google\.com\/store\/apps\/details\?/.test(url)) {
-    // The loaded page usually has the date (instant); some apps have none in any region (com.anthropic.aibo),
-    // so then Chrome-Stats (~0.1 s), and last the app page for other regions (about 1 s each)
-    const info = await runInPage(tab, readPlayAppInfo, "ISOLATED", [false]);
-    if (!info) return null;
-    const date = formatDate(info.released) || await chromeStatsDate(info.id)
-      || formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released);
-    return `Android ${date || "?"} https://play.google.com/store/apps/details?id=${info.id}`;
-  }
+  if (GOOGLE_PLAY.test(url)) return playLine(tab, url);
 
   // Chrome Web Store and Edge Add-ons items: release date from Chrome-Stats, which follows both. The stores show only
   // the last update, and Chrome blocks extensions from its Store's pages and requests (its own data has the first
@@ -681,8 +689,8 @@ async function readVideoInfo() {
 }
 
 // Runs in the page (must be self-contained)
-async function readPlayAppInfo(fetchRegions) {
-  const id = new URL(location.href).searchParams.get("id");
+async function readPlayAppInfo(fetchRegions, link = location.href) {
+  const id = new URL(link).searchParams.get("id");
   if (!id) return null;
 
   // The app data is one of the page's AF_initDataCallback blocks: "ds:5" when signed out, another
