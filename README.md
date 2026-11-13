@@ -73,6 +73,13 @@ iOS-iPadOS 2026-10-26 https://apps.apple.com/us/app/claude-duet-by-anthropic/id6
 (macOS)-iPadOS 2012-08-28 https://apps.apple.com/us/app/golly/id553184760
 ```
 
+A Wayback capture of an app page gives the same line, with the capture link (removed apps live on there):
+
+Source: [web.archive.org/web/20240329184808/https://apps.apple.com/us/app/xkcd-open-source/id995811425](https://web.archive.org/web/20240329184808/https://apps.apple.com/us/app/xkcd-open-source/id995811425)
+```
+iOS-iPadOS 2015-05-30 https://web.archive.org/web/20240329184808/https://apps.apple.com/us/app/xkcd-open-source/id995811425
+```
+
 **Chrome Web Store extensions:** release date (from Chrome-Stats, as the Store shows only the last update) and link
 
 Source: [chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng](https://chromewebstore.google.com/detail/copy-clean-link/oegijnfjkadehneapgaejnnappgdpgng)
@@ -470,6 +477,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.66.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | App Store: Wayback captures of app pages give the platforms and release date too, also from the pre-2025 page layout (`iOS-iPadOS 2015-05-30 https://web.archive.org/web/20240329184808/https://apps.apple.com/us/app/xkcd-open-source/id995811425`) |
 | 2.65.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Short links: Instagram profiles and `/p/` posts on instagr.am, amazon.com products on amzn.com (reels and the other Amazon sites have no short host that keeps the path) |
 | 2.64.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Facebook pages and profiles: short link on fb.com (`2020-03-10 https://fb.com/relayfinancial`) |
 | 2.63.2 | 2026-11-10 | Claude Code (Claude Opus 5.5) | YouTube videos: `?` when the player has no date (YouTube's bot check), instead of an empty date |

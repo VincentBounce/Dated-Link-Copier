@@ -115,6 +115,12 @@ async function runInPage(tab, func, world = "ISOLATED", args = []) {
   return result;
 }
 
+// App Store app pages (apps.apple.com/<country>/app/<name>/id<id>), live or archived, and their line
+const APP_STORE = /^https:\/\/apps\.apple\.com\/([a-z]{2}\/)?app\/([^/]+\/)?id\d+/;
+function appStoreLine(info, link) {
+  return `${info.platforms.join("-") || "?"} ${info.date || "?"} ${link}`;
+}
+
 // One line per kind of page; "?" when the date isn't found
 async function buildLine(tab) {
   const url = tab.url || "";
@@ -150,6 +156,12 @@ async function buildLine(tab) {
   if (archived) {
     const line = await linkLine(archived.replace(/^http:/, "https:"), null);
     if (line) return line;
+    // App Store pages: the same platforms and date as a live page, read from the capture, with the capture link (an app
+    // removed from the Store lives on there)
+    if (APP_STORE.test(archived.replace(/^http:/, "https:"))) {
+      const info = await runInPage(tab, readAppStoreInfo, "ISOLATED", [archived]);
+      if (info) return appStoreLine(info, url.replace(/#.*/, ""));
+    }
     const info = await runInPage(tab, readArticleInfo);
     const first = await runInPage(tab, readWaybackFirstCapture, "ISOLATED", [archived]);
     const date = formatDate(info.published) || (first ? `(${first.slice(0, 4)}-${first.slice(4, 6)})` : "?");
@@ -224,9 +236,9 @@ async function buildLine(tab) {
   }
 
   // App Store apps (apps.apple.com/<country>/app/<name>/id<id>): compatible platforms and first release date
-  if (/^https:\/\/apps\.apple\.com\/([a-z]{2}\/)?app\/([^/]+\/)?id\d+/.test(url)) {
+  if (APP_STORE.test(url)) {
     const info = await runInPage(tab, readAppStoreInfo);
-    if (info) return `${info.platforms.join("-") || "?"} ${info.date || "?"} ${info.link}`;
+    if (info) return appStoreLine(info, info.link);
   }
 
   if (/^https:\/\/((www|mobile)\.)?(x|twitter)\.com\//.test(url)) {
@@ -1106,12 +1118,13 @@ async function readChromeStatsInfo() {
 }
 
 // Runs in the page (must be self-contained)
-async function readAppStoreInfo() {
-  const m = location.pathname.match(/^\/(?:([a-z]{2})\/)?app\/(?:[^/]+\/)?id(\d+)/);
+async function readAppStoreInfo(link = location.href) {
+  const m = new URL(link).pathname.match(/^\/(?:([a-z]{2})\/)?app\/(?:[^/]+\/)?id(\d+)/);
   if (!m) return null;
   const [path, country = "us", id] = m;
+  const archived = link !== location.href;
   // The page's data: data[0].data.lockup is the app, matched on its ID since it stays from the first page after
-  // in-page navigation (then the app page is fetched again)
+  // in-page navigation (then the app page is fetched again; not from a Wayback capture, which is that page)
   const lockupOf = doc => {
     try {
       const lockup = JSON.parse(doc.getElementById("serialized-server-data").textContent).data[0].data.lockup;
@@ -1119,26 +1132,40 @@ async function readAppStoreInfo() {
     } catch (e) { return null; }
   };
   let lockup = lockupOf(document);
-  if (!lockup) {
+  if (!lockup && !archived) {
     try { lockup = lockupOf(new DOMParser().parseFromString(await (await fetch(path)).text(), "text/html")); } catch (e) {}
+  }
+  // Pages before the 2025 redesign (Wayback captures) cache the media API instead: the app's attributes, with its
+  // deviceFamilies ("iphone", "ipad", "ipod", "mac", "tvos", "watch", "realityDevice") and release dates
+  let legacy = null;
+  if (!lockup) {
+    try {
+      const cache = JSON.parse(document.getElementById("shoebox-media-api-cache-apps").textContent);
+      legacy = Object.values(cache).flatMap(json => JSON.parse(json).d || []).find(app => app.id === id)?.attributes;
+    } catch (e) {}
   }
   // Platforms of the app ("phone", "pad", "mac", "tv", "watch", "vision"); an iPhone/iPad app that also runs on
   // Apple silicon Macs or on Apple Vision Pro gets that platform in parentheses, "(macOS)", as it isn't native there
   const config = lockup?.buttonAction?.purchaseConfiguration || {};
-  const native = new Set(config.appPlatforms || []);
-  const compatible = new Set([lockup?.isIOSBinaryMacOSCompatible && "mac", config.supportsVisionOSCompatibleIOSBinary && "vision"]);
+  const FAMILIES = { iphone: "phone", ipad: "pad", mac: "mac", tvos: "tv", watch: "watch", realityDevice: "vision" };
+  const native = new Set(lockup ? config.appPlatforms || [] : (legacy?.deviceFamilies || []).map(f => FAMILIES[f]));
+  if (Object.values(legacy?.platformAttributes || {}).some(p => p.isAppleWatchSupported)) native.add("watch");
+  const compatible = new Set([(lockup || legacy)?.isIOSBinaryMacOSCompatible && "mac",
+    config.supportsVisionOSCompatibleIOSBinary && "vision"]);
   const NAMES = { mac: "macOS", phone: "iOS", pad: "iPadOS", tv: "tvOS", watch: "watchOS", vision: "visionOS" };
   const platforms = Object.keys(NAMES).filter(p => native.has(p) || compatible.has(p))
     .map(p => native.has(p) ? NAMES[p] : `(${NAMES[p]})`);
   // The page shows no release date: the public lookup API has it ("2026-10-26T07:00:00Z", midnight in California)
-  // and allows requests from apps.apple.com
+  // and allows requests from apps.apple.com; a capture (another origin) has it in its cache
   let date = "";
   try {
     const iso = (await (await fetch(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).json()).results[0]?.releaseDate || "";
     date = iso.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
   } catch (e) {}
+  date ||= Object.values(legacy?.platformAttributes || {}).map(p => p.releaseDate).filter(Boolean).sort()[0] || "";
   return { platforms, date, link: `https://apps.apple.com${path}` };
 }
+
 
 // Runs in the page (must be self-contained)
 function readRedditInfo() {
