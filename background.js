@@ -139,7 +139,8 @@ async function buildLine(tab) {
   if (facebook && !/^(watch|groups|events|marketplace|gaming|reel|reels|photo|photo\.php|story\.php|permalink\.php|share|login|help|settings|notifications|messages|friends|pages|search|hashtag|ads|business|privacy|policies|home\.php|saved|bookmarks|memories)$/.test(facebook[2] || "")) {
     const page = facebook[1] ? `profile.php?id=${facebook[1]}` : facebook[2];
     const info = await runInPage(tab, readFacebookPageCreated, "ISOLATED", [page]);
-    return `${localizedDate(info.created, info.lang) || consultedDate()} https://www.facebook.com/${page}`;
+    // fb.com: Facebook's own short host, which keeps the path (the user's choice)
+    return `${localizedDate(info.created, info.lang) || consultedDate()} https://fb.com/${page}`;
   }
 
   // Wayback Machine captures (web.archive.org/web/<timestamp>/<link>): the archived link's own line when its date comes

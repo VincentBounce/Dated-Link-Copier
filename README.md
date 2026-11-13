@@ -144,7 +144,7 @@ Source: [www.instagram.com/relayfinancial/](https://www.instagram.com/relayfinan
 
 Source: [www.facebook.com/relayfinancial](https://www.facebook.com/relayfinancial)
 ```
-2020-03-10 https://www.facebook.com/relayfinancial
+2020-03-10 https://fb.com/relayfinancial
 ```
 
 **LinkedIn posts:** post date and link, read from the post ID like on X (works signed in or out)
@@ -470,6 +470,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.64.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Facebook pages and profiles: short link on fb.com (`2020-03-10 https://fb.com/relayfinancial`) |
 | 2.63.2 | 2026-11-10 | Claude Code (Claude Opus 5.5) | YouTube videos: `?` when the player has no date (YouTube's bot check), instead of an empty date |
 | 2.63.1 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Quora questions removed: Cloudflare blocks the background read of the question's log, so the date read stays |
 | 2.63.0 | 2026-11-10 | Claude Code (Claude Opus 5.5) | Google Groups threads (first message's date and subject) and Quora questions (date asked, from the question's log) |
