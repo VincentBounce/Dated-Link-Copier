@@ -484,6 +484,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.67.1 | 2026-11-13 | Claude Code (Claude Opus 5.5) | App Store: recent Wayback captures read in their raw form, and the release date from the version history when Apple's lookup has none (`macOS-iOS-iPadOS 2020-10-08 https://web.archive.org/web/20260917050845/https://apps.apple.com/us/app/lego-mindstorms-inventor/id1515448947`) |
 | 2.67.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Google Play: Wayback captures of app pages give the release date too (`Android 2020-10-08 https://web.archive.org/web/20250830144254/https://play.google.com/store/apps/details?id=com.lego.retail.mindstorms&hl=en_US`) |
 | 2.66.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | App Store: Wayback captures of app pages give the platforms and release date too, also from the pre-2025 page layout (`iOS-iPadOS 2015-05-30 https://web.archive.org/web/20240329184808/https://apps.apple.com/us/app/xkcd-open-source/id995811425`) |
 | 2.65.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | Short links: Instagram profiles and `/p/` posts on instagr.am, amazon.com products on amzn.com (reels and the other Amazon sites have no short host that keeps the path) |

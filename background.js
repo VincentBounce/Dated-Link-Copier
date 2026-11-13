@@ -1130,25 +1130,34 @@ async function readAppStoreInfo(link = location.href) {
   const m = new URL(link).pathname.match(/^\/(?:([a-z]{2})\/)?app\/(?:[^/]+\/)?id(\d+)/);
   if (!m) return null;
   const [path, country = "us", id] = m;
+  // A Wayback capture is read in its raw form ("/web/<timestamp>id_/<link>"): the replayed page's script removes its data
   const archived = link !== location.href;
-  // The page's data: data[0].data.lockup is the app, matched on its ID since it stays from the first page after
-  // in-page navigation (then the app page is fetched again; not from a Wayback capture, which is that page)
-  const lockupOf = doc => {
+  let doc = document;
+  if (archived) {
     try {
-      const lockup = JSON.parse(doc.getElementById("serialized-server-data").textContent).data[0].data.lockup;
-      return lockup.adamId === id ? lockup : null;
+      const raw = location.href.replace(/^(https:\/\/web\.archive\.org\/web\/\d+)[a-z_]*\//, "$1id_/");
+      doc = new DOMParser().parseFromString(await (await fetch(raw)).text(), "text/html");
+    } catch (e) {}
+  }
+  // The page's data: data[0].data is the app's page, its lockup matched on the app's ID since it stays from the first
+  // page after in-page navigation (then the app page is fetched again)
+  const pageOf = doc => {
+    try {
+      const page = JSON.parse(doc.getElementById("serialized-server-data").textContent).data[0].data;
+      return page.lockup.adamId === id ? page : null;
     } catch (e) { return null; }
   };
-  let lockup = lockupOf(document);
-  if (!lockup && !archived) {
-    try { lockup = lockupOf(new DOMParser().parseFromString(await (await fetch(path)).text(), "text/html")); } catch (e) {}
+  let page = pageOf(doc);
+  if (!page && !archived) {
+    try { page = pageOf(new DOMParser().parseFromString(await (await fetch(path)).text(), "text/html")); } catch (e) {}
   }
+  const lockup = page?.lockup;
   // Pages before the 2025 redesign (Wayback captures) cache the media API instead: the app's attributes, with its
   // deviceFamilies ("iphone", "ipad", "ipod", "mac", "tvos", "watch", "realityDevice") and release dates
   let legacy = null;
   if (!lockup) {
     try {
-      const cache = JSON.parse(document.getElementById("shoebox-media-api-cache-apps").textContent);
+      const cache = JSON.parse(doc.getElementById("shoebox-media-api-cache-apps").textContent);
       legacy = Object.values(cache).flatMap(json => JSON.parse(json).d || []).find(app => app.id === id)?.attributes;
     } catch (e) {}
   }
@@ -1164,13 +1173,17 @@ async function readAppStoreInfo(link = location.href) {
   const platforms = Object.keys(NAMES).filter(p => native.has(p) || compatible.has(p))
     .map(p => native.has(p) ? NAMES[p] : `(${NAMES[p]})`);
   // The page shows no release date: the public lookup API has it ("2026-10-26T07:00:00Z", midnight in California)
-  // and allows requests from apps.apple.com; a capture (another origin) has it in its cache
+  // and allows requests from apps.apple.com; else (an app removed from the Store, or a capture: another origin) the
+  // oldest entry of the page's version history ("1.0", "Thu Oct 08 2020 … GMT+0000"), or the old layout's cache
   let date = "";
   try {
     const iso = (await (await fetch(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).json()).results[0]?.releaseDate || "";
     date = iso.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
   } catch (e) {}
-  date ||= Object.values(legacy?.platformAttributes || {}).map(p => p.releaseDate).filter(Boolean).sort()[0] || "";
+  const versions = page?.shelfMapping?.mostRecentVersion?.seeAllAction?.pageData?.shelves?.[0]?.items || [];
+  const first = Math.min(...versions.map(v => Date.parse(v.secondarySubtitle)).filter(Boolean));
+  date ||= (isFinite(first) ? new Date(first).toISOString().slice(0, 10) : "")
+    || Object.values(legacy?.platformAttributes || {}).map(p => p.releaseDate).filter(Boolean).sort()[0] || "";
   return { platforms, date, link: `https://apps.apple.com${path}` };
 }
 
