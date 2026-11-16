@@ -418,7 +418,7 @@ Sources: [web.archive.org/web/20170319021736/http://dood.al/pinktrombone/](https
 2023-12-06 Introducing Gemini： our largest and most capable AI model https://web.archive.org/web/20241231005116/https://blog.google/technology/ai/google-gemini-ai/
 ```
 
-**Claude artifacts (published):** date of the current version (the page has no creation date) and the artifact's title
+**Claude artifacts (published):** date of the current version (the page has no creation date) and the artifact's title, also when the artifact is opened inside the claude.ai app
 
 Source: [claude.ai/artifact/DCyB4bdC8dpwG6JTozTGeK](https://claude.ai/artifact/DCyB4bdC8dpwG6JTozTGeK)
 ```
@@ -501,6 +501,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.72.0 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Claude artifacts opened inside the claude.ai app (sidebar view): read from the app's same-origin artifact viewer frame |
 | 2.71.1 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Generic reader: the last-update times (Claude artifacts, Google Sites) no longer fail (a helper was used before its definition) |
 | 2.71.0 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Claude artifacts: date of the current version and the artifact's title (`2026-11-14 Interactive Fractal Tilings https://claude.ai/artifact/…`) |
 | 2.70.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | YouTube videos: a trailing ` | <channel>` in the title is dropped (`… Whole-Body RL [NL65Awuv8gU]`) |

@@ -785,6 +785,10 @@ async function readArticleInfo() {
       }
     } catch (e) {}
   }
+  // A Claude artifact opened inside the claude.ai app (sidebar, "Chat", "Share") shows the artifact's own viewer
+  // page in a same-origin frame (claude.ai/code/artifact/<uuid>): that viewer has its version time and title
+  const viewer = doc.querySelector('iframe[src*="/code/artifact/"]')?.contentDocument;
+  if (viewer?.querySelector("#frame-slot")) doc = viewer;
   const meta = sel => doc.querySelector(sel)?.content;
   // Dates of the usual tags, complete first. Scientific journals (Nature…) use citation_* / Dublin Core tags, as
   // "2025/06/03" or "2024 Oct 3" (PMC); their citation_publication_date can be the print issue month only
