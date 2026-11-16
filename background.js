@@ -901,9 +901,11 @@ async function readArticleInfo() {
 
   // Else the last update: modification metadata, else the text after "Updated", "Mis à jour le"… (emergentmind.com:
   // "Updated 11 January 2026"), else a Google Sites page's last publication (data-last-updated-at-time, ms, shown in
-  // its "Page updated" info), dated in PT
+  // its "Page updated" info), else a published Claude artifact's current version (claude.ai/artifact/<id>: its frame's
+  // data-ver "1794673376-11c0" starts with the version's Unix time; no creation date in the page), dated in PT
   function updatedDate() {
-    const updatedAt = Number(doc.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime);
+    const updatedAt = Number(doc.querySelector("[data-last-updated-at-time]")?.dataset.lastUpdatedAtTime)
+      || 1000 * Number(doc.querySelector("#frame-slot iframe[data-ver]")?.dataset.ver.match(/^\d{10}(?=-)/)?.[0]);
     return firstDate([meta('meta[property="article:modified_time"]'), meta('meta[property="og:updated_time"]'),
       meta('meta[itemprop="dateModified"]'), ...jsonLd("dateModified")])
       || afterLabel(/(last (?:updated|modified)(?: on)?|updated(?: on)?|mise? à jour(?: le)?|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
@@ -962,8 +964,9 @@ async function readArticleInfo() {
   link = wiki?.link || lemmy?.link || link;
   // Title without the site name (" | Scientific Reports", " - Le Parisien")
   const site = meta('meta[property="og:site_name"]')?.trim();
-  let title = meta('meta[name="citation_title"]') || meta('meta[name="dc.title"]') || meta('meta[name="DC.title"]')
-    || meta('meta[property="og:title"]') || doc.title;
+  // A Claude artifact's og:title is "Claude Artifact" on every one: its page title is the artifact's
+  let title = doc.querySelector("#frame-slot") ? doc.title : meta('meta[name="citation_title"]')
+    || meta('meta[name="dc.title"]') || meta('meta[name="DC.title"]') || meta('meta[property="og:title"]') || doc.title;
   title = (title || "").trim();
   if (site) title = title.replace(new RegExp(`\\s+[-|–—:]\\s+${site.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "");
   // Without og:site_name, " | <site>" at the end is still the site ("… | auto-illustré - le magazine automobile suisse")

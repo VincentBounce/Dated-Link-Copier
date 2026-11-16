@@ -418,6 +418,13 @@ Sources: [web.archive.org/web/20170319021736/http://dood.al/pinktrombone/](https
 2023-12-06 Introducing Gemini： our largest and most capable AI model https://web.archive.org/web/20241231005116/https://blog.google/technology/ai/google-gemini-ai/
 ```
 
+**Claude artifacts (published):** date of the current version (the page has no creation date) and the artifact's title
+
+Source: [claude.ai/artifact/DCyB4bdC8dpwG6JTozTGeK](https://claude.ai/artifact/DCyB4bdC8dpwG6JTozTGeK)
+```
+2026-11-14 Interactive Fractal Tilings https://claude.ai/artifact/DCyB4bdC8dpwG6JTozTGeK
+```
+
 **patch.gg projects:** creation date of the project and its link
 
 Source: [patch.gg/blendi/coloured-pencil](https://patch.gg/blendi/coloured-pencil)
@@ -494,6 +501,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.71.0 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Claude artifacts: date of the current version and the artifact's title (`2026-11-14 Interactive Fractal Tilings https://claude.ai/artifact/…`) |
 | 2.70.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | YouTube videos: a trailing ` | <channel>` in the title is dropped (`… Whole-Body RL [NL65Awuv8gU]`) |
 | 2.69.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | patch.gg projects: creation date (`2026-11-12 https://patch.gg/blendi/coloured-pencil`) |
 | 2.68.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | One date rule everywhere: exact times are dated in Pacific Time, the same for everyone wherever they copy (they were in the viewer's time zone, UTC or PT depending on the site); dates written without a time zone are copied as written. Sony press releases: title from the release's heading again |
