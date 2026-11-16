@@ -808,6 +808,8 @@ async function readArticleInfo() {
     const m = doc.body.innerText.match(new RegExp(`\\b${label.source}\\s*:?\\s*([^\\n]{6,40})`, "i"));
     return m ? dateFromText(m[2], /^(published|posted|updated|last updated)/i.test(m[1])) : "";
   };
+  // An exact time in ms as ISO ("2026-11-09T03:59:13.378Z"): the service worker gives its Pacific date
+  const instant = ms => isFinite(ms) ? new Date(ms).toISOString() : "";
   const wiki = await mediaWiki();
   const lemmy = await lemmyPost();
   const published = wiki?.date || lemmy?.date || forumDate() || firstDate(publishedTags) || shownDate()
@@ -834,9 +836,6 @@ async function readArticleInfo() {
         link: new URL(general.articlepath.replace("$1", path), new URL(general.server, pageUrl)).href };
     } catch (e) { return null; }
   }
-
-  // An exact time in ms as ISO ("2026-11-09T03:59:13.378Z"): the service worker gives its Pacific date
-  const instant = ms => isFinite(ms) ? new Date(ms).toISOString() : "";
 
   // Lemmy posts (/post/<id> on any server, known by its <meta name="Description" content="Lemmy">) carry no date: the
   // post's "published" (UTC) from the server's public API, dated in PT; a comment's link

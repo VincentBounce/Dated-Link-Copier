@@ -501,6 +501,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.71.1 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Generic reader: the last-update times (Claude artifacts, Google Sites) no longer fail (a helper was used before its definition) |
 | 2.71.0 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Claude artifacts: date of the current version and the artifact's title (`2026-11-14 Interactive Fractal Tilings https://claude.ai/artifact/…`) |
 | 2.70.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | YouTube videos: a trailing ` | <channel>` in the title is dropped (`… Whole-Body RL [NL65Awuv8gU]`) |
 | 2.69.0 | 2026-11-13 | Claude Code (Claude Opus 5.5) | patch.gg projects: creation date (`2026-11-12 https://patch.gg/blendi/coloured-pencil`) |
