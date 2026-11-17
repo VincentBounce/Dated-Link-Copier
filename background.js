@@ -817,7 +817,7 @@ async function readArticleInfo() {
   const wiki = await mediaWiki();
   const lemmy = await lemmyPost();
   const published = wiki?.date || lemmy?.date || forumDate() || firstDate(publishedTags) || shownDate()
-    || dates(publishedTags)[0] || updatedDate();
+    || dates(publishedTags)[0] || updatedDate() || await deployDate();
 
   // MediaWiki sites (LifeWiki, Arch Wiki, Minecraft Wiki…, known by their generator tag; Wikipedia is read from its link
   // alone): creation date = first revision, from the wiki's own API (its EditURI link, else the REST search link's
@@ -913,6 +913,16 @@ async function readArticleInfo() {
       meta('meta[itemprop="dateModified"]'), ...jsonLd("dateModified")])
       || afterLabel(/(last (?:updated|modified)(?: on)?|updated(?: on)?|mise? à jour(?: le)?|aktualisiert(?: am)?|aggiornato(?: il)?|actualizado(?: el)?)/)
       || (updatedAt ? instant(updatedAt) : "");
+  }
+
+  // Else, on a static app host, the last deployment: Vercel (*.vercel.app) and GitHub Pages (*.github.io) send the
+  // deployment time as the page's Last-Modified (waldo-stripes-soft.vercel.app: "Sat, 14 Nov 2026 22:17:43 GMT"); other
+  // sites' Last-Modified is often the request's time, and Netlify and Cloudflare Pages send none
+  async function deployDate() {
+    if (!/\.(vercel\.app|github\.io)$/.test(new URL(pageUrl).hostname)) return "";
+    try {
+      return instant(Date.parse((await fetch(pageUrl, { method: "HEAD" })).headers.get("Last-Modified")));
+    } catch (e) { return ""; }
   }
 
   // "2021-11-14", "14.11.2021" (day first, or month first after an English label with slashes), "14 novembre 2021",
