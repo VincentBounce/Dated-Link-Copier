@@ -122,12 +122,19 @@ const GOOGLE_PLAY = /^https:\/\/play\.google\.com\/store\/apps\/details\?/;
 async function playLine(tab, link, captureLink) {
   const info = await runInPage(tab, readPlayAppInfo, "ISOLATED", [false, link]);
   if (!info) return null;
-  // A capture without a release date (2012 pages, an app since removed): the month of its first capture, under the
-  // Play address or Android Market's before it (market.android.com/details?id=, until 2012)
+  // A capture without a release date (2012 pages, an app since removed): its oldest review date shown, or the month of
+  // its first capture under the Play address or Android Market's before it (market.android.com/details?id=, until
+  // 2012), whichever is older: the app existed then
   const date = formatDate(info.released) || await chromeStatsDate(info.id) || (captureLink
-    ? await firstCaptureMonth(tab, [link, `https://market.android.com/details?id=${info.id}`])
+    ? await existedSince(tab, info, [link, `https://market.android.com/details?id=${info.id}`])
     : formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released));
   return `Android ${date || "?"} ${captureLink || `https://play.google.com/store/apps/details?id=${info.id}`}`;
+}
+
+async function existedSince(tab, info, links) {
+  const reviewed = info.reviews.map(r => localizedDate(r, info.lang)).filter(d => d && !d.includes("x")).sort()[0];
+  const captured = await firstCaptureMonth(tab, links);
+  return reviewed && !(captured.slice(1, 8) < reviewed.slice(0, 7)) ? reviewed : captured;
 }
 
 // App Store app pages (apps.apple.com/<country>/app/<name>/id<id>), live or archived, and their line
@@ -751,7 +758,12 @@ async function readPlayAppInfo(fetchRegions, link = location.href) {
       released = releasedFrom(await res.text());
     } catch (e) {}
   }
-  return { id, released: released || "" };
+  // Pages before 2013 (Wayback captures) show no release date, only review dates, in the page's language, which its
+  // own links carry ("hl=cs", the most frequent; the language menu has each once): " - 11. srpen 2011"
+  const langs = [...document.querySelectorAll('a[href*="hl="]')].map(a => a.href.match(/[?&]hl=([\w-]+)/)?.[1]);
+  const lang = langs.sort((a, b) => langs.filter(l => l === b).length - langs.filter(l => l === a).length)[0];
+  const reviews = [...document.querySelectorAll(".doc-review-date")].map(e => e.textContent);
+  return { id, released: released || "", reviews, lang };
 }
 
 // Runs in the page (must be self-contained)
