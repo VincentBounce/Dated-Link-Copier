@@ -240,6 +240,13 @@ async function buildLine(tab) {
     return `Linux ${info.added ? pacificDate(info.added * 1000) : "?"} ${info.link}`;
   }
 
+  // F-Droid apps (f-droid.org/<lang>/packages/<id>/): date added to F-Droid
+  const fdroid = url.match(/^https:\/\/f-droid\.org\/(?:[a-z]{2}(?:[-_][A-Za-z]{2,4})?\/)?packages\/([\w.]+)/);
+  if (fdroid) {
+    const added = await runInPage(tab, readFdroidAdded, "ISOLATED", [fdroid[1]]);
+    return `Android ${formatDate(added) || "?"} https://f-droid.org/packages/${fdroid[1]}/`;
+  }
+
   // Microsoft Store apps and games: app type and release date
   if (/^https:\/\/apps\.microsoft\.com\/detail\/(xp)?[a-z0-9]{12}/i.test(url)) {
     const info = await runInPage(tab, readMicrosoftStoreInfo);
@@ -1663,6 +1670,43 @@ function readMetaQuestAppInfo() {
   const date = [...html.matchAll(/"release_info":\{"display_date":"([^"]+)"\}/g)]
     .find(m => html.slice(Math.max(0, m.index - 3000), m.index).includes(`"id":"${id}"`))?.[1];
   return { date: date || "", lang: document.documentElement.lang || "en", link: `https://www.meta.com/experiences/${slug}${id}/` };
+}
+
+// Runs in the page (must be self-contained)
+// F-Droid: "added" (ms, a UTC midnight: a date) of the app in the repository index (/repo/index-v2.json, 74 MB, every
+// app, sorted by id: "de.schildbach.wallet": {"metadata": {"added": 1330300800000, …), the pages showing only their
+// last versions' dates. Read by 16 KB ranges: eight probes a round, each giving the first app id after its offset,
+// narrow the span holding the app, then its last chunks are read (~6 rounds, ~50 requests, ~2.5 s: the server
+// answers each range slowly; smaller ranges miss the long entries and never narrow)
+async function readFdroidAdded(id) {
+  const size = 16384, target = `"${id}": {"metadata": {"added": `;
+  const read = async start => {
+    const res = await fetch("/repo/index-v2.json", { headers: { Range: `bytes=${start}-${start + size - 1}` } });
+    return { text: await res.text(), total: Number(res.headers.get("Content-Range")?.split("/")[1]) };
+  };
+  try {
+    let lo = 0, hi = (await read(0)).total;
+    for (let round = 0; round < 12 && hi > lo; round++) {
+      const last = hi - lo <= 8 * size;
+      // (the last chunks overlap, so that the app's entry is never cut between two)
+      const step = last ? size - 256 : Math.floor((hi - lo) / 9);
+      const offsets = Array.from({ length: last ? Math.ceil((hi - lo) / step) + 1 : 8 }, (_, i) => lo + (i + (last ? 0 : 1)) * step);
+      const chunks = await Promise.all(offsets.map(read));
+      for (const { text } of chunks) {
+        const at = text.indexOf(target), added = at < 0 ? null : text.slice(at + target.length).match(/^(\d+),/);
+        if (added) return new Date(Number(added[1])).toISOString();
+      }
+      if (last) return "";
+      // First app id of each chunk (none inside a long entry): the span is between the last one before the app and
+      // the first one after it
+      chunks.forEach(({ text }, i) => {
+        const first = text.match(/"([^"]+)": \{"metadata": \{"added": /)?.[1];
+        if (first && first < id) lo = offsets[i];
+        if (first && first > id && offsets[i] < hi) hi = offsets[i];
+      });
+    }
+  } catch (e) {}
+  return "";
 }
 
 // Runs in the page (must be self-contained)
