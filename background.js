@@ -122,8 +122,11 @@ const GOOGLE_PLAY = /^https:\/\/play\.google\.com\/store\/apps\/details\?/;
 async function playLine(tab, link, captureLink) {
   const info = await runInPage(tab, readPlayAppInfo, "ISOLATED", [false, link]);
   if (!info) return null;
-  const date = formatDate(info.released) || await chromeStatsDate(info.id)
-    || (captureLink ? "" : formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released));
+  // A capture without a release date (2012 pages, an app since removed): the month of its first capture, under the
+  // Play address or Android Market's before it (market.android.com/details?id=, until 2012)
+  const date = formatDate(info.released) || await chromeStatsDate(info.id) || (captureLink
+    ? await firstCaptureMonth(tab, [link, `https://market.android.com/details?id=${info.id}`])
+    : formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released));
   return `Android ${date || "?"} ${captureLink || `https://play.google.com/store/apps/details?id=${info.id}`}`;
 }
 
@@ -179,9 +182,7 @@ async function buildLine(tab) {
       if (line) return line;
     }
     const info = await runInPage(tab, readArticleInfo);
-    const first = await runInPage(tab, readWaybackFirstCapture, "ISOLATED", [archived]);
-    const captured = first && Date.UTC(first.slice(0, 4), first.slice(4, 6) - 1, first.slice(6, 8), first.slice(8, 10));
-    const date = formatDate(info.published) || (captured ? `(${pacificDate(captured).slice(0, 7)})` : "?");
+    const date = formatDate(info.published) || await firstCaptureMonth(tab, [archived]) || "?";
     return `${date} ${titleIfNotInLink(info.title, info.link)}${info.link}`;
   }
 
@@ -431,6 +432,13 @@ async function linkLine(url, tab) {
 
 // Runs in the page (must be self-contained)
 // Timestamp of a link's first Wayback Machine capture ("20170319021736"), from the same-site CDX API
+// The month of the oldest first Wayback capture of these links, "(2017-03)": the page existed then (the user's convention)
+async function firstCaptureMonth(tab, links) {
+  const [t] = (await Promise.all(links.map(link => runInPage(tab, readWaybackFirstCapture, "ISOLATED", [link]))))
+    .filter(Boolean).sort();
+  return t ? `(${pacificDate(Date.UTC(t.slice(0, 4), t.slice(4, 6) - 1, t.slice(6, 8), t.slice(8, 10), t.slice(10, 12))).slice(0, 7)})` : "";
+}
+
 async function readWaybackFirstCapture(link) {
   try {
     return (await (await fetch(`/cdx/search/cdx?url=${encodeURIComponent(link)}&limit=1&fl=timestamp`)).text()).trim();
@@ -857,7 +865,8 @@ async function readArticleInfo() {
   // Forum engines without date metadata: the first post's date as written. MyBB: .post_date ("2023-06-30, 01:35 PM";
   // a relative "Yesterday" carries the date in its title); SMF 2.1: .postinfo a.smalltext ("March 08, 2026, 08:49:59 AM",
   // its <time> being the current time in the header); SMF 1.1 and 2.0: the first .smalltext "« on: May 05, 2013, …»";
-  // vBulletin 3: the post table's first .thead ("30-10-2026, 13:27"), 4: .postdate .date; FluxBB: .blockpost h2 a
+  // bitcointalk.org (SMF 1.1, own theme): the first post header's .smalltext ("March 11, 2011, 09:25:51 PM", then
+  // "Last edit: …" when edited); vBulletin 3: the post table's first .thead ("30-10-2026, 13:27"), 4: .postdate .date; FluxBB: .blockpost h2 a
   // ("2010-06-27 16:20:13"); Discuz!: [id^=authorposton] ("发表于 2012-5-9 18:03", a relative "3 天前" carries the date in
   // its span's title); ProBoards: abbr.o-timestamp data-timestamp (ms). "Today" and "Yesterday" (SMF, vBulletin, FluxBB)
   // are today and yesterday, dated in PT. Others need nothing: phpBB 3, XenForo, Invision, Vanilla (first <time datetime>), Discourse,
@@ -869,6 +878,7 @@ async function readArticleInfo() {
     const discuz = doc.querySelector('#postlist [id^="authorposton"]');
     const other = doc.querySelector("#forumposts .postinfo a.smalltext")
       || [...doc.querySelectorAll(".smalltext")].find(e => e.textContent.trim().startsWith("«"))
+      || doc.querySelector(".td_headerandpost .smalltext")
       || doc.querySelector('#posts table[id^="post"] td.thead, #posts .postdate .date, .blockpost h2 a');
     const text = (myBB ? (myBB.nodeType === Node.ELEMENT_NODE ? myBB.title : myBB.textContent)
       : discuz ? discuz.querySelector("span[title]")?.title || discuz.textContent.replace(/^\D+/, "")

@@ -508,6 +508,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.74.0 | 2026-11-19 | Claude Code (Claude Opus 5.5) | Google Play captures without a release date: the month of the first capture, Android Market address included (`Android (2012-02) …?id=de.schildbach.wallet`); bitcointalk.org topics: the first post's date (`2011-03-11 Bitcoin Wallet for Android …topic=4384.0`) |
 | 2.73.0 | 2026-11-17 | Claude Code (Claude Opus 5.5) | Apps on Vercel and GitHub Pages without a date: the last deployment, from the page's Last-Modified (`2026-11-14 Waldo Stripes Soft https://waldo-stripes-soft.vercel.app/`) |
 | 2.72.0 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Claude artifacts opened inside the claude.ai app (sidebar view): read from the app's same-origin artifact viewer frame |
 | 2.71.1 | 2026-11-16 | Claude Code (Claude Opus 5.5) | Generic reader: the last-update times (Claude artifacts, Google Sites) no longer fail (a helper was used before its definition) |
