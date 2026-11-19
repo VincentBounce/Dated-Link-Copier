@@ -1035,6 +1035,11 @@ const FORGES = [
     api: (path, kind, ref) => `https://gitlab.com/api/v4/projects/${encodeURIComponent(path)}${kind ? `/${kind === "commit" ? "repository/commits" : kind}/${ref}` : ""}`,
     link: (path, kind, ref) => `https://gitlab.com/${path}${kind ? `/-/${kind}/${ref}` : ""}`,
     commit: data => ({ sha: data.id, date: data.committed_date, title: data.title }) }
+    // No firstCommit on GitLab yet: its API gives no page count nor last page, so the oldest commit needs a search of
+    // the last page, ~12 requests one after the other (~4 s for bitcoin-wallet/bitcoin-wallet, created 2018-06-18 on
+    // GitLab, first commit 2011-03-08; ~15 s for gitlab-org/gitlab-foss), too long for now (the user's choice,
+    // 2026-11-19); in parallel GitLab answers 429 and the search goes wrong. Possible later: that search, stopped after
+    // 5 s or on any error (then created_at)
 ];
 
 async function forgeLine(url) {
