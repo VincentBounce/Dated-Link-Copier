@@ -122,11 +122,12 @@ const GOOGLE_PLAY = /^https:\/\/play\.google\.com\/store\/apps\/details\?/;
 async function playLine(tab, link, captureLink) {
   const info = await runInPage(tab, readPlayAppInfo, "ISOLATED", [false, link]);
   if (!info) return null;
-  // A capture without a release date (2012 pages, an app since removed): its oldest review date shown, or the month of
-  // its first capture under the Play address or Android Market's before it (market.android.com/details?id=, until
-  // 2012), whichever is older: the app existed then
-  const date = formatDate(info.released) || await chromeStatsDate(info.id) || (captureLink
-    ? await existedSince(tab, info, [link, `https://market.android.com/details?id=${info.id}`])
+  // The release time, else the written release date (2019-2021 captures), else Chrome-Stats; a capture without any
+  // (before 2018, an app since removed): its oldest review date shown, or the month of its first capture under the
+  // Play address or Android Market's before it (market.android.com/details?id=, until 2012), whichever is older: the
+  // app existed then
+  const date = formatDate(info.released) || localizedDate(info.written, info.lang) || await chromeStatsDate(info.id)
+    || (captureLink ? await existedSince(tab, info, [link, `https://market.android.com/details?id=${info.id}`])
     : formatDate((await runInPage(tab, readPlayAppInfo, "ISOLATED", [true]))?.released));
   return `Android ${date || "?"} ${captureLink || `https://play.google.com/store/apps/details?id=${info.id}`}`;
 }
@@ -750,7 +751,8 @@ async function readPlayAppInfo(fetchRegions, link = location.href) {
   };
 
   // The loaded page, or else (fetchRegions) the app page for the US, then other regions
-  let released = fetchRegions ? "" : releasedFrom([...document.scripts].map(s => s.textContent).join("\n"));
+  const scripts = [...document.scripts].map(s => s.textContent).join("\n");
+  let released = fetchRegions ? "" : releasedFrom(scripts);
   for (const gl of fetchRegions ? ["US", "FR", "GB", "CH"] : []) {
     if (released) break;
     try {
@@ -758,12 +760,19 @@ async function readPlayAppInfo(fetchRegions, link = location.href) {
       released = releasedFrom(await res.text());
     } catch (e) {}
   }
-  // Pages before 2013 (Wayback captures) show no release date, only review dates, in the page's language, which its
-  // own links carry ("hl=cs", the most frequent; the language menu has each once): " - 11. srpen 2011"
+  // Older pages (Wayback captures) write their dates in the page's language: <html lang>, else the language its own
+  // links carry ("hl=cs", the most frequent; the language menu has each once). 2019-2021: the release date is a text
+  // at [0][12][36] of the ds:5 block, whose data is a function ("Mar 10, 2011"); before 2018 there is none, only
+  // review dates (" - 11. srpen 2011" until 2013, then "7 December 2016")
   const langs = [...document.querySelectorAll('a[href*="hl="]')].map(a => a.href.match(/[?&]hl=([\w-]+)/)?.[1]);
-  const lang = langs.sort((a, b) => langs.filter(l => l === b).length - langs.filter(l => l === a).length)[0];
-  const reviews = [...document.querySelectorAll(".doc-review-date")].map(e => e.textContent);
-  return { id, released: released || "", reviews, lang };
+  const lang = document.documentElement.lang
+    || langs.sort((a, b) => langs.filter(l => l === b).length - langs.filter(l => l === a).length)[0];
+  let written = "";
+  try {
+    written = JSON.parse(scripts.match(/AF_initDataCallback\(\{key: 'ds:5'[^]*?data:function\(\)\{return ([^]*?)\}\}\);/)[1])[0][12][36];
+  } catch (e) {}
+  const reviews = [...document.querySelectorAll(".doc-review-date, .review-date")].map(e => e.textContent);
+  return { id, released: released || "", written: typeof written === "string" ? written : "", reviews, lang };
 }
 
 // Runs in the page (must be self-contained)
