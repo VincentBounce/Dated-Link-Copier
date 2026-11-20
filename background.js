@@ -240,6 +240,13 @@ async function buildLine(tab) {
     return `Linux ${info.added ? pacificDate(info.added * 1000) : "?"} ${info.link}`;
   }
 
+  // Sketchfab models (sketchfab.com/3d-models/<slug>-<32 hex id>): "@<user> - <name>", like YouTube
+  const sketchfab = url.match(/^https:\/\/sketchfab\.com\/3d-models\/(?:[^/?#]*-)?([0-9a-f]{32})/);
+  if (sketchfab) {
+    const info = await runInPage(tab, readSketchfabModel, "ISOLATED", [sketchfab[1]]);
+    if (info) return `${formatDate(info.date) || "?"} @${cleanText(info.user)} - ${cleanText(info.name)} ${info.link}`;
+  }
+
   // F-Droid apps (f-droid.org/<lang>/packages/<id>/): date added to F-Droid
   const fdroid = url.match(/^https:\/\/f-droid\.org\/(?:[a-z]{2}(?:[-_][A-Za-z]{2,4})?\/)?packages\/([\w.]+)/);
   if (fdroid) {
@@ -1670,6 +1677,17 @@ function readMetaQuestAppInfo() {
   const date = [...html.matchAll(/"release_info":\{"display_date":"([^"]+)"\}/g)]
     .find(m => html.slice(Math.max(0, m.index - 3000), m.index).includes(`"id":"${id}"`))?.[1];
   return { date: date || "", lang: document.documentElement.lang || "en", link: `https://www.meta.com/experiences/${slug}${id}/` };
+}
+
+// Runs in the page (must be self-contained)
+// Sketchfab: name, author's username and publication time of the public API (CORS allows sketchfab.com; "publishedAt"
+// "2020-09-22T23:54:53.867395" has no zone: UTC, the API's)
+async function readSketchfabModel(id) {
+  try {
+    const model = await (await fetch(`https://api.sketchfab.com/v3/models/${id}`)).json();
+    return { name: model.name, user: model.user.username, link: model.viewerUrl.replace(/\/$/, ""),
+      date: model.publishedAt ? `${model.publishedAt}Z` : "" };
+  } catch (e) { return null; }
 }
 
 // Runs in the page (must be self-contained)
