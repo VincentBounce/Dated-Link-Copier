@@ -439,6 +439,13 @@ Source: [f-droid.org/packages/de.schildbach.wallet/](https://f-droid.org/package
 Android 2012-02-27 https://f-droid.org/packages/de.schildbach.wallet/
 ```
 
+**Desmos graphs:** creation date of the graph's link (each save makes a new one) and its title
+
+Source: [www.desmos.com/calculator/cq17lqjgb7](https://www.desmos.com/calculator/cq17lqjgb7)
+```
+2026-09-10 automata on a trefoil knot https://www.desmos.com/calculator/cq17lqjgb7
+```
+
 **Sketchfab models:** publication date, author's username and model name, like YouTube
 
 Source: [sketchfab.com/3d-models/globe-59af1994b3224c0893729fec19eb4438](https://sketchfab.com/3d-models/globe-59af1994b3224c0893729fec19eb4438)
@@ -522,6 +529,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.79.0 | 2026-11-21 | Claude Code (Claude Opus 5.5) | Desmos graphs: creation date and title (`2026-09-10 automata on a trefoil knot https://www.desmos.com/calculator/cq17lqjgb7`) |
 | 2.78.0 | 2026-11-20 | Claude Code (Claude Opus 5.5) | Sketchfab models: `YYYY-MM-DD @<user> - <name> <link>` from the public API (`2020-09-22 @glowbox3d - Globe https://sketchfab.com/3d-models/globe-…`) |
 | 2.77.0 | 2026-11-19 | Claude Code (Claude Opus 5.5) | F-Droid apps: date added to F-Droid, read by ranges from the repository index (`Android 2012-02-27 https://f-droid.org/packages/de.schildbach.wallet/`) |
 | 2.76.0 | 2026-11-19 | Claude Code (Claude Opus 5.5) | Google Play captures from 2019-2021: the release date written in the page data (`Android 2011-03-10 …/20200506190729/…?id=de.schildbach.wallet`) |

@@ -247,6 +247,14 @@ async function buildLine(tab) {
     if (info) return `${formatDate(info.date) || "?"} @${cleanText(info.user)} - ${cleanText(info.name)} ${info.link}`;
   }
 
+  // Desmos graphs (www.desmos.com/calculator/<hash>, also /3d/, /geometry/): each save is a new link, created then
+  const desmos = url.match(/^https:\/\/www\.desmos\.com\/(calculator|3d|geometry)\/(\w+)/);
+  if (desmos) {
+    const graph = await runInPage(tab, readDesmosGraph, "ISOLATED", [desmos[2]]);
+    const link = `https://www.desmos.com/${desmos[1]}/${desmos[2]}`;
+    if (graph) return `${formatDate(graph.created) || "?"} ${titleIfNotInLink(graph.title, link)}${link}`;
+  }
+
   // F-Droid apps (f-droid.org/<lang>/packages/<id>/): date added to F-Droid
   const fdroid = url.match(/^https:\/\/f-droid\.org\/(?:[a-z]{2}(?:[-_][A-Za-z]{2,4})?\/)?packages\/([\w.]+)/);
   if (fdroid) {
@@ -1677,6 +1685,14 @@ function readMetaQuestAppInfo() {
   const date = [...html.matchAll(/"release_info":\{"display_date":"([^"]+)"\}/g)]
     .find(m => html.slice(Math.max(0, m.index - 3000), m.index).includes(`"id":"${id}"`))?.[1];
   return { date: date || "", lang: document.documentElement.lang || "en", link: `https://www.meta.com/experiences/${slug}${id}/` };
+}
+
+// Runs in the page (must be self-contained)
+// Desmos: the graph link answers JSON when asked ("Accept: application/json"): "title", "created" (ISO, UTC)
+async function readDesmosGraph(hash) {
+  try {
+    return await (await fetch(location.pathname.replace(/[^/]*$/, hash), { headers: { Accept: "application/json" } })).json();
+  } catch (e) { return null; }
 }
 
 // Runs in the page (must be self-contained)
