@@ -90,13 +90,14 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 
 // Links as the address bar shows them: percent-encoded UTF-8 decoded ("clean-link-—-copy" instead of
-// "clean-link-%E2%80%94-copy"); ASCII (%20, %2F, %3F…), spaces and control characters stay encoded, so the
-// link keeps its meaning and still ends at the first space of the line
+// "clean-link-%E2%80%94-copy"), and the ASCII characters that mean the same written or escaped: letters, digits,
+// "-._~" and the apostrophe ("Boy%27s_surface" → "Boy's_surface"); other ASCII (%20, %2F, %3F, %28…), spaces and
+// control characters stay encoded, so the link keeps its meaning and still ends at the first space of the line
 function readableLinks(line) {
   return line.replace(/(%[0-9A-F]{2})+/gi, run => {
     let text;
     try { text = decodeURIComponent(run); } catch (e) { return run; }
-    return text.replace(/[\x00-\x7F\s\p{C}]/gu, c =>
+    return text.replace(/(?![\w.~'-])[\x00-\x7F]|[\s\p{C}]/gu, c =>
       [...new TextEncoder().encode(c)].map(b => "%" + b.toString(16).toUpperCase().padStart(2, "0")).join(""));
   });
 }
