@@ -256,6 +256,14 @@ async function buildLine(tab) {
     if (graph) return `${formatDate(graph.created) || "?"} ${titleIfNotInLink(graph.title, link)}${link}`;
   }
 
+  // GrabCAD models (grabcad.com/library/<slug>): upload time of the same-site API, as the page's "Uploaded:" shows it
+  const grabcad = url.match(/^https:\/\/grabcad\.com\/library\/([\w-]+)/);
+  if (grabcad) {
+    const model = await runInPage(tab, readGrabcadModel, "ISOLATED", [grabcad[1]]);
+    const link = `https://grabcad.com/library/${grabcad[1]}`;
+    if (model) return `${formatDate(model.created_at) || "?"} ${titleIfNotInLink(model.name, link)}${link}`;
+  }
+
   // F-Droid apps (f-droid.org/<lang>/packages/<id>/): date added to F-Droid
   const fdroid = url.match(/^https:\/\/f-droid\.org\/(?:[a-z]{2}(?:[-_][A-Za-z]{2,4})?\/)?packages\/([\w.]+)/);
   if (fdroid) {
@@ -1694,6 +1702,12 @@ async function readDesmosGraph(hash) {
   try {
     return await (await fetch(location.pathname.replace(/[^/]*$/, hash), { headers: { Accept: "application/json" } })).json();
   } catch (e) { return null; }
+}
+
+// Runs in the page (must be self-contained)
+// GrabCAD: the model page is an Angular shell; its data comes from /community/api/v1/models/<slug> ("created_at", "name")
+async function readGrabcadModel(slug) {
+  try { return await (await fetch(`/community/api/v1/models/${slug}`)).json(); } catch (e) { return null; }
 }
 
 // Runs in the page (must be self-contained)
