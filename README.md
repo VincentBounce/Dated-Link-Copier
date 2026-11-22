@@ -460,6 +460,13 @@ Source: [demonstrations.wolfram.com/TheKleinBottle](https://demonstrations.wolfr
 2019-09-13 https://demonstrations.wolfram.com/TheKleinBottle/
 ```
 
+**French medicines database (Base de données publique des médicaments):** marketing authorization date and the medicine's name
+
+Source: [base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait](https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait)
+```
+1992-06-04 TARDYFERON 80 mg, comprimé pelliculé https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait
+```
+
 **Sketchfab models:** publication date, author's username and model name, like YouTube
 
 Source: [sketchfab.com/3d-models/globe-59af1994b3224c0893729fec19eb4438](https://sketchfab.com/3d-models/globe-59af1994b3224c0893729fec19eb4438)
@@ -543,6 +550,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.83.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | French medicines database: marketing authorization date and name (`1992-06-04 TARDYFERON 80 mg, comprimé pelliculé https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait`); the page's last update (2026-11-03) came before |
 | 2.82.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Wolfram Demonstrations: publication date (`2019-09-13 https://demonstrations.wolfram.com/TheKleinBottle/`) |
 | 2.81.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | GrabCAD models: upload date (`2022-07-08 https://grabcad.com/library/klein-bottle-24`) |
 | 2.80.0 | 2026-11-21 | Claude Code (Claude Opus 5.5) | Links: escaped apostrophes, letters, digits and `-._~` are written plainly (`https://en.wikipedia.org/wiki/Boy's_surface`), in the extension and the Clean Link shortcut |

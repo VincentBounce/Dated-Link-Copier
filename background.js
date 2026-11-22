@@ -422,6 +422,14 @@ async function buildLine(tab) {
     return `${formatDate(info.date) || "?"} ${info.link}`;
   }
 
+  // French medicines database (base-donnees-publique.medicaments.gouv.fr/medicament/<CIS>/…): marketing authorization
+  // date ("Date de l'autorisation : 04/06/1992") and the medicine's name, the same line on every tab of its page
+  const medicine = url.match(/^https:\/\/base-donnees-publique\.medicaments\.gouv\.fr\/medicament\/(\d+)/);
+  if (medicine) {
+    const info = await runInPage(tab, readMedicineInfo);
+    return `${formatDate(info.date) || "?"} ${cleanText(info.name)} https://base-donnees-publique.medicaments.gouv.fr/medicament/${medicine[1]}/extrait`;
+  }
+
   // Have I Been Pwned breaches: date the breach was added to HIBP ("Added to HIBP: 20 Dec 2020")
   if (/^https:\/\/haveibeenpwned\.com\/Breach\/[^/?#]+/i.test(url)) {
     const info = await runInPage(tab, readHibpBreachInfo);
@@ -1829,6 +1837,13 @@ async function readPyPIProjectInfo() {
   }
   // upload_time is UTC without its zone
   return { date: /^\d{4}-\d{2}-\d{2}T[\d:.]+$/.test(date) ? `${date}Z` : date, link: `https://pypi.org/project/${name}/` };
+}
+
+// Runs in the page (must be self-contained)
+// French medicines database: "Date de l'autorisation : 04/06/1992" (day first) and the name, the page's first h3
+function readMedicineInfo() {
+  const m = document.body.innerText.match(/Date de l.autorisation\s*:\s*(\d{2})\/(\d{2})\/(\d{4})/);
+  return { date: m ? `${m[3]}-${m[2]}-${m[1]}` : "", name: document.querySelector("h3")?.textContent || "" };
 }
 
 // Runs in the page (must be self-contained)
