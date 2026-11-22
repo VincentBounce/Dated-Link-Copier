@@ -460,6 +460,13 @@ Source: [demonstrations.wolfram.com/TheKleinBottle](https://demonstrations.wolfr
 2019-09-13 https://demonstrations.wolfram.com/TheKleinBottle/
 ```
 
+**3D Warehouse models:** upload date, author and title, like Sketchfab
+
+Source: [3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle](https://3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle?hl=en)
+```
+2010-01-31 @Jim H. - Klein Bottle https://3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle
+```
+
 **French medicines database (Base de données publique des médicaments):** marketing authorization date and the medicine's name
 
 Source: [base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait](https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait)
@@ -550,6 +557,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.84.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | 3D Warehouse models: upload date, author and title (`2010-01-31 @Jim H. - Klein Bottle https://3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle`); `hl` (interface language) removed from links, in the extension and the Clean Link shortcut |
 | 2.83.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | French medicines database: marketing authorization date and name (`1992-06-04 TARDYFERON 80 mg, comprimé pelliculé https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait`); the page's last update (2026-11-03) came before |
 | 2.82.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Wolfram Demonstrations: publication date (`2019-09-13 https://demonstrations.wolfram.com/TheKleinBottle/`) |
 | 2.81.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | GrabCAD models: upload date (`2022-07-08 https://grabcad.com/library/klein-bottle-24`) |

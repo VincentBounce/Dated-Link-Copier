@@ -248,6 +248,13 @@ async function buildLine(tab) {
     if (info) return `${formatDate(info.date) || "?"} @${cleanText(info.user)} - ${cleanText(info.name)} ${info.link}`;
   }
 
+  // 3D Warehouse models (3dwarehouse.sketchup.com/model/<32 hex id>/<name>): upload time, author and title, like Sketchfab
+  const warehouse = url.match(/^https:\/\/3dwarehouse\.sketchup\.com\/model\/([0-9a-f]{32})(\/[^/?#]*)?/);
+  if (warehouse) {
+    const model = await runInPage(tab, readWarehouseModel, "ISOLATED", [warehouse[1]]);
+    if (model) return `${formatDate(model.createTime && `${model.createTime}Z`) || "?"} @${cleanText(model.creator?.displayName || "")} - ${cleanText(model.title || "")} https://3dwarehouse.sketchup.com/model/${warehouse[1]}${warehouse[2] || ""}`;
+  }
+
   // Desmos graphs (www.desmos.com/calculator/<hash>, also /3d/, /geometry/): each save is a new link, created then
   const desmos = url.match(/^https:\/\/www\.desmos\.com\/(calculator|3d|geometry)\/(\w+)/);
   if (desmos) {
@@ -1046,7 +1053,7 @@ async function readArticleInfo() {
     u.hash = "";
     // Tracking parameters: families by prefix (utm_source…, Matomo, Piwik, HubSpot ads), else exact names
     // (ad click IDs, Google result links, social networks, newsletters); the rest of the query stays
-    const tracking = /^((utm|mtm|matomo|pk|piwik|hsa)_.*|fbclid|gclid|gclsrc|gbraid|wbraid|gad_source|srsltid|msclkid|igshid|igsh|ttclid|twclid|li_fat_id|yclid|mc_cid|mc_eid|_hsenc|_hsmi|mkt_tok|_ga|_ke|ef_id|s_kwcid|epik)$/;
+    const tracking = /^((utm|mtm|matomo|pk|piwik|hsa)_.*|fbclid|gclid|gclsrc|gbraid|wbraid|gad_source|srsltid|msclkid|igshid|igsh|ttclid|twclid|li_fat_id|yclid|mc_cid|mc_eid|_hsenc|_hsmi|mkt_tok|_ga|_ke|ef_id|s_kwcid|epik|hl)$/;
     for (const k of [...u.searchParams.keys()]) {
       if (tracking.test(k)) u.searchParams.delete(k);
     }
@@ -1744,6 +1751,13 @@ async function readSketchfabModel(id) {
     return { name: model.name, user: model.user.username, link: model.viewerUrl.replace(/\/$/, ""),
       date: model.publishedAt ? `${model.publishedAt}Z` : "" };
   } catch (e) { return null; }
+}
+
+// Runs in the page (must be self-contained)
+// 3D Warehouse: the page shows only "Modified Date" (a server-side re-render); the same-site API has "createTime"
+// ("2010-01-31 22:22:36.000", UTC), "creator.displayName" and "title"
+async function readWarehouseModel(id) {
+  try { return await (await fetch(`/warehouse/v1.0/entities/${id}`)).json(); } catch (e) { return null; }
 }
 
 // Runs in the page (must be self-contained)
