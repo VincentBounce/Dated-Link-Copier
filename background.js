@@ -406,10 +406,12 @@ async function buildLine(tab) {
     return `${formatDate(created) || "?"} ${link}`;
   }
 
-  // Printables models: first publication (a republished model's datePublished is its last one), dated in PT
+  // Printables models: first publication (a republished model's datePublished is its last one), dated in PT, then
+  // "@<handle> - <name>" like Sketchfab
   if (/^https:\/\/www\.printables\.com\/(?:[a-z]{2}\/)?model\/\d+/.test(url)) {
     const info = await runInPage(tab, readPrintablesModelInfo);
-    return `${formatDate(info.published) || "?"} ${info.link}`;
+    const by = info.user && info.name ? `@${cleanText(info.user)} - ${cleanText(info.name)} ` : "";
+    return `${formatDate(info.published) || "?"} ${by}${info.link}`;
   }
 
   // Apple user guides (support.apple.com/<locale>/guide/…) carry no date at all: the date read, and the link without
@@ -1676,10 +1678,10 @@ async function readPrintablesModelInfo() {
   let print = {};
   try {
     const res = await fetch("https://api.printables.com/graphql/", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: "query($id: ID!) { print(id: $id) { slug firstPublish } }", variables: { id } }) });
+      body: JSON.stringify({ query: "query($id: ID!) { print(id: $id) { slug name firstPublish user { handle } } }", variables: { id } }) });
     print = (await res.json())?.data?.print || {};
   } catch (e) {}
-  return { published: print.firstPublish, link: `https://www.printables.com/model/${id}${print.slug ? `-${print.slug}` : slug || ""}` };
+  return { published: print.firstPublish, name: print.name, user: print.user?.handle, link: `https://www.printables.com/model/${id}${print.slug ? `-${print.slug}` : slug || ""}` };
 }
 
 // Runs in the page (must be self-contained)

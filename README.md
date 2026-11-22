@@ -492,7 +492,7 @@ Source: [patch.gg/blendi/coloured-pencil](https://patch.gg/blendi/coloured-penci
 
 Source: [www.printables.com/model/99861-klein-bottle](https://www.printables.com/model/99861-klein-bottle)
 ```
-2021-12-21 https://www.printables.com/model/99861-klein-bottle
+2021-12-21 @muckmed_193993 - Klein Bottle https://www.printables.com/model/99861-klein-bottle
 ```
 
 **iCloud shared shortcuts:** creation date and shortcut name (the link only has the ID)
@@ -557,6 +557,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.85.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Printables models: `@handle - name` like Sketchfab (`2021-12-21 @muckmed_193993 - Klein Bottle https://www.printables.com/model/99861-klein-bottle`) |
 | 2.84.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | 3D Warehouse models: upload date, author and title (`2010-01-31 @Jim H. - Klein Bottle https://3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle`); `hl` (interface language) removed from links, in the extension and the Clean Link shortcut |
 | 2.83.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | French medicines database: marketing authorization date and name (`1992-06-04 TARDYFERON 80 mg, comprimé pelliculé https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait`); the page's last update (2026-11-03) came before |
 | 2.82.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Wolfram Demonstrations: publication date (`2019-09-13 https://demonstrations.wolfram.com/TheKleinBottle/`) |
