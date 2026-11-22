@@ -453,6 +453,13 @@ Source: [grabcad.com/library/klein-bottle-24](https://grabcad.com/library/klein-
 2022-07-08 https://grabcad.com/library/klein-bottle-24
 ```
 
+**Wolfram Demonstrations:** publication date (the citation's "Published:"); title only when its words are not in the link
+
+Source: [demonstrations.wolfram.com/TheKleinBottle](https://demonstrations.wolfram.com/TheKleinBottle/)
+```
+2019-09-13 https://demonstrations.wolfram.com/TheKleinBottle/
+```
+
 **Sketchfab models:** publication date, author's username and model name, like YouTube
 
 Source: [sketchfab.com/3d-models/globe-59af1994b3224c0893729fec19eb4438](https://sketchfab.com/3d-models/globe-59af1994b3224c0893729fec19eb4438)
@@ -536,6 +543,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.82.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Wolfram Demonstrations: publication date (`2019-09-13 https://demonstrations.wolfram.com/TheKleinBottle/`) |
 | 2.81.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | GrabCAD models: upload date (`2022-07-08 https://grabcad.com/library/klein-bottle-24`) |
 | 2.80.0 | 2026-11-21 | Claude Code (Claude Opus 5.5) | Links: escaped apostrophes, letters, digits and `-._~` are written plainly (`https://en.wikipedia.org/wiki/Boy's_surface`), in the extension and the Clean Link shortcut |
 | 2.79.0 | 2026-11-21 | Claude Code (Claude Opus 5.5) | Desmos graphs: creation date and title (`2026-09-10 automata on a trefoil knot https://www.desmos.com/calculator/cq17lqjgb7`) |

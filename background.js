@@ -264,6 +264,14 @@ async function buildLine(tab) {
     if (model) return `${formatDate(model.created_at) || "?"} ${titleIfNotInLink(model.name, link)}${link}`;
   }
 
+  // Wolfram Demonstrations (demonstrations.wolfram.com/<ID>/): publication date of the demonstration's data file
+  const wolfram = url.match(/^https:\/\/demonstrations\.wolfram\.com\/(\w+)\/?(?:[?#]|$)/);
+  if (wolfram) {
+    const demo = await runInPage(tab, readWolframDemo, "ISOLATED", [wolfram[1]]);
+    const link = `https://demonstrations.wolfram.com/${wolfram[1]}/`;
+    if (demo) return `${formatDate(demo.PublishedDate) || "?"} ${titleIfNotInLink(demo.Title, link)}${link}`;
+  }
+
   // F-Droid apps (f-droid.org/<lang>/packages/<id>/): date added to F-Droid
   const fdroid = url.match(/^https:\/\/f-droid\.org\/(?:[a-z]{2}(?:[-_][A-Za-z]{2,4})?\/)?packages\/([\w.]+)/);
   if (fdroid) {
@@ -1701,6 +1709,15 @@ function readMetaQuestAppInfo() {
 async function readDesmosGraph(hash) {
   try {
     return await (await fetch(location.pathname.replace(/[^/]*$/, hash), { headers: { Accept: "application/json" } })).json();
+  } catch (e) { return null; }
+}
+
+// Runs in the page (must be self-contained)
+// Wolfram Demonstrations: the page is a React shell; its data is shingle.json on wolframcloud.com (CORS allows the
+// demonstrations site): "PublishedDate" ("2019-09-13T00:00:00", a date: the citation's "Published:"), "Title"
+async function readWolframDemo(id) {
+  try {
+    return await (await fetch(`https://www.wolframcloud.com/obj/resourcesystem/published/DemonstrationRepository/json/demonstrations/${id}/shingle.json`)).json();
   } catch (e) { return null; }
 }
 
