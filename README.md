@@ -302,6 +302,13 @@ Sources: [github.com/git/git](https://github.com/git/git) · [github.com/microso
 2005-04-07 Initial revision of ＂git＂, the information manager from hell https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290
 ```
 
+**GitHub users and organizations:** date the account was created
+
+Source: [github.com/leanprover](https://github.com/leanprover)
+```
+2014-04-08 https://github.com/leanprover
+```
+
 **GitHub releases:** publication date and link
 
 Source: [github.com/VincentBounce/Dated-Link-Copier/releases/tag/v2.32.0](https://github.com/VincentBounce/Dated-Link-Copier/releases/tag/v2.32.0)
@@ -557,6 +564,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.86.0 | 2026-11-23 | Claude Code (Claude Opus 5.5) | GitHub users and organizations: account creation date (`2014-04-08 https://github.com/leanprover`) |
 | 2.85.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Printables models: `@handle - name` like Sketchfab (`2021-12-21 @muckmed_193993 - Klein Bottle https://www.printables.com/model/99861-klein-bottle`) |
 | 2.84.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | 3D Warehouse models: upload date, author and title (`2010-01-31 @Jim H. - Klein Bottle https://3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle`); `hl` (interface language) removed from links, in the extension and the Clean Link shortcut |
 | 2.83.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | French medicines database: marketing authorization date and name (`1992-06-04 TARDYFERON 80 mg, comprimé pelliculé https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait`); the page's last update (2026-11-03) came before |

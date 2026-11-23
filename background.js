@@ -490,7 +490,7 @@ async function buildLine(tab) {
 async function linkLine(url, tab) {
   if (/^https:\/\/((www|mobile)\.)?(x|twitter)\.com\/[^/?#]+\/status\/\d+/.test(url)) return xPostLine(url);
   if (/^https:\/\/(www\.)?linkedin\.com\//.test(url) && linkedinPostLine(url)) return linkedinPostLine(url);
-  return await idPostLine(url, tab) || await forgeLine(url) || await wikipediaLine(url) || await npmLine(url)
+  return await idPostLine(url, tab) || await forgeLine(url) || await githubAccountLine(url) || await wikipediaLine(url) || await npmLine(url)
     || await firefoxAddonLine(url) || await arxivLine(url);
 }
 
@@ -1077,7 +1077,7 @@ async function readArticleInfo() {
 
 // Code forges: repositories (creation), issues and pull or merge requests (opening, with their title), commits
 // (commit date, with their subject), from the public REST APIs (CORS allowed; GitHub: 60 requests an hour without
-// sign-in), dated in PT. null on other pages (users, /features/…: the API has no such
+// sign-in), dated in PT. null on other pages (users: githubAccountLine; /features/…: the API has no such
 // repository) and when the API fails, then the generic reader.
 // GitHub: /<owner>/<repo>, /issues/<n>, /pull/<n> (own endpoint: repos with issues disabled answer 410 to /issues),
 // /commit/<sha>. GitLab: /<group>/…/<project>, /-/issues/<n>, /-/merge_requests/<n>, /-/commit/<sha>.
@@ -1134,6 +1134,19 @@ async function forgeLine(url) {
     }
   }
   return null;
+}
+
+// GitHub users and organizations (github.com/<login>, with its ?tab=): date the account was created, from the public
+// API (CORS allowed), dated in PT. GitHub's own pages (/features, /explore…) are reserved logins: 404, null
+async function githubAccountLine(url) {
+  const m = url.match(/^https:\/\/github\.com\/([\w-]+)\/?(?:[?#]|$)/);
+  if (!m) return null;
+  try {
+    const res = await fetch(`https://api.github.com/users/${m[1]}`);
+    if (!res.ok) return null;
+    const account = await res.json();
+    return `${pacificDate(Date.parse(account.created_at))} https://github.com/${account.login}`;
+  } catch (e) { return null; }
 }
 
 // Firefox add-ons (addons.mozilla.org/<lang>/firefox/addon/<slug>/): date created, from the public API (CORS
