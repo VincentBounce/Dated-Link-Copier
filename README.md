@@ -302,6 +302,13 @@ Sources: [github.com/git/git](https://github.com/git/git) · [github.com/microso
 2005-04-07 Initial revision of ＂git＂, the information manager from hell https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290
 ```
 
+**Visual Studio Marketplace:** first release, with the product the extension is for
+
+Source: [marketplace.visualstudio.com/items?itemName=rvest.vs-code-prettier-eslint](https://marketplace.visualstudio.com/items?itemName=rvest.vs-code-prettier-eslint)
+```
+VS Code ext 2020-02-11 https://marketplace.visualstudio.com/items?itemName=rvest.vs-code-prettier-eslint
+```
+
 **GitHub users and organizations:** date the account was created
 
 Source: [github.com/leanprover](https://github.com/leanprover)
@@ -564,6 +571,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.88.0 | 2026-11-24 | Claude Code (Claude Opus 5.5) | Visual Studio Marketplace: first release and product (`VS Code ext 2020-02-11 https://marketplace.visualstudio.com/items?itemName=rvest.vs-code-prettier-eslint`); the last update, read day first, came before |
 | 2.87.0 | 2026-11-24 | Claude Code (Claude Opus 5.5) | YouTube videos: `YT[ID]` after the link (`… https://youtu.be/IyYsJNstc2Q YT[IyYsJNstc2Q]`); X posts: `𝕏[user／id]` after the link (`2026-11-23 https://x.com/matheorems/status/2125085909871899114 𝕏[matheorems／2125085909871899114]`) |
 | 2.86.0 | 2026-11-23 | Claude Code (Claude Opus 5.5) | GitHub users and organizations: account creation date (`2014-04-08 https://github.com/leanprover`) |
 | 2.85.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Printables models: `@handle - name` like Sketchfab (`2021-12-21 @muckmed_193993 - Klein Bottle https://www.printables.com/model/99861-klein-bottle`) |

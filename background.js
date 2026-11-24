@@ -263,6 +263,15 @@ async function buildLine(tab) {
     if (graph) return `${formatDate(graph.created) || "?"} ${titleIfNotInLink(graph.title, link)}${link}`;
   }
 
+  // Visual Studio Marketplace (marketplace.visualstudio.com/items?itemName=<publisher>.<name>): first release, with
+  // the product the extension is for, like the Chrome Web Store's "Chrome ext"
+  const vsItem = url.match(/^https:\/\/marketplace\.visualstudio\.com\/items\?(?:[^#]*&)?itemName=([\w.-]+)/);
+  if (vsItem) {
+    const info = await runInPage(tab, readVsMarketplaceItem);
+    const product = { 0: "Azure DevOps", 3: "VS Code", 4: "Visual Studio" }[info.type];
+    return `${product ? `${product} ext ` : ""}${formatDate(info.released) || "?"} https://marketplace.visualstudio.com/items?itemName=${vsItem[1]}`;
+  }
+
   // GrabCAD models (grabcad.com/library/<slug>): upload time of the same-site API, as the page's "Uploaded:" shows it
   const grabcad = url.match(/^https:\/\/grabcad\.com\/library\/([\w-]+)/);
   if (grabcad) {
@@ -1750,6 +1759,16 @@ async function readWolframDemo(id) {
   try {
     return await (await fetch(`https://www.wolframcloud.com/obj/resourcesystem/published/DemonstrationRepository/json/demonstrations/${id}/shingle.json`)).json();
   } catch (e) { return null; }
+}
+
+// Runs in the page (must be self-contained)
+// Visual Studio Marketplace: the page data (script.jiContent) has "ReleaseDateString" ("Wed, 12 Feb 2020 06:26:22 GMT")
+// and "ItemType" (0 Azure DevOps, 3 VS Code, 4 Visual Studio); the page shows only "Last updated" as "2/6/2024"
+function readVsMarketplaceItem() {
+  let data = {};
+  try { data = JSON.parse(document.querySelector("script.jiContent").textContent); } catch (e) {}
+  const time = Date.parse(data.ReleaseDateString);
+  return { released: time ? new Date(time).toISOString() : "", type: data.ItemType };
 }
 
 // Runs in the page (must be self-contained)
