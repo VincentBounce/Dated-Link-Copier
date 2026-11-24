@@ -204,10 +204,10 @@ async function buildLine(tab) {
     // MAIN world: gives access to the YouTube player's data for the current video
     const info = await runInPage(tab, readVideoInfo, "MAIN");
     if (!info) return null;
-    // Replace " - " in channels and title; one "@" per channel (collaborations have several); "[ID]" before the link
+    // Replace " - " in channels and title; one "@" per channel (collaborations have several); "YT[ID]" after the link
     const cleanChannels = info.channels.map(c => "@" + cleanText(c)).join(" ");
     const cleanTitle = cleanText(withoutChannelSuffix(info.title, info.channels));
-    return `${formatDate(info.published) || "?"} ${cleanChannels} - ${cleanTitle} [${info.id}] https://youtu.be/${info.id}`;
+    return `${formatDate(info.published) || "?"} ${cleanChannels} - ${cleanTitle} https://youtu.be/${info.id} YT[${info.id}]`;
   }
 
   if (GOOGLE_PLAY.test(url)) return playLine(tab, url);
@@ -539,7 +539,8 @@ function xPostLine(url) {
   // Older posts (before November 2010) have small sequential IDs that carry no date.
   // Dated in PT, like every exact time.
   const date = id < 10000000000000n ? "?" : pacificDate(Number((id >> 22n) + 1288834974657n));
-  return `${date} https://x.com/${m[1]}/status/${m[2]}`;
+  // Then 𝕏[user／id], the user's tag (like YouTube's YT[id]), file-name safe
+  return `${date} https://x.com/${m[1]}/status/${m[2]} 𝕏[${cleanText(`${m[1]}/${m[2]}`)}]`;
 }
 
 // X profiles show "Joined October 2021" (in the page's language) and no date metadata

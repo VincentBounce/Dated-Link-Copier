@@ -14,7 +14,7 @@ Click the toolbar icon. It shows ✓ when the line was copied, ✗ otherwise. Th
 
 Source: [www.youtube.com/watch?v=0PT5c1z3LL8](https://www.youtube.com/watch?v=0PT5c1z3LL8)
 ```
-2025-02-06 @Katie Couric - Microplastics are accumulating in human brains at an alarming rate [0PT5c1z3LL8] https://youtu.be/0PT5c1z3LL8
+2025-02-06 @Katie Couric - Microplastics are accumulating in human brains at an alarming rate https://youtu.be/0PT5c1z3LL8 YT[0PT5c1z3LL8]
 ```
 
 - `YYYY-MM-DD` publish date, as shown by YouTube
@@ -123,7 +123,7 @@ Source: [chrome-stats.com/d/com.anthropic.aibo](https://chrome-stats.com/d/com.a
 
 Source: [x.com/RobertDaleSmith/status/2108787905225245094](https://x.com/RobertDaleSmith/status/2108787905225245094)
 ```
-2026-10-09 https://x.com/RobertDaleSmith/status/2108787905225245094
+2026-10-09 https://x.com/RobertDaleSmith/status/2108787905225245094 𝕏[RobertDaleSmith／2108787905225245094]
 ```
 
 **X (Twitter) profiles:** month the account joined X ("Joined October 2021", in any page language) and profile link
@@ -564,6 +564,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.87.0 | 2026-11-24 | Claude Code (Claude Opus 5.5) | YouTube videos: `YT[ID]` after the link (`… https://youtu.be/IyYsJNstc2Q YT[IyYsJNstc2Q]`); X posts: `𝕏[user／id]` after the link (`2026-11-23 https://x.com/matheorems/status/2125085909871899114 𝕏[matheorems／2125085909871899114]`) |
 | 2.86.0 | 2026-11-23 | Claude Code (Claude Opus 5.5) | GitHub users and organizations: account creation date (`2014-04-08 https://github.com/leanprover`) |
 | 2.85.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | Printables models: `@handle - name` like Sketchfab (`2021-12-21 @muckmed_193993 - Klein Bottle https://www.printables.com/model/99861-klein-bottle`) |
 | 2.84.0 | 2026-11-22 | Claude Code (Claude Opus 5.5) | 3D Warehouse models: upload date, author and title (`2010-01-31 @Jim H. - Klein Bottle https://3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle`); `hl` (interface language) removed from links, in the extension and the Clean Link shortcut |
