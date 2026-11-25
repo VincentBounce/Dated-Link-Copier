@@ -481,6 +481,13 @@ Source: [3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-B
 2010-01-31 @Jim H. - Klein Bottle https://3dwarehouse.sketchup.com/model/6f28815071193438faa1eaf488f2666a/Klein-Bottle
 ```
 
+**Dwitter dweets:** date, author and the author's comment, like Sketchfab
+
+Source: [www.dwitter.net/d/34154](https://www.dwitter.net/d/34154)
+```
+2025-07-24 @KilledByAPixel - When the chips are down. 🃏 https://www.dwitter.net/d/34154
+```
+
 **French medicines database (Base de données publique des médicaments):** marketing authorization date and the medicine's name
 
 Source: [base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait](https://base-donnees-publique.medicaments.gouv.fr/medicament/68269288/extrait)
@@ -571,6 +578,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.89.0 | 2026-11-25 | Claude Code (Claude Opus 5.5) | Dwitter dweets: date, author and the author's comment (`2025-07-24 @KilledByAPixel - When the chips are down. 🃏 https://www.dwitter.net/d/34154`) |
 | 2.88.1 | 2026-11-25 | Claude Code (Claude Opus 5.5) | JSON-LD dates are read from the page's own items, not from the reviews they hold (fisherpaykel.com products gave the newest review's day: now `(2026-11)`, the date read) |
 | 2.88.0 | 2026-11-24 | Claude Code (Claude Opus 5.5) | Visual Studio Marketplace: first release and product (`VS Code ext 2020-02-11 https://marketplace.visualstudio.com/items?itemName=rvest.vs-code-prettier-eslint`); the last update, read day first, came before |
 | 2.87.0 | 2026-11-24 | Claude Code (Claude Opus 5.5) | YouTube videos: `YT[ID]` after the link (`… https://youtu.be/IyYsJNstc2Q YT[IyYsJNstc2Q]`); X posts: `𝕏[user／id]` after the link (`2026-11-23 https://x.com/matheorems/status/2125085909871899114 𝕏[matheorems／2125085909871899114]`) |

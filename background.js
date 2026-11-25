@@ -248,6 +248,14 @@ async function buildLine(tab) {
     if (info) return `${formatDate(info.date) || "?"} @${cleanText(info.user)} - ${cleanText(info.name)} ${info.link}`;
   }
 
+  // Dwitter dweets (www.dwitter.net/d/<id>): "@<user> - <author's comment>", like Sketchfab; a dweet has no title, its
+  // author's first comment stands for one (none: "@<user>" alone)
+  const dweet = url.match(/^https:\/\/www\.dwitter\.net\/d\/(\d+)/);
+  if (dweet) {
+    const info = await runInPage(tab, readDweet, "ISOLATED", [dweet[1]]);
+    if (info) return `${formatDate(info.posted) || "?"} @${cleanText(info.user)}${info.comment ? ` - ${cleanText(info.comment)}` : ""} https://www.dwitter.net/d/${dweet[1]}`;
+  }
+
   // 3D Warehouse models (3dwarehouse.sketchup.com/model/<32 hex id>/<name>): upload time, author and title, like Sketchfab
   const warehouse = url.match(/^https:\/\/3dwarehouse\.sketchup\.com\/model\/([0-9a-f]{32})(\/[^/?#]*)?/);
   if (warehouse) {
@@ -1794,6 +1802,17 @@ async function readSketchfabModel(id) {
     const model = await (await fetch(`https://api.sketchfab.com/v3/models/${id}`)).json();
     return { name: model.name, user: model.user.username, link: model.viewerUrl.replace(/\/$/, ""),
       date: model.publishedAt ? `${model.publishedAt}Z` : "" };
+  } catch (e) { return null; }
+}
+
+// Runs in the page (must be self-contained)
+// Dwitter: "posted" (UTC) and "author.username" of the same-site API /api/dweets/<id>/; the author's first comment is
+// the page's ".comment-message.sticky-comment" (only on that dweet's page: in-page navigation is none, the site reloads)
+async function readDweet(id) {
+  try {
+    const dweet = await (await fetch(`/api/dweets/${id}/`)).json();
+    const comment = location.pathname === `/d/${id}` ? document.querySelector(".comment-message.sticky-comment")?.textContent.trim() : "";
+    return { posted: dweet.posted, user: dweet.author.username, comment };
   } catch (e) { return null; }
 }
 
