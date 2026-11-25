@@ -571,6 +571,7 @@ X posts, YouTube videos (start time kept), Google Play apps, Amazon products, Re
 
 | Version | Date | Built with | Changes |
 |---|---|---|---|
+| 2.88.1 | 2026-11-25 | Claude Code (Claude Opus 5.5) | JSON-LD dates are read from the page's own items, not from the reviews they hold (fisherpaykel.com products gave the newest review's day: now `(2026-11)`, the date read) |
 | 2.88.0 | 2026-11-24 | Claude Code (Claude Opus 5.5) | Visual Studio Marketplace: first release and product (`VS Code ext 2020-02-11 https://marketplace.visualstudio.com/items?itemName=rvest.vs-code-prettier-eslint`); the last update, read day first, came before |
 | 2.87.0 | 2026-11-24 | Claude Code (Claude Opus 5.5) | YouTube videos: `YT[ID]` after the link (`… https://youtu.be/IyYsJNstc2Q YT[IyYsJNstc2Q]`); X posts: `𝕏[user／id]` after the link (`2026-11-23 https://x.com/matheorems/status/2125085909871899114 𝕏[matheorems／2125085909871899114]`) |
 | 2.86.0 | 2026-11-23 | Claude Code (Claude Opus 5.5) | GitHub users and organizations: account creation date (`2014-04-08 https://github.com/leanprover`) |

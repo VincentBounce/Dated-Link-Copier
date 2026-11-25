@@ -890,8 +890,17 @@ async function readArticleInfo() {
   // ("2026/07", "2011"), so the online date comes first, and a partial date only after the dates shown on the page
   const dates = list => list.map(d => dateFromText((d || "").trim(), false)).filter(Boolean);
   const firstDate = list => dates(list).find(d => !d.includes("x")) || "";
-  const jsonLd = key => [...doc.querySelectorAll('script[type="application/ld+json"]')]
-    .map(s => s.textContent.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`))?.[1]);
+  // JSON-LD dates of the page's own items (top level, @graph, mainEntity), never of the items they hold: a product's
+  // reviews carry their own datePublished (Bazaarvoice on fisherpaykel.com: the newest review's day); a script that is
+  // not valid JSON is searched as text
+  const jsonLd = key => [...doc.querySelectorAll('script[type="application/ld+json"]')].flatMap(s => {
+    let data;
+    try { data = JSON.parse(s.textContent); } catch (e) {
+      return [s.textContent.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`))?.[1]];
+    }
+    return [data].flat().flatMap(item => [item, ...(item?.["@graph"] || []), item?.mainEntity].flat())
+      .map(item => item?.[key]).filter(value => typeof value === "string");
+  });
   const publishedTags = [
     meta('meta[property="article:published_time"]'),
     meta('meta[itemprop="datePublished"]'),
